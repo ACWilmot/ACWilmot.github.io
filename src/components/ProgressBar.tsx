@@ -15,17 +15,18 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   className 
 }) => {
   const progress = (currentQuestion / totalQuestions) * 100;
+  const formattedProgress = Math.round(progress);
   
   return (
     <div className={cn("w-full", className)}>
       <div className="flex justify-between text-xs text-muted-foreground mb-1">
         <span>Question {currentQuestion} of {totalQuestions}</span>
-        <span>{Math.round(progress)}% Complete</span>
+        <span>{formattedProgress}% Complete</span>
       </div>
       
-      <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
         <motion.div 
-          className="h-full bg-primary"
+          className="h-full bg-primary rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.3, ease: "easeInOut" }}

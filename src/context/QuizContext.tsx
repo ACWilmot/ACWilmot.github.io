@@ -307,10 +307,10 @@ const sampleQuestions: Record<Subject, Question[]> = {
     {
       id: 'v8',
       subject: 'verbal',
-      text: 'If 'day' is to 'night', then 'awake' is to:',
+      text: 'If "day" is to "night", then "awake" is to:',
       options: ['Sleep', 'Dream', 'Tired', 'Bed'],
       correctAnswer: 'Sleep',
-      explanation: 'Day and night are opposites, so the relationship is looking for the opposite of 'awake', which is 'sleep'.'
+      explanation: 'Day and night are opposites, so the relationship is looking for the opposite of "awake", which is "sleep".'
     },
     {
       id: 'v9',

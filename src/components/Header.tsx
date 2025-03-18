@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Book } from 'lucide-react';
+import { Book, LogIn, UserPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +21,17 @@ const Header: React.FC = () => {
         <NavLink href="/">Home</NavLink>
         <NavLink href="/quiz">Practice</NavLink>
       </nav>
+
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+          <LogIn className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Sign In</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate('/register')}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Register</span>
+        </Button>
+      </div>
     </header>
   );
 };

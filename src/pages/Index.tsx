@@ -1,14 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import SubjectCard from '@/components/SubjectCard';
 import { useQuiz, Subject } from '@/context/QuizContext';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { startQuiz } = useQuiz();
+  const { startQuiz, questionCount, setQuestionCount } = useQuiz();
 
   const subjectInfo = [
     {
@@ -38,6 +40,10 @@ const Index = () => {
     navigate('/quiz');
   };
 
+  const handleSliderChange = (value: number[]) => {
+    setQuestionCount(value[0]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <Header />
@@ -64,6 +70,33 @@ const Index = () => {
             Comprehensive practice for all 11+ subjects with detailed explanations 
             and personalized feedback to help students excel.
           </p>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="max-w-md mx-auto mb-12 p-6 bg-card rounded-xl shadow-sm"
+        >
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <Label htmlFor="question-count">Number of Questions</Label>
+              <span className="text-sm font-medium">{questionCount}</span>
+            </div>
+            <Slider 
+              id="question-count"
+              defaultValue={[questionCount]} 
+              max={100} 
+              min={10} 
+              step={5}
+              onValueChange={handleSliderChange}
+              className="w-full"
+            />
+            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+              <span>10</span>
+              <span>100</span>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div 

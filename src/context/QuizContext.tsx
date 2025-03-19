@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 
@@ -19,6 +20,8 @@ interface QuizContextType {
   userAnswers: Record<string, string>;
   selectedSubject: Subject | null;
   isLoading: boolean;
+  questionCount: number;
+  setQuestionCount: (count: number) => void;
   setSelectedSubject: (subject: Subject | null) => void;
   startQuiz: (subject: Subject) => void;
   answerQuestion: (questionId: string, answer: string) => void;
@@ -42,6 +45,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [questionCount, setQuestionCount] = useState(10);
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
@@ -55,7 +59,10 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         [subjectQuestions[i], subjectQuestions[j]] = [subjectQuestions[j], subjectQuestions[i]];
       }
       
-      setQuestions(subjectQuestions);
+      // Take only the requested number of questions (or all if less available)
+      const selectedQuestions = subjectQuestions.slice(0, Math.min(questionCount, subjectQuestions.length));
+      
+      setQuestions(selectedQuestions);
       setSelectedSubject(subject);
       setCurrentQuestionIndex(0);
       setScore(0);
@@ -120,6 +127,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userAnswers,
         selectedSubject,
         isLoading,
+        questionCount,
+        setQuestionCount,
         setSelectedSubject,
         startQuiz,
         answerQuestion,

@@ -17,6 +17,7 @@ const QuizPage = () => {
     userAnswers,
     selectedSubject,
     isLoading,
+    questionCount,
     answerQuestion,
     goToNextQuestion,
     goToPreviousQuestion,
@@ -106,7 +107,9 @@ const QuizPage = () => {
               <h1 className="text-xl font-display font-semibold">
                 {selectedSubject?.charAt(0).toUpperCase() + selectedSubject?.slice(1)} Practice
               </h1>
-              <p className="text-sm text-muted-foreground">Test your knowledge</p>
+              <p className="text-sm text-muted-foreground">
+                {questions.length} questions selected from the question pool
+              </p>
             </div>
           </div>
           

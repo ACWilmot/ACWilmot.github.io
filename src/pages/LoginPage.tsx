@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Key, LogIn } from 'lucide-react';
 import Header from '@/components/Header';
+import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -33,6 +34,14 @@ const formSchema = z.object({
 const LoginPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login, isAuthenticated } = useAuth();
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,20 +52,15 @@ const LoginPage = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // This would be connected to an authentication service in a real app
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const success = await login(values.email, values.password);
     
-    // Simulate successful login
-    toast({
-      title: "Login successful!",
-      description: "Welcome back to SmartPrep.",
-    });
-    
-    // Redirect to home page after login
-    setTimeout(() => {
-      navigate('/');
-    }, 1500);
+    if (success) {
+      // Redirect to home page after login
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+    }
   }
 
   return (
@@ -106,6 +110,7 @@ const LoginPage = () => {
                     </FormItem>
                   )}
                 />
+                
                 <div className="flex items-center space-x-2">
                   <FormField
                     control={form.control}
@@ -125,6 +130,13 @@ const LoginPage = () => {
                     )}
                   />
                 </div>
+                
+                <div className="bg-yellow-50 p-3 rounded-md text-sm border border-yellow-100 text-yellow-700">
+                  <p><strong>Demo account:</strong></p>
+                  <p>Email: wilmot@example.com</p>
+                  <p>Password: Password</p>
+                </div>
+
                 <Button type="submit" className="w-full" size="lg">
                   <LogIn className="mr-2 h-4 w-4" />
                   Sign In

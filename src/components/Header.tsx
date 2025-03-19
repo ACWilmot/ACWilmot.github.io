@@ -3,9 +3,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
+import UserProfile from './UserProfile';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between glass fixed top-0 z-50 animate-slide-down">
@@ -20,17 +23,24 @@ const Header: React.FC = () => {
       <nav className="hidden md:flex items-center gap-8">
         <NavLink href="/">Home</NavLink>
         <NavLink href="/quiz">Practice</NavLink>
+        {isAuthenticated && <NavLink href="/progress">My Progress</NavLink>}
       </nav>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
-          <LogIn className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Sign In</span>
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => navigate('/register')}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Register</span>
-        </Button>
+        {isAuthenticated ? (
+          <UserProfile />
+        ) : (
+          <>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+              <LogIn className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Sign In</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/register')}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Register</span>
+            </Button>
+          </>
+        )}
       </div>
     </header>
   );

@@ -1,10 +1,10 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check, X, RotateCcw, Home, ArrowRight } from 'lucide-react';
 import Header from '@/components/Header';
 import { useQuiz } from '@/context/QuizContext';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -19,6 +19,8 @@ const ResultsPage = () => {
     startQuiz
   } = useQuiz();
   
+  const { isAuthenticated, updateProgress } = useAuth();
+  
   // If no subject is selected, redirect to home
   useEffect(() => {
     if (!selectedSubject) {
@@ -27,6 +29,13 @@ const ResultsPage = () => {
   }, [selectedSubject, navigate]);
   
   const { score, totalQuestions, percentage } = getResults();
+  
+  // Save progress for authenticated users
+  useEffect(() => {
+    if (isAuthenticated && selectedSubject && questions.length > 0) {
+      updateProgress(selectedSubject, totalQuestions, score);
+    }
+  }, [isAuthenticated, selectedSubject, score, totalQuestions, questions.length, updateProgress]);
   
   const getGrade = () => {
     if (percentage >= 90) return { text: 'Excellent', color: 'text-green-500' };

@@ -1,3 +1,4 @@
+
 import { Question } from '@/types/questionTypes';
 
 const mathsQuestions: Question[] = [
@@ -581,4 +582,10 @@ const mathsQuestions: Question[] = [
     id: 'm73',
     subject: 'maths',
     text: 'What is the value of 0.6 as a fraction in its simplest form?',
-    options: ['3/
+    options: ['3/5', '6/10', '2/3', '6/9'],
+    correctAnswer: '3/5',
+    explanation: '0.6 = 6/10 = 3/5 in its simplest form'
+  }
+];
+
+export default mathsQuestions;

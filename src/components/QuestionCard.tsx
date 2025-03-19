@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Question } from '@/context/QuizContext';
+import { Question } from '@/types/questionTypes';
 
 interface QuestionCardProps {
   question: Question;

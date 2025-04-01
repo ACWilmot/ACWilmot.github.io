@@ -159,7 +159,7 @@ const QuestionsPage = () => {
                     <PaginationItem>
                       <PaginationPrevious 
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
-                        disabled={currentPage === 1}
+                        isDisabled={currentPage === 1}
                       />
                     </PaginationItem>
                     
@@ -168,7 +168,7 @@ const QuestionsPage = () => {
                     <PaginationItem>
                       <PaginationNext 
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
-                        disabled={currentPage === totalPages}
+                        isDisabled={currentPage === totalPages}
                       />
                     </PaginationItem>
                   </PaginationContent>

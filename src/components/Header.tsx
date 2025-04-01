@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserProfile from './UserProfile';
+import DonateButton from './DonateButton';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ const Header: React.FC = () => {
       </nav>
 
       <div className="flex items-center gap-2">
+        <DonateButton />
         {isAuthenticated ? (
           <UserProfile />
         ) : (

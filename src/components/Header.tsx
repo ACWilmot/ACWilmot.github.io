@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book, LogIn, UserPlus } from 'lucide-react';
@@ -20,12 +19,11 @@ const Header: React.FC = () => {
         <span className="text-xl font-display font-medium tracking-tight">SmartPrep</span>
       </div>
       
-      {/* Center the navigation items */}
       <nav className="hidden md:flex items-center justify-center flex-1 mx-4">
         <div className="flex items-center gap-8">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/quiz">Practice</NavLink>
-          {/* Removed My Progress link */}
+          {isAuthenticated && <NavLink href="/progress">My Progress</NavLink>}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>

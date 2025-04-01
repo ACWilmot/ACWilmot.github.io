@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -59,6 +60,9 @@ const ResultsPage = () => {
   };
 
   const grade = getGrade();
+
+  // Filter questions to only show those with answers
+  const answeredQuestions = questions.filter(question => userAnswers[question.id]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -157,43 +161,51 @@ const ResultsPage = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <h2 className="text-xl font-display font-semibold mb-4">Question Breakdown</h2>
-            <div className="space-y-3">
-              {questions.map((question, index) => {
-                const isCorrect = userAnswers[question.id] === question.correctAnswer;
-                
-                return (
-                  <Card key={question.id} className="flex items-center p-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 flex-shrink-0 ${
-                      isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                    }`}>
-                      {isCorrect ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <X className="h-4 w-4" />
-                      )}
-                    </div>
-                    
-                    <div className="flex-grow">
-                      <p className="text-sm font-medium line-clamp-1">{question.text}</p>
-                      <div className="flex text-xs text-muted-foreground">
-                        <span>Your answer: </span>
-                        <span className={isCorrect ? 'text-green-600 ml-1' : 'text-red-600 ml-1'}>
-                          {userAnswers[question.id] || 'Not answered'}
-                        </span>
-                        {!isCorrect && (
-                          <>
-                            <span className="mx-1">•</span>
-                            <span>Correct: </span>
-                            <span className="text-green-600 ml-1">{question.correctAnswer}</span>
-                          </>
+            <h2 className="text-xl font-display font-semibold mb-4">
+              Question Breakdown {answeredQuestions.length > 0 ? `(${answeredQuestions.length} answered)` : ''}
+            </h2>
+            {answeredQuestions.length > 0 ? (
+              <div className="space-y-3">
+                {answeredQuestions.map((question) => {
+                  const isCorrect = userAnswers[question.id] === question.correctAnswer;
+                  
+                  return (
+                    <Card key={question.id} className="flex items-center p-4">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 flex-shrink-0 ${
+                        isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                      }`}>
+                        {isCorrect ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <X className="h-4 w-4" />
                         )}
                       </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+                      
+                      <div className="flex-grow">
+                        <p className="text-sm font-medium line-clamp-1">{question.text}</p>
+                        <div className="flex text-xs text-muted-foreground">
+                          <span>Your answer: </span>
+                          <span className={isCorrect ? 'text-green-600 ml-1' : 'text-red-600 ml-1'}>
+                            {userAnswers[question.id]}
+                          </span>
+                          {!isCorrect && (
+                            <>
+                              <span className="mx-1">•</span>
+                              <span>Correct: </span>
+                              <span className="text-green-600 ml-1">{question.correctAnswer}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center p-6 border rounded-lg bg-background">
+                <p className="text-muted-foreground">No questions answered yet</p>
+              </div>
+            )}
           </motion.div>
           
           <motion.div

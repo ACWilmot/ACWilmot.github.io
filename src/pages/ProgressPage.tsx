@@ -10,7 +10,7 @@ import { ArrowLeft, BarChart2, RefreshCcw } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const ProgressPage = () => {
-  const { user, isAuthenticated, resetProgress } = useAuth();
+  const { user, isAuthenticated, resetSubjectProgress } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if not authenticated
@@ -31,50 +31,25 @@ const ProgressPage = () => {
       <Header />
       
       <main className="flex-1 container px-4 pt-32 pb-16 max-w-5xl mx-auto">
-        <div className="mb-8 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={() => navigate('/')}
-              className="h-9 w-9 rounded-full"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            
-            <div>
-              <h1 className="text-3xl font-display font-bold flex items-center gap-2">
-                <BarChart2 className="h-6 w-6 text-primary" />
-                My Progress
-              </h1>
-              <p className="text-muted-foreground">
-                Track your performance across different subjects
-              </p>
-            </div>
+        <div className="mb-8 flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => navigate('/')}
+            className="h-9 w-9 rounded-full"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          
+          <div>
+            <h1 className="text-3xl font-display font-bold flex items-center gap-2">
+              <BarChart2 className="h-6 w-6 text-primary" />
+              My Progress
+            </h1>
+            <p className="text-muted-foreground">
+              Track your performance across different subjects
+            </p>
           </div>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="gap-2">
-                <RefreshCcw className="h-4 w-4" />
-                Reset Progress
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will reset your progress for all subjects. All completed quizzes and statistics will be erased.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={resetProgress}>
-                  Reset Progress
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -112,13 +87,37 @@ const ProgressPage = () => {
                     </div>
                   </div>
 
-                  <Button 
-                    className="w-full mt-4" 
-                    onClick={() => navigate('/quiz')}
-                    variant="outline"
-                  >
-                    Practice {subject}
-                  </Button>
+                  <div className="mt-4 flex items-center gap-2">
+                    <Button 
+                      className="flex-1" 
+                      onClick={() => navigate('/quiz')}
+                      variant="outline"
+                    >
+                      Practice {subject}
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                          <RefreshCcw className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Reset {subject} progress?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will reset your progress for {subject} only. All completed quizzes and statistics for this subject will be erased.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => resetSubjectProgress(subject)}>
+                            Reset
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </CardContent>
               </Card>
             );

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<boolean>;
   updateProgress: (subject: string, completed: number, correct: number) => void;
   resetProgress: () => void;
+  resetSubjectProgress: (subject: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -260,6 +262,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     toast.success("Progress reset successfully");
   };
 
+  const resetSubjectProgress = (subject: string) => {
+    if (!user) return;
+
+    const updatedUser = {
+      ...user,
+      progress: {
+        ...user.progress,
+        [subject]: {
+          completed: 0,
+          correct: 0,
+          lastAttempted: new Date().toISOString().split('T')[0]
+        }
+      }
+    };
+
+    setUser(updatedUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+
+    // Update user data in users list
+    if (user.email) {
+      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        if (users[user.email]) {
+          users[user.email].userData = updatedUser;
+          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+        }
+      }
+    }
+
+    toast.success(`${subject} progress reset successfully`);
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -268,7 +303,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       logout,
       register,
       updateProgress,
-      resetProgress
+      resetProgress,
+      resetSubjectProgress
     }}>
       {children}
     </AuthContext.Provider>

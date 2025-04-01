@@ -34,6 +34,17 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       
       <h2 className="text-xl font-display mb-6">{question.text}</h2>
       
+      {/* Display question image if available */}
+      {question.imageUrl && (
+        <div className="mb-6">
+          <img 
+            src={question.imageUrl} 
+            alt={`Visual for question ${question.id}`} 
+            className="mx-auto rounded-md max-h-64 object-contain"
+          />
+        </div>
+      )}
+      
       <div className="space-y-3 mb-6">
         {question.options.map((option, index) => (
           <Option
@@ -44,6 +55,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             isCorrect={question.correctAnswer === option}
             showCorrectness={!!userAnswer}
             onSelect={() => onAnswer(option)}
+            imageUrl={question.optionImages?.[index]}
           />
         ))}
       </div>
@@ -75,6 +87,7 @@ interface OptionProps {
   isCorrect: boolean;
   showCorrectness: boolean;
   onSelect: () => void;
+  imageUrl?: string;
 }
 
 const Option: React.FC<OptionProps> = ({
@@ -83,7 +96,8 @@ const Option: React.FC<OptionProps> = ({
   isSelected,
   isCorrect,
   showCorrectness,
-  onSelect
+  onSelect,
+  imageUrl
 }) => {
   const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
   
@@ -113,13 +127,26 @@ const Option: React.FC<OptionProps> = ({
         {letters[index]}
       </span>
       
-      <span className={cn(
-        "flex-grow",
-        isSelected && showCorrectness && !isCorrect && "text-red-600",
-        !isSelected && showCorrectness && isCorrect && "text-green-600"
-      )}>
-        {option}
-      </span>
+      <div className="flex-grow flex flex-col">
+        <span className={cn(
+          "flex-grow",
+          isSelected && showCorrectness && !isCorrect && "text-red-600",
+          !isSelected && showCorrectness && isCorrect && "text-green-600"
+        )}>
+          {option}
+        </span>
+        
+        {/* Display option image if available */}
+        {imageUrl && (
+          <div className="mt-2">
+            <img 
+              src={imageUrl} 
+              alt={`Option ${letters[index]}`} 
+              className="rounded-md max-h-32 object-contain"
+            />
+          </div>
+        )}
+      </div>
       
       {showCorrectness && (
         <>

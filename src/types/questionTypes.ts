@@ -8,6 +8,8 @@ export interface Question {
   options: string[];
   correctAnswer: string;
   explanation: string;
+  imageUrl?: string;
+  optionImages?: string[];
 }
 
 export type SubjectQuestions = Record<Subject, Question[]>;

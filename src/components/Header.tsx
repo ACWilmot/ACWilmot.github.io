@@ -25,7 +25,7 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-8">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/quiz">Practice</NavLink>
-          {isAuthenticated && <NavLink href="/progress">My Progress</NavLink>}
+          {/* Removed My Progress link */}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>

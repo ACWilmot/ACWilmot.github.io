@@ -1,12 +1,9 @@
-
 import React from 'react';
 import { Layout } from '@/components/Layout';
 import { Book, Headphones, Heart, Info, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
 const AboutPage = () => {
-  return (
-    <Layout>
+  return <Layout>
       <div className="container max-w-3xl mx-auto px-4 py-12 animate-fade-in">
         <h1 className="text-3xl font-display font-bold text-center mb-8">
           About SmartPrep
@@ -34,11 +31,7 @@ const AboutPage = () => {
               <Heart className="h-10 w-10 text-primary shrink-0" />
               <div>
                 <h2 className="text-xl font-medium mb-2">Free for Everyone</h2>
-                <p className="text-muted-foreground">
-                  I share it here freely for all to use, but do not maintain this as a 
-                  commercial venture. The app is designed to be straightforward and effective without 
-                  the distracting gamification elements found in many educational tools.
-                </p>
+                <p className="text-muted-foreground">I share it here freely for all to use, but do not maintain this as a commercial venture. If you run into issues with the app, please get in touch at thedopamineslotmachine@gmail.com.  </p>
               </div>
             </div>
           </CardContent>
@@ -52,12 +45,7 @@ const AboutPage = () => {
                 <h2 className="text-xl font-medium mb-2">The Dopamine Slot Machine Podcast</h2>
                 <p className="text-muted-foreground">
                   If this app has helped you, give us a listen at{' '}
-                  <a 
-                    href="https://thedopamineslotmachine.co.uk" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
+                  <a href="https://thedopamineslotmachine.co.uk" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                     thedopamineslotmachine.co.uk
                   </a>, 
                   or find us on Spotify/Apple Podcasts. We discuss digital wellbeing, ethical 
@@ -74,8 +62,6 @@ const AboutPage = () => {
           </p>
         </div>
       </div>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default AboutPage;

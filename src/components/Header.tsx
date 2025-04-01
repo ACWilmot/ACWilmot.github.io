@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Book, LogIn, UserPlus } from 'lucide-react';
+import { Book, LogIn, UserPlus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserProfile from './UserProfile';
@@ -24,6 +24,7 @@ const Header: React.FC = () => {
         <NavLink href="/">Home</NavLink>
         <NavLink href="/quiz">Practice</NavLink>
         {isAuthenticated && <NavLink href="/progress">My Progress</NavLink>}
+        <NavLink href="/about">About</NavLink>
       </nav>
 
       <div className="flex items-center gap-2">

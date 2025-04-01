@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Subject } from '@/context/QuizContext';
@@ -23,13 +23,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Info } from 'lucide-react';
 
 const QuestionsPage = () => {
   const [activeSubject, setActiveSubject] = useState<Subject>('maths');
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 10;
+
+  // Reset current page when subject changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeSubject]);
 
   const toggleQuestion = (questionId: string) => {
     setExpandedQuestions(prev => ({
@@ -51,9 +56,51 @@ const QuestionsPage = () => {
   const totalPages = Math.ceil(currentQuestions.length / questionsPerPage);
 
   const renderPaginationLinks = () => {
-    const links = [];
-    for (let i = 1; i <= totalPages; i++) {
-      links.push(
+    // For smaller number of pages, show all page links
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+        <PaginationItem key={pageNum}>
+          <PaginationLink
+            onClick={() => setCurrentPage(pageNum)}
+            isActive={currentPage === pageNum}
+          >
+            {pageNum}
+          </PaginationLink>
+        </PaginationItem>
+      ));
+    }
+    
+    // For larger number of pages, use ellipsis
+    const pages = [];
+    
+    // Always show first page
+    pages.push(
+      <PaginationItem key={1}>
+        <PaginationLink
+          onClick={() => setCurrentPage(1)}
+          isActive={currentPage === 1}
+        >
+          1
+        </PaginationLink>
+      </PaginationItem>
+    );
+    
+    // Calculate range of pages to show around current page
+    let startPage = Math.max(2, currentPage - 2);
+    let endPage = Math.min(totalPages - 1, currentPage + 2);
+    
+    // Show ellipsis if needed before startPage
+    if (startPage > 2) {
+      pages.push(
+        <PaginationItem key="ellipsis-start">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+    
+    // Add page numbers around current page
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
         <PaginationItem key={i}>
           <PaginationLink
             onClick={() => setCurrentPage(i)}
@@ -64,7 +111,31 @@ const QuestionsPage = () => {
         </PaginationItem>
       );
     }
-    return links;
+    
+    // Show ellipsis if needed after endPage
+    if (endPage < totalPages - 1) {
+      pages.push(
+        <PaginationItem key="ellipsis-end">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+    
+    // Always show last page
+    if (totalPages > 1) {
+      pages.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            onClick={() => setCurrentPage(totalPages)}
+            isActive={currentPage === totalPages}
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    return pages;
   };
 
   return (
@@ -97,6 +168,12 @@ const QuestionsPage = () => {
           
           {subjects.map(subject => (
             <TabsContent key={subject} value={subject} className="mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing {indexOfFirstQuestion + 1}-{Math.min(indexOfLastQuestion, currentQuestions.length)} of {currentQuestions.length} questions
+                </div>
+              </div>
+              
               <div className="space-y-4">
                 {currentQuestionsPage.map((question: Question) => (
                   <Card key={question.id} className="shadow-sm">
@@ -139,6 +216,16 @@ const QuestionsPage = () => {
                               ))}
                             </TableBody>
                           </Table>
+                          
+                          {question.imageUrl && (
+                            <div className="py-2">
+                              <img 
+                                src={question.imageUrl} 
+                                alt={`Visual for question ${question.id}`} 
+                                className="mx-auto rounded-md max-h-48 object-contain"
+                              />
+                            </div>
+                          )}
                           
                           <div className="bg-muted p-4 rounded-lg">
                             <p className="text-sm">

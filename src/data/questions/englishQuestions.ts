@@ -347,7 +347,7 @@ const englishQuestions: Question[] = [
   },
   {
     id: 'e44',
-    subject: 'english',
+: english',
     text: 'What is the term for a word that is spelled the same forwards and backwards?',
     options: ['palindrome', 'anagram', 'homonym', 'acronym'],
     correctAnswer: 'palindrome',

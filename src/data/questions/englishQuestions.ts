@@ -1,3 +1,4 @@
+
 import { Question } from '@/types/questionTypes';
 
 const englishQuestions: Question[] = [
@@ -347,7 +348,7 @@ const englishQuestions: Question[] = [
   },
   {
     id: 'e44',
-: english',
+    subject: 'english',
     text: 'What is the term for a word that is spelled the same forwards and backwards?',
     options: ['palindrome', 'anagram', 'homonym', 'acronym'],
     correctAnswer: 'palindrome',

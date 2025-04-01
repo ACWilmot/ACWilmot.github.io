@@ -339,7 +339,7 @@ const englishQuestions: Question[] = [
   },
   {
     id: 'e43',
-1 subject: 'english',
+    subject: 'english',
     text: 'Which prefix means "against"?',
     options: ['pro-', 'anti-', 'un-', 'dis-'],
     correctAnswer: 'anti-',
@@ -791,13 +791,13 @@ const englishQuestions: Question[] = [
     text: 'What is the literary term for a sequence of events that builds toward a climax?',
     options: ['foreshadowing', 'flashback', 'rising action', 'resolution'],
     correctAnswer: 'rising action',
-    explanation: 'Rising action is the part of a story's plot that leads up to the climax, building tension and developing conflict.'
+    explanation: 'Rising action is the part of a story\'s plot that leads up to the climax, building tension and developing conflict.'
   },
   {
     id: 'e100',
     subject: 'english',
     text: 'Which sentence demonstrates correct agreement between subject and pronoun?',
-    options: ['Everyone should bring their notebook.', 'The committee made its decision.', 'Each of the students have their own locker.', 'Neither of them have finished their work.'],
+    options: ['Everyone should bring their notebook.', 'The committee made its decision.', 'Each of the students has their own locker.', 'Neither of them have finished their work.'],
     correctAnswer: 'The committee made its decision.',
     explanation: 'Collective nouns like "committee" take singular pronouns. "Committee" and "its" show correct agreement.'
   }

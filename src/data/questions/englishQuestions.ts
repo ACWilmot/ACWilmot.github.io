@@ -182,7 +182,7 @@ const englishQuestions: Question[] = [
     id: 'e23',
     subject: 'english',
     text: 'Which sentence uses the apostrophe correctly?',
-    options: ['The dog\'s are barking loudly.', 'The book\'s pages were torn.', 'The childrens\' toys are broken.', 'Its' time to go home.'],
+    options: ['The dog\'s are barking loudly.', 'The book\'s pages were torn.', 'The childrens\' toys are broken.', "It's time to go home."],
     correctAnswer: 'The book\'s pages were torn.',
     explanation: 'The apostrophe in "book\'s" correctly shows possession by a singular noun.'
   },

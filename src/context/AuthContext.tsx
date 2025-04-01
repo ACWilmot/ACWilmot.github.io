@@ -21,25 +21,6 @@ type RegisterData = {
   password: string;
 };
 
-// Demo user data
-const demoUser = {
-  id: '1',
-  name: 'Wilmot',
-  email: 'wilmot@example.com',
-  progress: {
-    maths: {
-      completed: 5,
-      correct: 3,
-      lastAttempted: '2023-06-15'
-    },
-    english: {
-      completed: 7,
-      correct: 5, 
-      lastAttempted: '2023-06-20'
-    }
-  }
-};
-
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -75,15 +56,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
     if (!storedUsers) {
-      // Add demo user to initial users
-      const initialUsers = {
-        'wilmot@example.com': {
-          name: demoUser.name,
-          password: 'Password',
-          userData: demoUser
-        }
-      };
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(initialUsers));
+      // Initialize with empty users object
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify({}));
     }
   }, []);
 
@@ -146,14 +120,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Get users from localStorage
     const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
     const users = storedUsers ? JSON.parse(storedUsers) : {};
-
-    // Handle demo account
-    if (email === 'wilmot@example.com' && password === 'Password') {
-      setUser(demoUser);
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(demoUser));
-      toast.success("Logged in successfully");
-      return true;
-    }
 
     // Check if user exists and password matches
     if (users[email] && users[email].password === password) {

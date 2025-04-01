@@ -130,12 +130,6 @@ const LoginPage = () => {
                     )}
                   />
                 </div>
-                
-                <div className="bg-yellow-50 p-3 rounded-md text-sm border border-yellow-100 text-yellow-700">
-                  <p><strong>Demo account:</strong></p>
-                  <p>Email: wilmot@example.com</p>
-                  <p>Password: Password</p>
-                </div>
 
                 <Button type="submit" className="w-full" size="lg">
                   <LogIn className="mr-2 h-4 w-4" />

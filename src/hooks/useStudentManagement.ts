@@ -42,8 +42,8 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, email, Email, progress')
-        .in('id', validStudentIds);
+        .select('id, name, email, Email, progress');
+        
         
       if (error) {
         console.error('Error fetching student profiles:', error);

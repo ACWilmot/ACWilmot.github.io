@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student, UserProgress } from '@/types/userTypes';
@@ -40,11 +39,12 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         validStudentIds
       });
       
+      // Modified query to explicitly filter by student IDs
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, email, Email, progress');
-        
-        
+        .select('id, name, email, Email, progress')
+        .in('id', validStudentIds); // This ensures we only get the students we want
+      
       if (error) {
         console.error('Error fetching student profiles:', error);
         return [];
@@ -245,4 +245,3 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     removeStudent
   };
 };
-

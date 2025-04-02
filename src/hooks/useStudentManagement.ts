@@ -37,19 +37,26 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
-      // First fetch the student profile based on email or name
+      // First fetch the student profile based on email
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('name', studentEmail); // We're using the name field which might contain email
+        .eq('email', studentEmail) // Using email field to find the student
+        .maybeSingle();
       
-      if (userError || !userData || userData.length === 0) {
-        console.error('Error finding student:', userError || 'Student not found');
+      if (userError) {
+        console.error('Error finding student:', userError);
+        toast.error("Error searching for student");
+        return false;
+      }
+      
+      if (!userData) {
+        console.error('Student not found with email:', studentEmail);
         toast.error("Student not found. Please check the email address.");
         return false;
       }
       
-      const studentId = userData[0].id;
+      const studentId = userData.id;
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
       // Get current students array or initialize empty array

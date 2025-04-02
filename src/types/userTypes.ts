@@ -4,6 +4,7 @@ export type UserRole = 'student' | 'teacher';
 export interface Student {
   id: string;
   name: string;
+  email?: string;
   progress: {
     [subject: string]: {
       completed: number;
@@ -16,6 +17,7 @@ export interface Student {
 export interface Teacher {
   id: string;
   name: string;
+  email?: string;
   students: string[]; // Array of student IDs
 }
 
@@ -28,6 +30,7 @@ export type UserProgress = {
 export interface Profile {
   id: string;
   name: string;
+  email?: string;
   role: UserRole;
   progress: {
     [subject: string]: UserProgress

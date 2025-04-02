@@ -51,6 +51,8 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
   const { name, email, password, role, teacherEmail } = data;
 
   try {
+    console.log(`Registering ${role} with email: ${email}, name: ${name}`);
+    
     // First create the auth user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -83,18 +85,22 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
         toast.error("Registration incomplete: Failed to set teacher role");
         return false;
       }
+      
+      console.log("Teacher profile updated successfully");
     }
     
     // If the user provided a teacher email, add the student to that teacher's class
     if (teacherEmail && role === 'student' && authData?.user) {
-      // Find the teacher by email - Note: We need to use an email field rather than name
+      // Find the teacher by email
       const { data: teacherData, error: teacherError } = await supabase
         .from('profiles')
-        .select('id, students')
-        .eq('name', teacherEmail) // Using name field temporarily as we don't have a separate email column
+        .select('id, students, email')
+        .eq('email', teacherEmail) // Looking up teacher by actual email instead of name
         .single();
       
       if (!teacherError && teacherData) {
+        console.log("Found teacher by email:", teacherEmail, "Teacher data:", teacherData);
+        
         // Add the new student to the teacher's students array
         const students = [...(teacherData.students || [])];
         if (!students.includes(authData.user.id)) {
@@ -108,14 +114,14 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
             
           if (updateError) {
             console.error("Error adding student to teacher's class:", updateError);
-            // Don't fail registration if this step fails
             toast.warning("Registration successful, but couldn't add you to teacher's class");
           } else {
+            console.log("Student added to teacher's class successfully");
             toast.success("Registration successful! You've been added to your teacher's class.");
           }
         }
       } else {
-        console.error("Error finding teacher:", teacherError);
+        console.error("Error finding teacher:", teacherError || "Teacher not found with email " + teacherEmail);
         toast.warning("Registration successful, but couldn't find specified teacher");
       }
     }
@@ -132,34 +138,34 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
 // Add this utility function to add Student1 to Teacher1's class for testing purposes
 export async function setupTestStudentTeacherRelationship(): Promise<void> {
   try {
-    // First check if Teacher1 exists
+    // First find teacher@example.com
     const { data: teacherData, error: teacherError } = await supabase
       .from('profiles')
       .select()
-      .eq('role', 'teacher')
-      .limit(1);
+      .eq('email', 'teacher@example.com')
+      .maybeSingle();
       
-    if (teacherError || !teacherData || teacherData.length === 0) {
-      console.error('Could not find any teacher:', teacherError || 'No teachers found');
+    if (teacherError || !teacherData) {
+      console.error('Could not find teacher@example.com:', teacherError || 'No teacher found');
       return;
     }
     
-    const teacher = teacherData[0];
+    const teacher = teacherData;
     console.log('Found teacher:', teacher);
     
-    // Find Student1
+    // Find student@example.com
     const { data: studentData, error: studentError } = await supabase
       .from('profiles')
       .select()
-      .eq('role', 'student')
-      .limit(1);
+      .eq('email', 'student@example.com')
+      .maybeSingle();
       
-    if (studentError || !studentData || studentData.length === 0) {
-      console.error('Could not find any student:', studentError || 'No students found');
+    if (studentError || !studentData) {
+      console.error('Could not find student@example.com:', studentError || 'No student found');
       return;
     }
     
-    const student = studentData[0];
+    const student = studentData;
     console.log('Found student:', student);
     
     // Add Student to Teacher's students array if not already there
@@ -186,5 +192,35 @@ export async function setupTestStudentTeacherRelationship(): Promise<void> {
   }
 }
 
-// Call this function once to ensure Student1 is in Teacher1's class
-setupTestStudentTeacherRelationship();
+// Commenting out automatic test setup as we'll handle this manually
+// setupTestStudentTeacherRelationship();
+
+// Function to add email field to profiles table
+export async function updateProfilesWithEmail(): Promise<void> {
+  try {
+    // Get all users from auth.users
+    const { data: authUsers, error: authError } = await supabase.auth
+      .admin.listUsers();
+    
+    if (authError || !authUsers) {
+      console.error('Could not fetch auth users:', authError);
+      return;
+    }
+    
+    // Update each profile with their email
+    for (const user of authUsers.users) {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ email: user.email })
+        .eq('id', user.id);
+        
+      if (updateError) {
+        console.error(`Failed to update profile for ${user.email}:`, updateError);
+      } else {
+        console.log(`Updated profile for ${user.email}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error updating profiles with email:', error);
+  }
+}

@@ -6,7 +6,7 @@ import { Profile, RegisterData, Student, UserRole } from '@/types/userTypes';
 import { fetchUserProfile, registerUser } from '@/utils/authUtils';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useProgressActions } from '@/hooks/useProgressActions';
-import { useTeacherActions } from '@/hooks/useTeacherActions';
+import { useStudentManagement } from '@/hooks/useStudentManagement';
 
 interface AuthContextType {
   user: Profile | null;
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const { login, teacherLogin, logout } = useAuthActions(user, setUser);
   const { updateProgress, resetProgress, resetSubjectProgress } = useProgressActions(user, setUser);
-  const { getStudents, addStudent, removeStudent } = useTeacherActions(user, setUser);
+  const { getStudents, addStudent, removeStudent } = useStudentManagement(user, setUser);
   
   const register = async (data: RegisterData): Promise<boolean> => {
     return await registerUser(data);

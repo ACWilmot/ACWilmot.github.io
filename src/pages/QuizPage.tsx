@@ -2,25 +2,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
+import QuestionCard from '@/components/QuestionCard';
+import ProgressBar from '@/components/ProgressBar';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 
 const QuizPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { 
     startQuiz, 
-    currentQuestion, 
-    currentQuestionIndex, // Make sure we're using this from context
-    selectedOptions, 
-    selectOption, 
+    questions, 
+    currentQuestionIndex,
+    userAnswers, 
+    answerQuestion, 
     submitQuiz, 
     quizInProgress,
-    questions
+    goToNextQuestion,
+    goToPreviousQuestion
   } = useQuiz();
   const { isAuthenticated, userType } = useAuth();
   
@@ -31,6 +34,7 @@ const QuizPage = () => {
   const [numQuestions, setNumQuestions] = useState<number>(10);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [timePerQuestion, setTimePerQuestion] = useState<number>(60);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
 
   useEffect(() => {
     // Redirect teacher to dashboard
@@ -54,12 +58,19 @@ const QuizPage = () => {
   const handleStartQuiz = () => {
     startQuiz(subject, difficulty, numQuestions);
     setTimeLeft(numQuestions * timePerQuestion);
+    setShowExplanation(false);
   };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const handleAnswerQuestion = (answer: string) => {
+    if (!questions[currentQuestionIndex]) return;
+    answerQuestion(questions[currentQuestionIndex].id, answer);
+    setShowExplanation(true);
   };
 
   // Handle preselected subject from assignments
@@ -70,71 +81,7 @@ const QuizPage = () => {
     }
   }, [location.state]);
 
-  // Helper function to render question content safely
-  const renderQuestionContent = () => {
-    if (!currentQuestion) return null;
-    
-    // Handle different question format types
-    if (typeof currentQuestion.content === 'string') {
-      return <div dangerouslySetInnerHTML={{ __html: currentQuestion.content }} className="prose max-w-none mb-8" />;
-    } else if (typeof currentQuestion.text === 'string') {
-      return <div className="prose max-w-none mb-8">{currentQuestion.text}</div>;
-    }
-    return null;
-  };
-
-  // Helper function to render question options
-  const renderQuestionOptions = () => {
-    if (!currentQuestion) return null;
-
-    // Check if options is an object with A, B, C, D properties
-    const isObjectOptions = currentQuestion.options && 
-      typeof currentQuestion.options === 'object' &&
-      'A' in currentQuestion.options;
-
-    return (
-      <Tabs defaultValue={selectedOptions[currentQuestion.id] || 'none'} onValueChange={(value) => selectOption(currentQuestion.id, value)}>
-        <TabsList className="grid grid-cols-4 mb-6">
-          <TabsTrigger value="A">A</TabsTrigger>
-          <TabsTrigger value="B">B</TabsTrigger>
-          <TabsTrigger value="C">C</TabsTrigger>
-          <TabsTrigger value="D">D</TabsTrigger>
-        </TabsList>
-        
-        {isObjectOptions ? (
-          <>
-            <TabsContent value="A" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).A }} className="prose max-w-none" />
-            </TabsContent>
-            <TabsContent value="B" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).B }} className="prose max-w-none" />
-            </TabsContent>
-            <TabsContent value="C" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).C }} className="prose max-w-none" />
-            </TabsContent>
-            <TabsContent value="D" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).D }} className="prose max-w-none" />
-            </TabsContent>
-          </>
-        ) : (
-          <>
-            {Array.isArray(currentQuestion.options) && currentQuestion.options.map((option, index) => {
-              const optionKey = String.fromCharCode(65 + index); // A, B, C, D...
-              return (
-                <TabsContent key={optionKey} value={optionKey} className="border p-4 rounded-lg">
-                  <div className="prose max-w-none">{option}</div>
-                </TabsContent>
-              );
-            })}
-          </>
-        )}
-        
-        <TabsContent value="none">
-          <div className="border p-4 rounded-lg text-center text-muted-foreground">Select an answer above</div>
-        </TabsContent>
-      </Tabs>
-    );
-  };
+  const currentQuestion = questions[currentQuestionIndex];
 
   return (
     <div className="min-h-screen bg-background">
@@ -274,7 +221,7 @@ const QuizPage = () => {
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-xl font-display font-medium">
-                Question {currentQuestion.number || (currentQuestionIndex + 1)} of {questions.length}
+                Question {currentQuestionIndex + 1} of {questions.length}
               </h1>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -282,29 +229,60 @@ const QuizPage = () => {
               </div>
             </div>
             
-            <div className="min-h-[60vh]">
-              {renderQuestionContent()}
-              {renderQuestionOptions()}
-            </div>
+            <ProgressBar 
+              currentQuestion={currentQuestionIndex + 1} 
+              totalQuestions={questions.length} 
+              className="mb-8" 
+            />
+            
+            {currentQuestion && (
+              <QuestionCard
+                question={currentQuestion}
+                userAnswer={userAnswers[currentQuestion.id]}
+                onAnswer={handleAnswerQuestion}
+                showExplanation={showExplanation}
+              />
+            )}
 
-            <div className="mt-8 space-x-2 flex justify-between">
+            <div className="mt-8 flex justify-between">
               <Button
                 variant="outline"
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to finish the quiz early?")) {
-                    submitQuiz();
-                    navigate('/results');
-                  }
-                }}
+                onClick={goToPreviousQuestion}
+                disabled={currentQuestionIndex === 0}
+                className="flex items-center gap-2"
               >
-                Finish Quiz
+                <ArrowLeft className="h-4 w-4" /> Previous
               </Button>
-              <Button onClick={() => {
-                submitQuiz();
-                navigate('/results');
-              }} className="bg-primary">
-                Submit Answers
-              </Button>
+
+              <div className="space-x-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to finish the quiz early?")) {
+                      submitQuiz();
+                      navigate('/results');
+                    }
+                  }}
+                >
+                  Finish Quiz
+                </Button>
+                
+                <Button
+                  onClick={() => {
+                    if (currentQuestionIndex === questions.length - 1) {
+                      submitQuiz();
+                      navigate('/results');
+                    } else {
+                      goToNextQuestion();
+                      setShowExplanation(false);
+                    }
+                  }}
+                  className="bg-primary"
+                >
+                  {currentQuestionIndex === questions.length - 1 ? 'Submit Answers' : 'Next Question'}
+                  {currentQuestionIndex !== questions.length - 1 && <ArrowRight className="ml-2 h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           </div>
         )}

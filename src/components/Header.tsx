@@ -9,7 +9,7 @@ import DonateButton from './DonateButton';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userType } = useAuth();
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between glass fixed top-0 z-50 animate-slide-down">
@@ -26,6 +26,7 @@ const Header: React.FC = () => {
           <NavLink href="/">Home</NavLink>
           <NavLink href="/quiz">Practice</NavLink>
           {isAuthenticated && <NavLink href="/progress">My Progress</NavLink>}
+          {isAuthenticated && userType === 'teacher' && <NavLink href="/teacher-dashboard">Teacher Dashboard</NavLink>}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>

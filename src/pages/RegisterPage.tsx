@@ -96,9 +96,9 @@ const RegisterPage = () => {
         title: "Success",
         description: "Student account created successfully",
       });
-      // Redirect to login page after registration
+      // Redirect to homepage after registration
       setTimeout(() => {
-        navigate('/login');
+        navigate('/');
       }, 1500);
     }
   }
@@ -116,9 +116,9 @@ const RegisterPage = () => {
         title: "Success",
         description: "Teacher account created successfully",
       });
-      // Redirect to login page after registration
+      // Redirect to teacher dashboard after registration
       setTimeout(() => {
-        navigate('/login');
+        navigate('/teacher-dashboard');
       }, 1500);
     }
   }

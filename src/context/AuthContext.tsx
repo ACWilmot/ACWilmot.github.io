@@ -23,6 +23,7 @@ export interface User {
   id: string;
   name: string;
   email?: string;
+  password?: string;
   progress?: UserProgress;
 }
 
@@ -35,11 +36,20 @@ export interface Assignment {
   createdAt: string;
 }
 
+export interface AssignmentAttempt {
+  assignmentId: string;
+  completed: boolean;
+  score?: number;
+  date: string;
+}
+
 export interface StudentData {
   id: string;
   name: string;
+  password: string;
   classId: string;
   progress: UserProgress;
+  assignmentAttempts: AssignmentAttempt[];
 }
 
 export interface ClassData {
@@ -56,11 +66,11 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (type: UserType) => boolean;
   logout: () => void;
-  register: (userData: { name: string; email: string; userType: UserType }) => Promise<boolean>;
+  register: (userData: { name: string; email?: string; password?: string; userType: UserType }) => Promise<boolean>;
   getClassesByTeacher: () => ClassData[];
   getClassById: (classId: string) => ClassData | undefined;
   createClass: (className: string) => Promise<boolean>;
-  addStudentToClass: (studentName: string, classId: string) => Promise<boolean>;
+  addStudentToClass: (studentName: string, classId: string, password: string) => Promise<boolean>;
   getStudentsByClass: (classId: string) => StudentData[];
   assignExercise: (classId: string, assignment: Omit<Assignment, 'id' | 'createdAt'>) => Promise<boolean>;
   updateProgress: (subject: keyof UserProgress, totalQuestions: number, score: number) => void;
@@ -70,17 +80,60 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Create a demo class with 30 students
+const demoClassId = uuidv4();
+const demoClass: ClassData = {
+  id: demoClassId,
+  teacherId: "teacher-demo",
+  name: "Demo Class",
+  students: [],
+  assignments: []
+};
+
+const demoStudents: StudentData[] = Array.from({ length: 30 }, (_, i) => ({
+  id: `student-${i+1}`,
+  name: `Student${i+1}`,
+  password: "password", 
+  classId: demoClassId,
+  progress: {
+    maths: { correct: 0, completed: 0 },
+    english: { correct: 0, completed: 0 },
+    verbal: { correct: 0, completed: 0 },
+    nonVerbal: { correct: 0, completed: 0 }
+  },
+  assignmentAttempts: []
+}));
+
+// Update demoClass.students with the student IDs
+demoClass.students = demoStudents.map(student => student.id);
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [classes, setClasses] = useState<ClassData[]>(() => {
     const storedClasses = localStorage.getItem('classes');
-    return storedClasses ? JSON.parse(storedClasses) : [];
+    if (storedClasses) {
+      const parsedClasses = JSON.parse(storedClasses);
+      // Check if demo class already exists
+      if (!parsedClasses.some((c: ClassData) => c.name === "Demo Class")) {
+        return [...parsedClasses, demoClass];
+      }
+      return parsedClasses;
+    }
+    return [demoClass];
   });
   const [students, setStudents] = useState<StudentData[]>(() => {
     const storedStudents = localStorage.getItem('students');
-    return storedStudents ? JSON.parse(storedStudents) : [];
+    if (storedStudents) {
+      const parsedStudents = JSON.parse(storedStudents);
+      // Check if demo students already exist
+      if (!parsedStudents.some((s: StudentData) => s.name === "Student1")) {
+        return [...parsedStudents, ...demoStudents];
+      }
+      return parsedStudents;
+    }
+    return demoStudents;
   });
 
   const { toast } = useToast();
@@ -123,14 +176,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true; // Return true to indicate successful login
   };
 
-  const register = async (userData: { name: string; email: string; userType: UserType }): Promise<boolean> => {
+  const register = async (userData: { name: string; email?: string; password?: string; userType: UserType }): Promise<boolean> => {
     try {
       // In a real app, we would register the user with a backend
       // For now, just set the user state as if they've logged in
-      const newUser = {
+      const newUser: User = {
         id: uuidv4(),
         name: userData.name,
-        email: userData.email
+        email: userData.email,
+        password: userData.password
       };
 
       setUser(newUser);
@@ -203,18 +257,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addStudentToClass = async (studentName: string, classId: string): Promise<boolean> => {
+  const addStudentToClass = async (studentName: string, classId: string, password: string): Promise<boolean> => {
     try {
       const newStudent: StudentData = {
         id: uuidv4(),
         name: studentName,
+        password: password,
         classId: classId,
         progress: {
           maths: { correct: 0, completed: 0 },
           english: { correct: 0, completed: 0 },
           verbal: { correct: 0, completed: 0 },
           nonVerbal: { correct: 0, completed: 0 }
-        }
+        },
+        assignmentAttempts: []
       };
 
       setStudents(prevStudents => [...prevStudents, newStudent]);

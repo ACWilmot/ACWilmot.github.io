@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
@@ -60,26 +59,21 @@ const LoginPage = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // We're simplifying the login for demo purposes
-    // In a real app, we'd pass the identifier and password to the login function
     try {
-      // Call the login function without checking its return value directly
+      // Call the login function
       login(loginType);
       
-      // Since the login function updates the isAuthenticated state in AuthContext,
-      // we should display the success message and let the useEffect handle the redirect
       toast({
         title: "Success",
         description: "Logged in successfully",
       });
       
-      // Optionally set a timeout for the redirect for better UX
-      setTimeout(() => {
-        if (userType === 'teacher') {
-          navigate('/teacher-dashboard');
-        } else {
-          navigate('/');
-        }
-      }, 1000);
+      // Direct to appropriate page based on user type
+      if (loginType === 'teacher') {
+        navigate('/teacher-dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       toast({
         title: "Error",

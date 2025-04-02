@@ -24,7 +24,7 @@ const ProgressPage = () => {
     return null;
   }
 
-  const subjects = Object.keys(user.progress || {});
+  const subjects = user.progress ? Object.keys(user.progress) : [];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -54,7 +54,8 @@ const ProgressPage = () => {
 
         <div className="grid md:grid-cols-2 gap-6">
           {subjects.length > 0 ? subjects.map(subject => {
-            const subjectData = user.progress[subject];
+            const typedSubject = subject as keyof typeof user.progress;
+            const subjectData = user.progress?.[typedSubject];
             const accuracy = subjectData && subjectData.completed > 0 
               ? Math.round((subjectData.correct / subjectData.completed) * 100) 
               : 0;
@@ -111,7 +112,7 @@ const ProgressPage = () => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => resetSubjectProgress(subject)}>
+                          <AlertDialogAction onClick={() => resetSubjectProgress(typedSubject)}>
                             Reset
                           </AlertDialogAction>
                         </AlertDialogFooter>

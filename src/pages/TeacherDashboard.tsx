@@ -60,6 +60,7 @@ const newStudentSchema = z.object({
   classId: z.string().min(1, {
     message: 'Please select a class',
   }),
+  password: z.string().optional(),
 });
 
 const newAssignmentSchema = z.object({
@@ -80,7 +81,7 @@ const TeacherDashboard = () => {
   const { 
     user, isAuthenticated, userType, getClassesByTeacher, 
     createClass, addStudentToClass, getStudentsByClass, 
-    assignExercise, createDemoClass 
+    assignExercise
   } = useAuth();
   const navigate = useNavigate();
   
@@ -160,7 +161,8 @@ const TeacherDashboard = () => {
   };
 
   const handleAddStudent = async (data: z.infer<typeof newStudentSchema>) => {
-    const success = await addStudentToClass(data.studentName, data.classId);
+    const password = data.password || "password";
+    const success = await addStudentToClass(data.studentName, data.classId, password);
     if (success) {
       if (data.classId === selectedClass) {
         loadStudents(data.classId);
@@ -257,13 +259,6 @@ const TeacherDashboard = () => {
     
     const targetClass = classes.find(c => c.id === classId);
     return targetClass ? targetClass.assignments : [];
-  };
-
-  const handleCreateDemoClass = async () => {
-    const success = await createDemoClass();
-    if (success) {
-      loadClasses();
-    }
   };
 
   return (
@@ -409,6 +404,26 @@ const TeacherDashboard = () => {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={studentForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="password" 
+                                  placeholder="Enter student password" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                              <FormDescription>
+                                Leave blank to use default password.
+                              </FormDescription>
+                            </FormItem>
+                          )}
+                        />
                         <DialogFooter>
                           <Button type="submit">Add Student</Button>
                         </DialogFooter>
@@ -536,11 +551,6 @@ const TeacherDashboard = () => {
                     </Form>
                   </DialogContent>
                 </Dialog>
-
-                <Button variant="outline" className="w-full justify-start" onClick={handleCreateDemoClass}>
-                  <Users className="mr-2 h-4 w-4" />
-                  Create Demo Class
-                </Button>
 
                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/progress')}>
                   <BarChart2 className="mr-2 h-4 w-4" />
@@ -907,7 +917,7 @@ const TeacherDashboard = () => {
                 <School className="h-12 w-12 text-muted-foreground mb-4" />
                 <h2 className="text-2xl font-medium mb-2">No Classes Yet</h2>
                 <p className="text-muted-foreground mb-4 text-center">
-                  Create your first class to get started managing your students
+                  Create your first class to get started
                 </p>
                 <Button onClick={() => setIsAddingClass(true)}>
                   <PlusCircle className="h-4 w-4 mr-2" />

@@ -10,7 +10,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
-      // Filter out any non-UUID values (like email addresses) that might be in the students array
+      // Filter out any non-UUID values that might be in the students array
       const validStudentIds = user.students.filter(id => 
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
@@ -21,26 +21,43 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       }
       
       console.log("Fetching students with valid IDs:", validStudentIds);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', validStudentIds);
-
-      if (error) {
-        console.error('Error fetching students:', error);
-        toast.error("Failed to fetch students");
-        return [];
-      }
-
-      console.log("Fetched students:", data);
       
-      // Transform the data to match the Student type
-      const studentData = data?.map(profile => ({
-        id: profile.id,
-        name: profile.name,
-        email: profile.email || profile.Email,
-        progress: profile.progress as Student['progress']
-      })) || [];
+      // Fetch one student at a time to debug which student might be causing issues
+      let studentData: Student[] = [];
+      
+      for (const studentId of validStudentIds) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', studentId)
+            .single();
+          
+          if (error) {
+            console.error(`Error fetching student ${studentId}:`, error);
+            continue;
+          }
+          
+          if (data) {
+            console.log(`Student ${studentId} data:`, data);
+            
+            // Transform to Student type with proper null checking
+            studentData.push({
+              id: data.id,
+              name: data.name || 'Unknown Student',
+              email: data.email || data.Email || 'No Email',
+              progress: data.progress as Student['progress'] || {
+                maths: { completed: 0, correct: 0, lastAttempted: null },
+                english: { completed: 0, correct: 0, lastAttempted: null },
+                verbal: { completed: 0, correct: 0, lastAttempted: null },
+                nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
+              }
+            });
+          }
+        } catch (innerError) {
+          console.error(`Error processing student ${studentId}:`, innerError);
+        }
+      }
       
       console.log("Transformed student data:", studentData);
       return studentData;

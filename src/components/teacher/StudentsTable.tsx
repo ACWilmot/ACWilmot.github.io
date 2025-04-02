@@ -29,14 +29,21 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
 
   // Calculate progress for a student
   const calculateProgress = (student: Student) => {
+    // Initialize with default values in case progress data is missing
     let totalCompleted = 0;
     let totalCorrect = 0;
     let subjectCount = 0;
 
-    for (const subject in student.progress) {
-      totalCompleted += student.progress[subject].completed;
-      totalCorrect += student.progress[subject].correct;
-      subjectCount++;
+    // Check if progress exists
+    if (student.progress) {
+      for (const subject in student.progress) {
+        const subjectProgress = student.progress[subject];
+        if (subjectProgress) {
+          totalCompleted += subjectProgress.completed || 0;
+          totalCorrect += subjectProgress.correct || 0;
+          subjectCount++;
+        }
+      }
     }
 
     const overallAccuracy = totalCompleted > 0 
@@ -53,10 +60,12 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
   // Find the most recent activity date for a student
   const getLastActivity = (student: Student) => {
     let lastActivity = null;
-    for (const subject in student.progress) {
-      const date = student.progress[subject].lastAttempted;
-      if (date && (!lastActivity || date > lastActivity)) {
-        lastActivity = date;
+    if (student.progress) {
+      for (const subject in student.progress) {
+        const date = student.progress[subject]?.lastAttempted;
+        if (date && (!lastActivity || date > lastActivity)) {
+          lastActivity = date;
+        }
       }
     }
     return lastActivity || 'Never';

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
@@ -20,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Mail, Key, LogIn, User, GraduationCap, School } from 'lucide-react';
 import Header from '@/components/Header';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   identifier: z.string().min(1, {
@@ -35,6 +35,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated, userType } = useAuth();
   const [loginType, setLoginType] = useState<'student' | 'teacher'>('student');
+  const { toast } = useToast();
 
   // Redirect if already authenticated
   React.useEffect(() => {
@@ -57,9 +58,15 @@ const LoginPage = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const success = await login(values.identifier, values.password);
+    // We're simplifying the login for demo purposes
+    // In a real app, we'd pass the identifier and password to the login function
+    const success = login(loginType);
     
     if (success) {
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
       // Redirect based on user type
       setTimeout(() => {
         if (userType === 'teacher') {

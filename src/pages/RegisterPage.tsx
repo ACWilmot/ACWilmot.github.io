@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
@@ -19,7 +18,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Mail, Key, UserPlus, User, GraduationCap, School } from 'lucide-react';
 import Header from '@/components/Header';
 import { useAuth, UserType } from '@/context/AuthContext';
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 
 const studentFormSchema = z.object({
   name: z.string().min(2, {
@@ -54,8 +53,8 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const { register, isAuthenticated, userType } = useAuth();
   const [userAccountType, setUserAccountType] = useState<UserType>('student');
+  const { toast } = useToast();
 
-  // Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
       if (userType === 'teacher') {
@@ -93,6 +92,10 @@ const RegisterPage = () => {
     });
     
     if (success) {
+      toast({
+        title: "Success",
+        description: "Student account created successfully",
+      });
       // Redirect to login page after registration
       setTimeout(() => {
         navigate('/login');
@@ -109,6 +112,10 @@ const RegisterPage = () => {
     });
     
     if (success) {
+      toast({
+        title: "Success",
+        description: "Teacher account created successfully",
+      });
       // Redirect to login page after registration
       setTimeout(() => {
         navigate('/login');

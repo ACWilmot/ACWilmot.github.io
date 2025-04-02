@@ -24,7 +24,7 @@ const ProgressPage = () => {
     return null;
   }
 
-  const subjects = Object.keys(user.progress);
+  const subjects = Object.keys(user.progress || {});
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -53,9 +53,9 @@ const ProgressPage = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {subjects.map(subject => {
+          {subjects.length > 0 ? subjects.map(subject => {
             const subjectData = user.progress[subject];
-            const accuracy = subjectData.completed > 0 
+            const accuracy = subjectData && subjectData.completed > 0 
               ? Math.round((subjectData.correct / subjectData.completed) * 100) 
               : 0;
               
@@ -64,7 +64,7 @@ const ProgressPage = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="capitalize">{subject}</CardTitle>
                   <CardDescription>
-                    Last attempted: {subjectData.lastAttempted}
+                    Last attempted: {subjectData?.lastAttempted || 'Never'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -78,11 +78,11 @@ const ProgressPage = () => {
 
                   <div className="mt-6 grid grid-cols-2 gap-4 text-center">
                     <div className="border rounded-lg p-3">
-                      <div className="text-2xl font-bold">{subjectData.completed}</div>
+                      <div className="text-2xl font-bold">{subjectData?.completed || 0}</div>
                       <div className="text-xs text-muted-foreground">Completed</div>
                     </div>
                     <div className="border rounded-lg p-3">
-                      <div className="text-2xl font-bold">{subjectData.correct}</div>
+                      <div className="text-2xl font-bold">{subjectData?.correct || 0}</div>
                       <div className="text-xs text-muted-foreground">Correct</div>
                     </div>
                   </div>
@@ -121,7 +121,17 @@ const ProgressPage = () => {
                 </CardContent>
               </Card>
             );
-          })}
+          }) : (
+            <div className="col-span-2 text-center py-8">
+              <p className="text-muted-foreground">No progress data available yet. Try taking some quizzes!</p>
+              <Button 
+                className="mt-4" 
+                onClick={() => navigate('/quiz')}
+              >
+                Start a Quiz
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>

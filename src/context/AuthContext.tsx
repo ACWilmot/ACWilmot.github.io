@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/components/ui/use-toast"
@@ -25,6 +26,7 @@ export interface ClassData {
 export interface Progress {
   correct: number;
   completed: number;
+  lastAttempted?: string;
 }
 
 export interface StudentData {
@@ -58,6 +60,9 @@ interface AuthContextType {
   getStudentsByClass: (classId: string) => StudentData[];
   assignExercise: (classId: string, assignment: Omit<Assignment, 'id' | 'createdAt'>) => Promise<boolean>;
   updateProgress: (subject: string, totalQuestions: number, score: number) => void;
+  resetSubjectProgress: (subject: string) => void;
+  getAssignmentsForStudent: () => Assignment[];
+  register: (userData: { name: string; email?: string; password: string; userType: UserType }) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -111,6 +116,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       userType: type,
       isAuthenticated: true,
     }));
+    
+    return true; // Return true to indicate successful login
+  };
+
+  const register = async (userData: { name: string; email?: string; password: string; userType: UserType }) => {
+    try {
+      // In a real app, we would register the user with a backend
+      // For now, just set the user state as if they've logged in
+      const newUser = { 
+        id: uuidv4(), 
+        name: userData.name,
+        email: userData.email
+      };
+      
+      setUser(newUser);
+      setUserType(userData.userType);
+      setIsAuthenticated(true);
+      
+      // Save authentication state to localStorage
+      localStorage.setItem('auth', JSON.stringify({
+        user: newUser,
+        userType: userData.userType,
+        isAuthenticated: true,
+      }));
+      
+      toast({
+        title: "Success",
+        description: "Account created successfully",
+      });
+      
+      return true;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create account",
+      });
+      return false;
+    }
   };
 
   const logout = () => {
@@ -227,20 +270,95 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const getAssignmentsForStudent = () => {
+    if (!user || userType !== 'student') return [];
+    
+    // Find all classes where this student is a member
+    const userClasses = classes.filter(cls => 
+      cls.students.includes(user.id)
+    );
+    
+    // Get all assignments from those classes
+    const assignments: Assignment[] = [];
+    userClasses.forEach(cls => {
+      assignments.push(...cls.assignments);
+    });
+    
+    return assignments;
+  };
+
   const updateProgress = (subject: string, totalQuestions: number, score: number) => {
-    setStudents(prevStudents => {
-      return prevStudents.map(student => {
-        // Only update the student if they are the current user
-        if (student.id === user?.id) {
-          const updatedProgress = { ...student.progress };
-          updatedProgress[subject] = {
-            correct: updatedProgress[subject].correct + score,
-            completed: updatedProgress[subject].completed + totalQuestions,
-          };
-          return { ...student, progress: updatedProgress };
-        }
-        return student;
-      });
+    setUser(prevUser => {
+      if (!prevUser || !prevUser.progress) {
+        const newProgress = {
+          maths: { correct: 0, completed: 0 },
+          english: { correct: 0, completed: 0 },
+          verbal: { correct: 0, completed: 0 },
+          nonVerbal: { correct: 0, completed: 0 },
+        };
+        
+        newProgress[subject] = {
+          correct: score,
+          completed: totalQuestions,
+          lastAttempted: new Date().toLocaleDateString()
+        };
+        
+        return {
+          ...prevUser,
+          progress: newProgress
+        };
+      }
+      
+      const updatedProgress = { ...prevUser.progress };
+      updatedProgress[subject] = {
+        correct: (updatedProgress[subject]?.correct || 0) + score,
+        completed: (updatedProgress[subject]?.completed || 0) + totalQuestions,
+        lastAttempted: new Date().toLocaleDateString()
+      };
+      
+      return { ...prevUser, progress: updatedProgress };
+    });
+    
+    // Update localStorage after state update
+    setTimeout(() => {
+      if (user) {
+        localStorage.setItem('auth', JSON.stringify({
+          user,
+          userType,
+          isAuthenticated,
+        }));
+      }
+    }, 0);
+  };
+
+  const resetSubjectProgress = (subject: string) => {
+    setUser(prevUser => {
+      if (!prevUser || !prevUser.progress) return prevUser;
+      
+      const updatedProgress = { ...prevUser.progress };
+      updatedProgress[subject] = {
+        correct: 0,
+        completed: 0,
+        lastAttempted: undefined
+      };
+      
+      return { ...prevUser, progress: updatedProgress };
+    });
+    
+    // Update localStorage after state update
+    setTimeout(() => {
+      if (user) {
+        localStorage.setItem('auth', JSON.stringify({
+          user,
+          userType,
+          isAuthenticated,
+        }));
+      }
+    }, 0);
+    
+    toast({
+      title: "Success",
+      description: `Progress for ${subject} has been reset`,
     });
   };
 
@@ -257,6 +375,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getStudentsByClass,
     assignExercise,
     updateProgress,
+    resetSubjectProgress,
+    getAssignmentsForStudent,
+    register,
   };
 
   return (

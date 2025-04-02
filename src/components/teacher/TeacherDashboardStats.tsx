@@ -13,8 +13,6 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
   students, 
   loading 
 }) => {
-  const { user } = useAuth();
-  
   // Calculate average accuracy
   const calculateAverageAccuracy = () => {
     if (!students || students.length === 0) return '-';
@@ -62,16 +60,9 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
     };
   };
 
-  // Get actual student count, including both fetched students and IDs in the user object
+  // Get the total number of students
   const getStudentCount = () => {
-    if (user?.students && user.role === 'teacher') {
-      // Filter to count only valid UUIDs
-      const validStudentIds = user.students.filter(id => 
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-      );
-      return validStudentIds.length;
-    }
-    return 0;
+    return students?.length || 0;
   };
 
   return (

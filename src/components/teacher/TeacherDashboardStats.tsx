@@ -2,7 +2,6 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Student } from '@/types/userTypes';
-import { useAuth } from '@/context/AuthContext';
 
 interface TeacherDashboardStatsProps {
   students: Student[];

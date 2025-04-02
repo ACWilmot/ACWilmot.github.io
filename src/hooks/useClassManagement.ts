@@ -2,6 +2,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student, Class, ClassWithStudentCount, ClassEnrollment } from '@/types/userTypes';
+import { Json } from '@/integrations/supabase/types';
+import { resetSubjects } from '@/utils/progressUtils';
 
 export const useClassManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   // Get all classes for the current teacher
@@ -217,39 +219,36 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       }
       
       // Initialize default progress structure
-      const defaultProgress = {
-        maths: { completed: 0, correct: 0, lastAttempted: null },
-        english: { completed: 0, correct: 0, lastAttempted: null },
-        verbal: { completed: 0, correct: 0, lastAttempted: null },
-        nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
-      };
+      const defaultProgress = resetSubjects;
       
       // Transform data to Student type
       const students: Student[] = profiles.map(profile => {
         // Ensure progress is properly handled
         let progressData = defaultProgress;
         
-        if (profile.progress && typeof profile.progress === 'object') {
+        if (profile.progress && typeof profile.progress === 'object' && !Array.isArray(profile.progress)) {
+          const typedProgress = profile.progress as Record<string, any>;
+          
           progressData = {
             maths: {
-              completed: profile.progress.maths?.completed || 0,
-              correct: profile.progress.maths?.correct || 0,
-              lastAttempted: profile.progress.maths?.lastAttempted || null
+              completed: typedProgress.maths?.completed || 0,
+              correct: typedProgress.maths?.correct || 0,
+              lastAttempted: typedProgress.maths?.lastAttempted || null
             },
             english: {
-              completed: profile.progress.english?.completed || 0,
-              correct: profile.progress.english?.correct || 0,
-              lastAttempted: profile.progress.english?.lastAttempted || null
+              completed: typedProgress.english?.completed || 0,
+              correct: typedProgress.english?.correct || 0,
+              lastAttempted: typedProgress.english?.lastAttempted || null
             },
             verbal: {
-              completed: profile.progress.verbal?.completed || 0,
-              correct: profile.progress.verbal?.correct || 0,
-              lastAttempted: profile.progress.verbal?.lastAttempted || null
+              completed: typedProgress.verbal?.completed || 0,
+              correct: typedProgress.verbal?.correct || 0,
+              lastAttempted: typedProgress.verbal?.lastAttempted || null
             },
             nonVerbal: {
-              completed: profile.progress.nonVerbal?.completed || 0,
-              correct: profile.progress.nonVerbal?.correct || 0,
-              lastAttempted: profile.progress.nonVerbal?.lastAttempted || null
+              completed: typedProgress.nonVerbal?.completed || 0,
+              correct: typedProgress.nonVerbal?.correct || 0,
+              lastAttempted: typedProgress.nonVerbal?.lastAttempted || null
             }
           };
         }

@@ -62,7 +62,7 @@ const ResultsPage = () => {
   const grade = getGrade();
 
   // Filter questions to only show those with answers
-  const answeredQuestions = questions.filter(question => userAnswers[question.id]);
+  const answeredQuestions = questions.filter(q => userAnswers[q.id] !== undefined);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -183,7 +183,7 @@ const ResultsPage = () => {
                       
                       <div className="flex-grow">
                         <p className="text-sm font-medium line-clamp-1">{question.text}</p>
-                        <div className="flex text-xs text-muted-foreground">
+                        <div className="flex flex-wrap text-xs text-muted-foreground">
                           <span>Your answer: </span>
                           <span className={isCorrect ? 'text-green-600 ml-1' : 'text-red-600 ml-1'}>
                             {userAnswers[question.id]}

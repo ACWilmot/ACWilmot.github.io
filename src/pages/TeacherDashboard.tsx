@@ -45,6 +45,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import AssignmentAttempts from '@/components/AssignmentAttempts';
 import { AlertCircle, BarChart2, Book, Calendar, CheckCircle, Clock, PlusCircle, School, Send, User, UserPlus, Users } from 'lucide-react';
 
 // Schema for creating a new class
@@ -843,36 +844,45 @@ const TeacherDashboard = () => {
                           {getAssignments(selectedClass).map((assignment) => (
                             <Card key={assignment.id}>
                               <CardContent className="p-4">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <h3 className="font-medium text-lg">{assignment.title}</h3>
-                                    
-                                    <div className="flex items-center mt-1 space-x-4">
-                                      <div className="flex items-center">
-                                        <Book className="h-4 w-4 mr-1 text-muted-foreground" />
-                                        <span className="text-sm capitalize">{assignment.subject}</span>
-                                      </div>
+                                <div className="flex flex-col space-y-4">
+                                  <div className="flex items-start justify-between">
+                                    <div>
+                                      <h3 className="font-medium text-lg">{assignment.title}</h3>
                                       
-                                      {assignment.dueDate && (
+                                      <div className="flex flex-wrap items-center mt-1 gap-4">
                                         <div className="flex items-center">
-                                          <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                                          <span className="text-sm">{new Date(assignment.dueDate).toLocaleDateString()}</span>
+                                          <Book className="h-4 w-4 mr-1 text-muted-foreground" />
+                                          <span className="text-sm capitalize">{assignment.subject}</span>
                                         </div>
-                                      )}
-                                      
-                                      <div className="flex items-center">
-                                        <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                                        <span className="text-sm">
-                                          {new Date(assignment.createdAt).toLocaleDateString()}
-                                        </span>
+                                        
+                                        {assignment.dueDate && (
+                                          <div className="flex items-center">
+                                            <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                                            <span className="text-sm">{new Date(assignment.dueDate).toLocaleDateString()}</span>
+                                          </div>
+                                        )}
+                                        
+                                        <div className="flex items-center">
+                                          <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                                          <span className="text-sm">
+                                            {new Date(assignment.createdAt).toLocaleDateString()}
+                                          </span>
+                                        </div>
                                       </div>
+                                      
+                                      {assignment.description && (
+                                        <p className="text-muted-foreground mt-2">
+                                          {assignment.description}
+                                        </p>
+                                      )}
                                     </div>
-                                    
-                                    {assignment.description && (
-                                      <p className="text-muted-foreground mt-2">
-                                        {assignment.description}
-                                      </p>
-                                    )}
+                                  </div>
+                                  
+                                  <div className="pt-2 border-t">
+                                    <AssignmentAttempts 
+                                      classId={selectedClass} 
+                                      assignmentId={assignment.id} 
+                                    />
                                   </div>
                                 </div>
                               </CardContent>

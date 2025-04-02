@@ -1,6 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student } from '@/types/userTypes';
+import { Json } from '@/integrations/supabase/types';
 
 export const useStudentManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   const getStudents = async (): Promise<Student[]> => {
@@ -44,12 +46,42 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       console.log("Fetched raw student profiles:", data);
       
       // Transform data to Student type with proper null checks
-      const studentData: Student[] = data.map(profile => ({
-        id: profile.id,
-        name: profile.name || 'Unknown Student',
-        email: profile.email || profile.Email || 'No Email',
-        progress: profile.progress || defaultProgress
-      }));
+      const studentData: Student[] = data.map(profile => {
+        // Ensure progress is properly handled as an object
+        let progressData: Student['progress'] = defaultProgress;
+        
+        if (profile.progress && typeof profile.progress === 'object' && !Array.isArray(profile.progress)) {
+          progressData = {
+            maths: {
+              completed: profile.progress.maths?.completed || 0,
+              correct: profile.progress.maths?.correct || 0,
+              lastAttempted: profile.progress.maths?.lastAttempted || null
+            },
+            english: {
+              completed: profile.progress.english?.completed || 0,
+              correct: profile.progress.english?.correct || 0,
+              lastAttempted: profile.progress.english?.lastAttempted || null
+            },
+            verbal: {
+              completed: profile.progress.verbal?.completed || 0,
+              correct: profile.progress.verbal?.correct || 0,
+              lastAttempted: profile.progress.verbal?.lastAttempted || null
+            },
+            nonVerbal: {
+              completed: profile.progress.nonVerbal?.completed || 0,
+              correct: profile.progress.nonVerbal?.correct || 0,
+              lastAttempted: profile.progress.nonVerbal?.lastAttempted || null
+            }
+          };
+        }
+        
+        return {
+          id: profile.id,
+          name: profile.name || 'Unknown Student',
+          email: profile.email || profile.Email || 'No Email',
+          progress: progressData
+        };
+      });
       
       console.log("Transformed student data:", studentData);
       return studentData;

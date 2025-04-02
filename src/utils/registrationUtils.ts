@@ -75,11 +75,17 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
         .from('profiles')
         .select('id, students')
         .eq('id', teacherId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
       
-      if (profileError || !profileData) {
-        console.error("Error finding teacher profile:", profileError || "No teacher profile found");
+      if (profileError) {
+        console.error("Error finding teacher profile:", profileError);
         toast.warning("Registration successful, but couldn't link to teacher's class");
+        return true;
+      }
+      
+      if (!profileData) {
+        console.error("Teacher profile not found for ID:", teacherId);
+        toast.warning("Registration successful, but teacher profile not found");
         return true;
       }
       

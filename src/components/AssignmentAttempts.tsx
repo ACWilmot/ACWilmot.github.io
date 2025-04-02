@@ -82,7 +82,7 @@ const AssignmentAttempts = ({ classId, assignmentId }: AssignmentAttemptsProps) 
               }
               
               const percentage = attempt.score > 0 ? 
-                Math.round((attempt.score / attempt.totalQuestions) * 100) : 0;
+                Math.round((attempt.score / attempt.total) * 100) : 0;
                 
               let statusColor = "text-amber-500";
               if (percentage >= 70) statusColor = "text-green-600";
@@ -100,7 +100,7 @@ const AssignmentAttempts = ({ classId, assignmentId }: AssignmentAttemptsProps) 
                       <div className="flex items-center">
                         <Clock className="h-3 w-3 text-muted-foreground mr-1" />
                         <span className="text-xs text-muted-foreground">
-                          {new Date(attempt.completedAt).toLocaleDateString()}
+                          {new Date(attempt.date).toLocaleDateString()}
                         </span>
                       </div>
                       
@@ -111,7 +111,7 @@ const AssignmentAttempts = ({ classId, assignmentId }: AssignmentAttemptsProps) 
                           <XCircle className={`h-4 w-4 mr-1 ${statusColor}`} />
                         )}
                         <span className={`font-medium ${statusColor}`}>
-                          {percentage}% ({attempt.score}/{attempt.totalQuestions})
+                          {percentage}% ({attempt.score}/{attempt.total})
                         </span>
                       </div>
                     </div>

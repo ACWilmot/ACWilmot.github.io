@@ -11,6 +11,9 @@ import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import TeacherLoginPage from "./pages/TeacherLoginPage";
+import TeacherRegisterPage from "./pages/TeacherRegisterPage";
+import TeacherDashboardPage from "./pages/TeacherDashboardPage";
 import ProgressPage from "./pages/ProgressPage";
 import NotFound from "./pages/NotFound";
 import AboutPage from "./pages/AboutPage";
@@ -37,6 +40,9 @@ const App = () => (
               <Route path="/progress" element={<ProgressPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/questions" element={<QuestionsPage />} />
+              <Route path="/teacher/login" element={<TeacherLoginPage />} />
+              <Route path="/teacher/register" element={<TeacherRegisterPage />} />
+              <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

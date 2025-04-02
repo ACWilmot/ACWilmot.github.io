@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
+import { UserRole, Student, Teacher } from '@/types/userTypes';
 
 type UserProgress = {
   completed: number;
@@ -13,26 +14,34 @@ type UserProgress = {
 type Profile = {
   id: string;
   name: string;
+  role: UserRole;
   progress: {
     [subject: string]: UserProgress
-  }
+  };
+  students?: string[];
 };
 
 type RegisterData = {
   name: string;
   email: string;
   password: string;
+  role: UserRole;
 };
 
 interface AuthContextType {
   user: Profile | null;
   isAuthenticated: boolean;
+  userRole: UserRole | null;
   login: (email: string, password: string) => Promise<boolean>;
+  teacherLogin: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<boolean>;
   updateProgress: (subject: string, completed: number, correct: number) => Promise<void>;
   resetProgress: () => Promise<void>;
   resetSubjectProgress: (subject: string) => Promise<void>;
+  getStudents: () => Promise<Student[]>;
+  addStudent: (studentId: string) => Promise<boolean>;
+  removeStudent: (studentId: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,14 +107,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const register = async (data: RegisterData): Promise<boolean> => {
-    const { name, email, password } = data;
+    const { name, email, password, role } = data;
 
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { name }
+          data: { 
+            name,
+            role
+          }
         }
       });
 
@@ -140,6 +152,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error("Error during login:", error);
       toast.error("Login failed");
+      return false;
+    }
+  };
+
+  const teacherLogin = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return false;
+      }
+
+      // Verify that the user is a teacher
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select()
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError || !profile || profile.role !== 'teacher') {
+          toast.error("Access denied. This account does not have teacher privileges.");
+          await supabase.auth.signOut();
+          return false;
+        }
+      }
+
+      toast.success("Logged in successfully as teacher");
+      return true;
+    } catch (error) {
+      console.error("Error during teacher login:", error);
+      toast.error("Teacher login failed");
       return false;
     }
   };
@@ -288,16 +337,122 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const getStudents = async (): Promise<Student[]> => {
+    if (!user || user.role !== 'teacher' || !user.students) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select()
+        .in('id', user.students);
+
+      if (error) {
+        console.error('Error fetching students:', error);
+        toast.error("Failed to fetch students");
+        return [];
+      }
+
+      return data as Student[] || [];
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      toast.error("Failed to fetch students");
+      return [];
+    }
+  };
+
+  const addStudent = async (studentId: string): Promise<boolean> => {
+    if (!user || user.role !== 'teacher') {
+      return false;
+    }
+
+    try {
+      const students = [...(user.students || [])];
+      
+      if (!students.includes(studentId)) {
+        students.push(studentId);
+        
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            students
+          })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error adding student:', error);
+          toast.error("Failed to add student");
+          return false;
+        }
+
+        setUser({
+          ...user,
+          students
+        });
+        
+        toast.success("Student added successfully");
+        return true;
+      }
+      
+      return true; // Student already in list
+    } catch (error) {
+      console.error('Error adding student:', error);
+      toast.error("Failed to add student");
+      return false;
+    }
+  };
+
+  const removeStudent = async (studentId: string): Promise<boolean> => {
+    if (!user || user.role !== 'teacher' || !user.students) {
+      return false;
+    }
+
+    try {
+      const students = user.students.filter(id => id !== studentId);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          students
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error removing student:', error);
+        toast.error("Failed to remove student");
+        return false;
+      }
+
+      setUser({
+        ...user,
+        students
+      });
+      
+      toast.success("Student removed successfully");
+      return true;
+    } catch (error) {
+      console.error('Error removing student:', error);
+      toast.error("Failed to remove student");
+      return false;
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
       isAuthenticated: !!user,
+      userRole: user?.role || null,
       login,
+      teacherLogin,
       logout,
       register,
       updateProgress,
       resetProgress,
-      resetSubjectProgress
+      resetSubjectProgress,
+      getStudents,
+      addStudent,
+      removeStudent
     }}>
       {!loading && children}
     </AuthContext.Provider>

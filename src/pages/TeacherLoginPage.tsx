@@ -15,64 +15,49 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Key, UserPlus } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Mail, Key, LogIn, GraduationCap } from 'lucide-react';
 import Header from '@/components/Header';
 import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
+  password: z.string().min(1, {
+    message: "Password is required.",
   }),
-  confirmPassword: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+  rememberMe: z.boolean().optional(),
 });
 
-const RegisterPage = () => {
+const TeacherLoginPage = () => {
   const navigate = useNavigate();
-  const { register, isAuthenticated } = useAuth();
+  const { teacherLogin, isAuthenticated, userRole } = useAuth();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated as a teacher
   React.useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
+    if (isAuthenticated && userRole === 'teacher') {
+      navigate('/teacher/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, userRole, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      confirmPassword: "",
+      rememberMe: false,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    
-    const success = await register({
-      name: values.name,
-      email: values.email,
-      password: values.password,
-      role: 'student'
-    });
+    const success = await teacherLogin(values.email, values.password);
     
     if (success) {
-      // Redirect to login page after registration
+      // Redirect to teacher dashboard after login
       setTimeout(() => {
-        navigate('/login');
-      }, 1500);
+        navigate('/teacher/dashboard');
+      }, 1000);
     }
   }
 
@@ -83,27 +68,17 @@ const RegisterPage = () => {
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Student Registration</CardTitle>
+            <div className="flex items-center justify-center mb-2">
+              <GraduationCap className="h-10 w-10 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Teacher Login</CardTitle>
             <CardDescription className="text-center">
-              Create an account to track your progress
+              Sign in to access your teacher dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your full name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <FormField
                   control={form.control}
                   name="email"
@@ -113,7 +88,7 @@ const RegisterPage = () => {
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input className="pl-10" placeholder="name@example.com" {...field} />
+                          <Input className="pl-10" placeholder="teacher@example.com" {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -129,44 +104,46 @@ const RegisterPage = () => {
                       <FormControl>
                         <div className="relative">
                           <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input className="pl-10" type="password" placeholder="Create a password" {...field} />
+                          <Input className="pl-10" type="password" placeholder="Enter your password" {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Confirm your password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
+                <div className="flex items-center space-x-2">
+                  <FormField
+                    control={form.control}
+                    name="rememberMe"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Remember me</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <Button type="submit" className="w-full" size="lg">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Register
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Teacher Sign In
                 </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm text-muted-foreground mt-2">
-              Already have an account?{" "}
+              Not a teacher?{" "}
               <Link to="/login" className="underline text-primary hover:text-primary/90">
-                Sign in
-              </Link>
-            </div>
-            <div className="text-center text-sm text-muted-foreground">
-              Are you a teacher?{" "}
-              <Link to="/teacher/register" className="underline text-primary hover:text-primary/90">
-                Teacher registration
+                Student login
               </Link>
             </div>
           </CardFooter>
@@ -176,4 +153,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default TeacherLoginPage;

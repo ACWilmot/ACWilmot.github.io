@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Book, LogIn, UserPlus } from 'lucide-react';
+import { Book, LogIn, UserPlus, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserProfile from './UserProfile';
@@ -9,7 +9,7 @@ import DonateButton from './DonateButton';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userRole } = useAuth();
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between glass fixed top-0 z-50 animate-slide-down">
@@ -25,7 +25,8 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-8">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/quiz">Practice</NavLink>
-          {isAuthenticated && <NavLink href="/progress">My Progress</NavLink>}
+          {isAuthenticated && userRole === 'student' && <NavLink href="/progress">My Progress</NavLink>}
+          {isAuthenticated && userRole === 'teacher' && <NavLink href="/teacher/dashboard">Dashboard</NavLink>}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>
@@ -36,16 +37,21 @@ const Header: React.FC = () => {
         {isAuthenticated ? (
           <UserProfile />
         ) : (
-          <>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="hidden sm:flex">
               <LogIn className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Sign In</span>
+              <span>Sign In</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate('/register')}>
+            <Button variant="outline" size="sm" onClick={() => navigate('/register')} className="hidden sm:flex">
               <UserPlus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Register</span>
+              <span>Register</span>
             </Button>
-          </>
+            
+            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher/login')}>
+              <GraduationCap className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Teacher</span>
+            </Button>
+          </div>
         )}
       </div>
     </header>

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Key, UserPlus } from 'lucide-react';
+import { Mail, Key, UserPlus, GraduationCap } from 'lucide-react';
 import Header from '@/components/Header';
 import { useAuth } from '@/context/AuthContext';
 
@@ -37,16 +37,16 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
-const RegisterPage = () => {
+const TeacherRegisterPage = () => {
   const navigate = useNavigate();
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, userRole } = useAuth();
 
   // Redirect if already authenticated
   React.useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
+    if (isAuthenticated && userRole === 'teacher') {
+      navigate('/teacher/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, userRole, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,19 +59,17 @@ const RegisterPage = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    
     const success = await register({
       name: values.name,
       email: values.email,
       password: values.password,
-      role: 'student'
+      role: 'teacher'
     });
     
     if (success) {
-      // Redirect to login page after registration
+      // Redirect to teacher login page after registration
       setTimeout(() => {
-        navigate('/login');
+        navigate('/teacher/login');
       }, 1500);
     }
   }
@@ -83,9 +81,12 @@ const RegisterPage = () => {
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Student Registration</CardTitle>
+            <div className="flex items-center justify-center mb-2">
+              <GraduationCap className="h-10 w-10 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Teacher Registration</CardTitle>
             <CardDescription className="text-center">
-              Create an account to track your progress
+              Create a teacher account to manage your classes
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -113,7 +114,7 @@ const RegisterPage = () => {
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input className="pl-10" placeholder="name@example.com" {...field} />
+                          <Input className="pl-10" placeholder="teacher@example.com" {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -151,22 +152,22 @@ const RegisterPage = () => {
                 />
                 <Button type="submit" className="w-full" size="lg">
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Register
+                  Register as Teacher
                 </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm text-muted-foreground mt-2">
-              Already have an account?{" "}
-              <Link to="/login" className="underline text-primary hover:text-primary/90">
+              Already have a teacher account?{" "}
+              <Link to="/teacher/login" className="underline text-primary hover:text-primary/90">
                 Sign in
               </Link>
             </div>
             <div className="text-center text-sm text-muted-foreground">
-              Are you a teacher?{" "}
-              <Link to="/teacher/register" className="underline text-primary hover:text-primary/90">
-                Teacher registration
+              Not a teacher?{" "}
+              <Link to="/register" className="underline text-primary hover:text-primary/90">
+                Student registration
               </Link>
             </div>
           </CardFooter>
@@ -176,4 +177,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default TeacherRegisterPage;

@@ -13,8 +13,6 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
   students, 
   loading 
 }) => {
-  const { user } = useAuth();
-  
   // Calculate average accuracy
   const calculateAverageAccuracy = () => {
     if (!students || students.length === 0) return '-';
@@ -62,16 +60,9 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
     };
   };
 
-  // Get actual student count, including both fetched students and IDs in the user object
+  // Get student count directly from the students array passed to the component
   const getStudentCount = () => {
-    if (user?.students && user.role === 'teacher') {
-      // Filter to count only valid UUIDs
-      const validStudentIds = user.students.filter(id => 
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-      );
-      return validStudentIds.length;
-    }
-    return 0;
+    return students ? students.length : 0;
   };
 
   return (
@@ -81,7 +72,9 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
           <CardTitle className="text-lg">Total Students</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{getStudentCount()}</div>
+          <div className="text-3xl font-bold">
+            {loading ? "..." : getStudentCount()}
+          </div>
         </CardContent>
       </Card>
 
@@ -100,7 +93,9 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
           <CardTitle className="text-lg">Average Accuracy</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{calculateAverageAccuracy()}</div>
+          <div className="text-3xl font-bold">
+            {loading ? "..." : calculateAverageAccuracy()}
+          </div>
         </CardContent>
       </Card>
     </div>

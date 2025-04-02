@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question } from '@/types/questionTypes';
@@ -84,6 +83,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 800);
   };
 
+  // Update this function to store just the option key (A, B, C, D)
   const selectOption = (questionId: string, option: string) => {
     setSelectedOptions((prev) => ({
       ...prev,

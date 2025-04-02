@@ -48,19 +48,22 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <div className="space-y-3 mb-6">
         {Array.isArray(question.options) ? (
           // Handle array options
-          question.options.map((option, index) => (
-            <Option
-              key={index}
-              option={option}
-              optionKey={String.fromCharCode(65 + index)} // A, B, C, D...
-              index={index}
-              isSelected={userAnswer === String.fromCharCode(65 + index)}
-              isCorrect={question.correctAnswer === String.fromCharCode(65 + index)}
-              showCorrectness={!!userAnswer}
-              onSelect={() => onAnswer(String.fromCharCode(65 + index))}
-              imageUrl={question.optionImages?.[index]}
-            />
-          ))
+          question.options.map((option, index) => {
+            const optionKey = String.fromCharCode(65 + index); // A, B, C, D...
+            return (
+              <Option
+                key={index}
+                option={option}
+                optionKey={optionKey}
+                index={index}
+                isSelected={userAnswer === optionKey}
+                isCorrect={question.correctAnswer === optionKey}
+                showCorrectness={!!userAnswer}
+                onSelect={() => onAnswer(optionKey)}
+                imageUrl={question.optionImages?.[index]}
+              />
+            );
+          })
         ) : (
           // Handle object options (A, B, C, D format)
           Object.entries(question.options).map(([key, value], index) => (
@@ -145,7 +148,7 @@ const Option: React.FC<OptionProps> = ({
         !isSelected && showCorrectness && isCorrect && "bg-green-100 text-green-600",
         !isSelected && !showCorrectness && "bg-secondary text-muted-foreground",
       )}>
-        {optionKey || letters[index]}
+        {optionKey}
       </span>
       
       <div className="flex-grow flex flex-col">
@@ -162,7 +165,7 @@ const Option: React.FC<OptionProps> = ({
           <div className="mt-2">
             <img 
               src={imageUrl} 
-              alt={`Option ${optionKey || letters[index]}`} 
+              alt={`Option ${optionKey}`} 
               className="rounded-md max-h-32 object-contain"
             />
           </div>

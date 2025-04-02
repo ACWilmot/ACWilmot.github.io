@@ -1,7 +1,8 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, X, RotateCcw, Home, ArrowRight } from 'lucide-react';
+import { Check, X, RotateCcw, Home } from 'lucide-react';
 import Header from '@/components/Header';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
@@ -57,12 +58,15 @@ const ResultsPage = () => {
     navigate('/');
   };
 
+  // Get the actual text value for an option based on the option key
   const getAnswerText = (question: Question, optionKey: string): string => {
+    if (!optionKey) return '';
+    
     if (Array.isArray(question.options)) {
       const index = optionKey.charCodeAt(0) - 65; // Convert A->0, B->1, etc.
-      return question.options[index] || optionKey;
+      return question.options[index] || '';
     } else {
-      return question.options[optionKey] || optionKey;
+      return question.options[optionKey] || '';
     }
   };
 
@@ -196,13 +200,13 @@ const ResultsPage = () => {
                         <div className="flex text-xs text-muted-foreground flex-wrap">
                           <span>Your answer: </span>
                           <span className={isCorrect ? 'text-green-600 ml-1' : 'text-red-600 ml-1'}>
-                            {userOptionKey} ({userOptionText})
+                            {userOptionText}
                           </span>
                           {!isCorrect && (
                             <>
                               <span className="mx-1">•</span>
                               <span>Correct: </span>
-                              <span className="text-green-600 ml-1">{correctOptionKey} ({correctOptionText})</span>
+                              <span className="text-green-600 ml-1">{correctOptionText}</span>
                             </>
                           )}
                         </div>

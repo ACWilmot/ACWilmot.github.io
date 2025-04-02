@@ -42,7 +42,9 @@ export const useAuthActions = (user: Profile | null, setUser: (user: Profile | n
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
         const profile = await fetchUserProfile(data.user.id);
-
+        
+        console.log("Teacher login attempt - profile:", profile);
+        
         if (!profile || profile.role !== 'teacher') {
           toast.error("Access denied. This account does not have teacher privileges.");
           await supabase.auth.signOut();

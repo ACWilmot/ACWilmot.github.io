@@ -16,6 +16,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       return null;
     }
 
+    console.log("Fetched profile:", data);
     return data as Profile;
   } catch (error) {
     console.error('Error fetching profile:', error);
@@ -50,7 +51,8 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
   const { name, email, password, role } = data;
 
   try {
-    const { error } = await supabase.auth.signUp({
+    // First create the auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -61,9 +63,26 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
       }
     });
 
-    if (error) {
-      toast.error(error.message);
+    if (authError) {
+      toast.error(authError.message);
       return false;
+    }
+
+    // If it's a teacher, make sure to update the profile with an empty students array
+    if (role === 'teacher' && authData?.user) {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          role: 'teacher',
+          students: []
+        })
+        .eq('id', authData.user.id);
+
+      if (updateError) {
+        console.error("Error updating teacher profile:", updateError);
+        toast.error("Registration incomplete: Failed to set teacher role");
+        return false;
+      }
     }
 
     toast.success("Registration successful! Check your email for verification.");

@@ -35,15 +35,17 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
     }
 
     try {
+      // Get current students array or initialize empty array
       const students = [...(user.students || [])];
       
       if (!students.includes(studentId)) {
         students.push(studentId);
         
+        // Update the profile with the new students array
         const { error } = await supabase
           .from('profiles')
           .update({
-            students
+            students: students
           })
           .eq('id', user.id);
 
@@ -53,6 +55,7 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
           return false;
         }
 
+        // Update local state
         setUser({
           ...user,
           students
@@ -81,7 +84,7 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
       const { error } = await supabase
         .from('profiles')
         .update({
-          students
+          students: students
         })
         .eq('id', user.id);
 
@@ -91,6 +94,7 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
         return false;
       }
 
+      // Update local state
       setUser({
         ...user,
         students

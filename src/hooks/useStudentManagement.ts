@@ -5,22 +5,13 @@ import { Json } from '@/integrations/supabase/types';
 
 export const useStudentManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   const getStudents = async (): Promise<Student[]> => {
-    if (!user || user.role !== 'teacher' || !user.students) {
-      console.log("Unable to fetch students: Missing user data, invalid role, or no students array");
+    if (!user || user.role !== 'teacher') {
+      console.log("Unable to fetch students: Missing user data or invalid role");
       return [];
     }
 
     try {
-      const validStudentIds = user.students.filter(id => 
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-      );
-      
-      if (validStudentIds.length === 0) {
-        console.log("No valid student IDs found");
-        return [];
-      }
-      
-      console.log("Fetching students with valid IDs:", validStudentIds);
+      console.log("Fetching all users with role 'student'");
       
       const defaultProgress = {
         maths: { completed: 0, correct: 0, lastAttempted: null },
@@ -29,12 +20,12 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
       };
       
-      console.log("Executing Supabase query to fetch students with IDs:", validStudentIds);
+      console.log("Executing Supabase query to fetch students");
       
       const { data, error } = await supabase
         .from('profiles')
         .select('id, name, Email, progress')
-        ;
+        .eq('role', 'student');
       
       if (error) {
         console.error('Error fetching student profiles:', error);
@@ -44,22 +35,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       console.log("Fetched raw student profiles:", data);
       
       if (!data || data.length === 0) {
-        console.log("No student profiles found in database for the provided IDs");
-        const { data: idCheck, error: idCheckError } = await supabase
-          .from('profiles')
-          .select('id')
-          .in('id', validStudentIds);
-        
-        if (idCheckError) {
-          console.error('Error checking if student IDs exist:', idCheckError);
-        } else {
-          console.log("ID check results:", idCheck);
-          if (idCheck.length === 0) {
-            console.log("None of the student IDs exist in the profiles table");
-          } else {
-            console.log(`Found ${idCheck.length} out of ${validStudentIds.length} IDs in profiles table`);
-          }
-        }
+        console.log("No student profiles found in database");
         return [];
       }
       
@@ -101,7 +77,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         return {
           id: profile.id,
           name: profile.name || 'Unknown Student',
-          email: profile.Email || profile.email || 'No Email',
+          email: profile.Email || 'No Email',
           progress: progressData
         };
       });

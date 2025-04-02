@@ -5,14 +5,15 @@ import { Profile, Student } from '@/types/userTypes';
 
 export const useStudentManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   const getStudents = async (): Promise<Student[]> => {
-    if (!user || user.role !== 'teacher' || !user.students) {
+    if (!user || user.role !== 'teacher' || !user.students || user.students.length === 0) {
       return [];
     }
 
     try {
+      console.log("Fetching students with IDs:", user.students);
       const { data, error } = await supabase
         .from('profiles')
-        .select()
+        .select('*')
         .in('id', user.students);
 
       if (error) {
@@ -21,6 +22,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         return [];
       }
 
+      console.log("Fetched students:", data);
       return data as unknown as Student[] || [];
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -35,14 +37,14 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
-      // First fetch the student profile based on email
+      // First fetch the student profile based on email or name
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('name', studentEmail); // Note: We're using the name field which contains email for student lookup
+        .eq('name', studentEmail); // We're using the name field which might contain email
       
       if (userError || !userData || userData.length === 0) {
-        console.error('Error finding student by email:', userError || 'Student not found');
+        console.error('Error finding student:', userError || 'Student not found');
         toast.error("Student not found. Please check the email address.");
         return false;
       }

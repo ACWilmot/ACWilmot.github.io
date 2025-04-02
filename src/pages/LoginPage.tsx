@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
@@ -60,21 +61,29 @@ const LoginPage = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // We're simplifying the login for demo purposes
     // In a real app, we'd pass the identifier and password to the login function
-    const success = login(loginType);
-    
-    if (success) {
+    try {
+      const success = login(loginType);
+      
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Logged in successfully",
+        });
+        // Redirect based on user type
+        setTimeout(() => {
+          if (userType === 'teacher') {
+            navigate('/teacher-dashboard');
+          } else {
+            navigate('/');
+          }
+        }, 1000);
+      }
+    } catch (error) {
       toast({
-        title: "Success",
-        description: "Logged in successfully",
+        title: "Error",
+        description: "Login failed",
+        variant: "destructive"
       });
-      // Redirect based on user type
-      setTimeout(() => {
-        if (userType === 'teacher') {
-          navigate('/teacher-dashboard');
-        } else {
-          navigate('/');
-        }
-      }, 1000);
     }
   }
 

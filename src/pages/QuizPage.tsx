@@ -1,156 +1,166 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, ArrowLeft, List } from 'lucide-react';
 import Header from '@/components/Header';
+import QuestionCard from '@/components/QuestionCard';
+import ProgressBar from '@/components/ProgressBar';
 import { useQuiz } from '@/context/QuizContext';
-import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
-import QuizSetupForm from '@/components/QuizSetupForm';
-import ActiveQuiz from '@/components/ActiveQuiz';
 
 const QuizPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { 
-    startQuiz, 
-    currentQuestion, 
-    currentQuestionIndex,
-    selectedOptions, 
-    selectOption, 
-    submitQuiz, 
-    quizInProgress,
+  const {
     questions,
-    goToNextQuestion
+    currentQuestionIndex,
+    userAnswers,
+    selectedSubject,
+    isLoading,
+    questionCount,
+    answerQuestion,
+    goToNextQuestion,
+    goToPreviousQuestion,
+    resetQuiz,
   } = useQuiz();
-  const { isAuthenticated, userType, recordAssignmentAttempt } = useAuth();
   
-  const [subject, setSubject] = useState<string>(
-    (location.state as any)?.preSelectedSubject || "maths"
-  );
-  const [difficulty, setDifficulty] = useState<string>("easy");
-  const [numQuestions, setNumQuestions] = useState<number>(10);
-  const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [timePerQuestion, setTimePerQuestion] = useState<number>(60);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [isAssignment, setIsAssignment] = useState(false);
-  const [assignmentId, setAssignmentId] = useState<string | undefined>(undefined);
-
+  
+  // If no subject is selected, redirect to home
   useEffect(() => {
-    // Handle assignment state if passed via location
-    const assignmentData = (location.state as any)?.assignment;
-    if (assignmentData) {
-      setIsAssignment(true);
-      setAssignmentId(assignmentData.id);
+    if (!selectedSubject && !isLoading) {
+      navigate('/');
     }
-  }, [location.state]);
-
-  useEffect(() => {
-    // Redirect teacher to dashboard
-    if (isAuthenticated && userType === 'teacher') {
-      navigate('/teacher-dashboard');
+  }, [selectedSubject, isLoading, navigate]);
+  
+  const currentQuestion = questions[currentQuestionIndex];
+  const userAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  
+  const handleAnswer = (answer: string) => {
+    if (currentQuestion) {
+      answerQuestion(currentQuestion.id, answer);
+      setShowExplanation(true);
     }
-  }, [isAuthenticated, userType, navigate]);
-
-  useEffect(() => {
-    if (quizInProgress && timeLeft > 0) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (quizInProgress && timeLeft === 0) {
-      finishQuiz();
+  };
+  
+  const handleNext = () => {
+    setShowExplanation(false);
+    if (isLastQuestion) {
+      navigate('/results');
+    } else {
+      goToNextQuestion();
     }
-  }, [quizInProgress, timeLeft]);
-
-  const handleStartQuiz = () => {
-    startQuiz(subject, difficulty, numQuestions);
-    setTimeLeft(numQuestions * timePerQuestion);
+  };
+  
+  const handlePrevious = () => {
+    setShowExplanation(false);
+    goToPreviousQuestion();
+  };
+  
+  const handleExit = () => {
+    const confirmed = window.confirm('Are you sure you want to exit this quiz? Your progress will be lost.');
+    if (confirmed) {
+      resetQuiz();
+      navigate('/');
+    }
   };
 
-  const handleSelectOption = (questionId: string, answer: string) => {
-    selectOption(questionId, answer);
-    setShowExplanation(true);
-    
-    // Add a delay before automatically going to the next question
-    setTimeout(() => {
-      if (currentQuestionIndex < questions.length - 1) {
-        goToNextQuestion();
-        setShowExplanation(false);
-      }
-    }, 2000);
-  };
-
-  const finishQuiz = () => {
-    submitQuiz();
-    
-    // Record assignment attempt if this was an assignment
-    if (isAssignment && assignmentId) {
-      const completed = questions.length;
-      const correct = questions.filter(
-        (q) => selectedOptions[q.id] === q.correctAnswer
-      ).length;
-      
-      recordAssignmentAttempt(assignmentId, completed, correct, questions.length);
-      toast.success("Assignment completed successfully!");
-    }
-    
-    navigate('/results');
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">
+        <Header />
+        <div className="animate-pulse text-center">
+          <h2 className="text-xl font-display mb-6">Loading questions...</h2>
+          <div className="loading-dots">
+            <span className="dot"></span>
+            <span className="dot"></span>
+            <span className="dot"></span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!currentQuestion) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <Header />
       
-      <main className="container px-4 pt-32 pb-16 max-w-5xl mx-auto">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => navigate('/')}
-          className="mb-6 h-9 w-9 rounded-full"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        
-        {!quizInProgress ? (
-          <>
-            <h1 className="text-3xl font-display font-bold mb-2">
-              {isAssignment ? "Complete Assignment" : "Start a Practice Quiz"}
-            </h1>
-            <p className="text-muted-foreground mb-8">
-              {isAssignment 
-                ? "Complete this assignment to track your progress" 
-                : "Customize your quiz settings and start practicing"
-              }
-            </p>
-
-            <QuizSetupForm
-              subject={subject}
-              setSubject={setSubject}
-              difficulty={difficulty}
-              setDifficulty={setDifficulty}
-              numQuestions={numQuestions}
-              setNumQuestions={setNumQuestions}
-              timePerQuestion={timePerQuestion}
-              setTimePerQuestion={setTimePerQuestion}
-              onStartQuiz={handleStartQuiz}
-              isAssignment={isAssignment}
-              isSubjectLocked={(location.state as any)?.preSelectedSubject !== undefined}
-            />
-          </>
-        ) : (
-          <ActiveQuiz
-            currentQuestion={currentQuestion}
-            currentQuestionIndex={currentQuestionIndex}
-            questions={questions}
-            selectedOptions={selectedOptions}
-            timeLeft={timeLeft}
-            showExplanation={showExplanation}
-            onSelectOption={handleSelectOption}
-            onFinishQuiz={finishQuiz}
+      <main className="pt-32 pb-16 px-6 max-w-7xl mx-auto">
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleExit}
+              className="h-9 w-9 rounded-full"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back to home</span>
+            </Button>
+            
+            <div>
+              <h1 className="text-xl font-display font-semibold">
+                {selectedSubject?.charAt(0).toUpperCase() + selectedSubject?.slice(1)} Practice
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {questions.length} questions selected from the question pool
+              </p>
+            </div>
+          </div>
+          
+          <ProgressBar 
+            currentQuestion={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
+            className="md:max-w-sm"
           />
-        )}
+        </div>
+        
+        <AnimatePresence mode="wait">
+          <QuestionCard
+            key={currentQuestion.id}
+            question={currentQuestion}
+            userAnswer={userAnswer}
+            onAnswer={handleAnswer}
+            showExplanation={showExplanation}
+          />
+        </AnimatePresence>
+        
+        <div className="flex justify-between mt-8 max-w-2xl mx-auto">
+          <Button 
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          
+          <Button
+            onClick={handleNext}
+            disabled={!userAnswer}
+            className="flex items-center gap-2"
+          >
+            {isLastQuestion ? 'Finish Quiz' : 'Next'}
+            {!isLastQuestion && <ChevronRight className="h-4 w-4" />}
+          </Button>
+        </div>
+        
+        <div className="mt-16 text-center">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/results')}
+            className="flex items-center gap-2 mx-auto"
+          >
+            <List className="h-4 w-4" />
+            View Progress
+          </Button>
+        </div>
       </main>
     </div>
   );

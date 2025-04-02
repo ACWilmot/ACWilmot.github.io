@@ -2,13 +2,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, X, RotateCcw, Home } from 'lucide-react';
+import { Check, X, RotateCcw, Home, ArrowRight } from 'lucide-react';
 import Header from '@/components/Header';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Question } from '@/types/questionTypes';
 
 const ResultsPage = () => {
   const navigate = useNavigate();
@@ -23,6 +22,7 @@ const ResultsPage = () => {
   
   const { isAuthenticated, updateProgress } = useAuth();
   
+  // If no subject is selected, redirect to home
   useEffect(() => {
     if (!selectedSubject) {
       navigate('/');
@@ -31,6 +31,7 @@ const ResultsPage = () => {
   
   const { score, totalQuestions, percentage } = getResults();
   
+  // Save progress for authenticated users
   useEffect(() => {
     if (isAuthenticated && selectedSubject && questions.length > 0) {
       updateProgress(selectedSubject, totalQuestions, score);
@@ -58,20 +59,9 @@ const ResultsPage = () => {
     navigate('/');
   };
 
-  // Get the actual text value for an option based on the option key
-  const getAnswerText = (question: Question, optionKey: string): string => {
-    if (!optionKey) return '';
-    
-    if (Array.isArray(question.options)) {
-      const index = optionKey.charCodeAt(0) - 65; // Convert A->0, B->1, etc.
-      return question.options[index] || '';
-    } else {
-      return question.options[optionKey] || '';
-    }
-  };
-
   const grade = getGrade();
 
+  // Filter questions to only show those with answers
   const answeredQuestions = questions.filter(question => userAnswers[question.id]);
 
   return (
@@ -177,11 +167,7 @@ const ResultsPage = () => {
             {answeredQuestions.length > 0 ? (
               <div className="space-y-3">
                 {answeredQuestions.map((question) => {
-                  const userOptionKey = userAnswers[question.id];
-                  const userOptionText = getAnswerText(question, userOptionKey);
-                  const correctOptionKey = question.correctAnswer;
-                  const correctOptionText = getAnswerText(question, correctOptionKey);
-                  const isCorrect = userOptionKey === correctOptionKey;
+                  const isCorrect = userAnswers[question.id] === question.correctAnswer;
                   
                   return (
                     <Card key={question.id} className="flex items-center p-4">
@@ -197,16 +183,16 @@ const ResultsPage = () => {
                       
                       <div className="flex-grow">
                         <p className="text-sm font-medium line-clamp-1">{question.text}</p>
-                        <div className="flex text-xs text-muted-foreground flex-wrap">
+                        <div className="flex text-xs text-muted-foreground">
                           <span>Your answer: </span>
                           <span className={isCorrect ? 'text-green-600 ml-1' : 'text-red-600 ml-1'}>
-                            {userOptionText}
+                            {userAnswers[question.id]}
                           </span>
                           {!isCorrect && (
                             <>
                               <span className="mx-1">•</span>
                               <span>Correct: </span>
-                              <span className="text-green-600 ml-1">{correctOptionText}</span>
+                              <span className="text-green-600 ml-1">{question.correctAnswer}</span>
                             </>
                           )}
                         </div>

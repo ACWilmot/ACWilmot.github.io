@@ -1,19 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { Profile } from '@/types/userTypes';
-
-interface Class {
-  id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-  teacher_id: string;
-}
-
-interface ClassWithStudentCount extends Class {
-  student_count: number;
-}
+import { Profile, Student, Class, ClassWithStudentCount, ClassEnrollment } from '@/types/userTypes';
 
 export const useClassManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   // Get all classes for the current teacher
@@ -204,25 +192,27 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching students for class:", classId);
       
-      // Join class_enrollments with profiles to get student details
-      const { data: enrollments, error } = await supabase
+      // First get the student IDs from enrollments
+      const { data: enrollments, error: enrollmentsError } = await supabase
         .from('class_enrollments')
-        .select(`
-          student_id,
-          profiles:student_id (
-            id, name, Email, email, progress
-          )
-        `)
+        .select('student_id')
         .eq('class_id', classId);
       
-      if (error) {
-        console.error('Error fetching class students:', error);
+      if (enrollmentsError || !enrollments || enrollments.length === 0) {
+        console.error('Error fetching enrollments or no students enrolled:', enrollmentsError || 'No enrollments found');
         return [];
       }
       
-      console.log("Fetched enrollments with profiles:", enrollments);
+      const studentIds = enrollments.map(enrollment => enrollment.student_id);
       
-      if (!enrollments || enrollments.length === 0) {
+      // Then get the profile data for these students
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, Email, email, progress')
+        .in('id', studentIds);
+      
+      if (profilesError || !profiles) {
+        console.error('Error fetching student profiles:', profilesError || 'No profiles found');
         return [];
       }
       
@@ -235,45 +225,42 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       };
       
       // Transform data to Student type
-      const students: Student[] = enrollments
-        .filter(enrollment => enrollment.profiles) // Filter out any null profiles
-        .map(enrollment => {
-          const profile = enrollment.profiles;
-          // Ensure progress is properly handled
-          let progressData = defaultProgress;
-          
-          if (profile.progress && typeof profile.progress === 'object') {
-            progressData = {
-              maths: {
-                completed: profile.progress.maths?.completed || 0,
-                correct: profile.progress.maths?.correct || 0,
-                lastAttempted: profile.progress.maths?.lastAttempted || null
-              },
-              english: {
-                completed: profile.progress.english?.completed || 0,
-                correct: profile.progress.english?.correct || 0,
-                lastAttempted: profile.progress.english?.lastAttempted || null
-              },
-              verbal: {
-                completed: profile.progress.verbal?.completed || 0,
-                correct: profile.progress.verbal?.correct || 0,
-                lastAttempted: profile.progress.verbal?.lastAttempted || null
-              },
-              nonVerbal: {
-                completed: profile.progress.nonVerbal?.completed || 0,
-                correct: profile.progress.nonVerbal?.correct || 0,
-                lastAttempted: profile.progress.nonVerbal?.lastAttempted || null
-              }
-            };
-          }
-          
-          return {
-            id: profile.id,
-            name: profile.name || 'Unknown Student',
-            email: profile.Email || profile.email || 'No Email',
-            progress: progressData
+      const students: Student[] = profiles.map(profile => {
+        // Ensure progress is properly handled
+        let progressData = defaultProgress;
+        
+        if (profile.progress && typeof profile.progress === 'object') {
+          progressData = {
+            maths: {
+              completed: profile.progress.maths?.completed || 0,
+              correct: profile.progress.maths?.correct || 0,
+              lastAttempted: profile.progress.maths?.lastAttempted || null
+            },
+            english: {
+              completed: profile.progress.english?.completed || 0,
+              correct: profile.progress.english?.correct || 0,
+              lastAttempted: profile.progress.english?.lastAttempted || null
+            },
+            verbal: {
+              completed: profile.progress.verbal?.completed || 0,
+              correct: profile.progress.verbal?.correct || 0,
+              lastAttempted: profile.progress.verbal?.lastAttempted || null
+            },
+            nonVerbal: {
+              completed: profile.progress.nonVerbal?.completed || 0,
+              correct: profile.progress.nonVerbal?.correct || 0,
+              lastAttempted: profile.progress.nonVerbal?.lastAttempted || null
+            }
           };
-        });
+        }
+        
+        return {
+          id: profile.id,
+          name: profile.name || 'Unknown Student',
+          email: profile.Email || profile.email || 'No Email',
+          progress: progressData
+        };
+      });
       
       console.log("Transformed student data:", students);
       return students;
@@ -292,17 +279,3 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     getClassStudents
   };
 };
-
-// Type for Student imported from userTypes.ts but defined here for clarity
-interface Student {
-  id: string;
-  name: string;
-  email?: string;
-  progress: {
-    [subject: string]: {
-      completed: number;
-      correct: number;
-      lastAttempted: string | null;
-    }
-  };
-}

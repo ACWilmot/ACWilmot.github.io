@@ -20,7 +20,10 @@ export interface Class {
   description: string | null;
   created_at: string;
   teacher_id: string;
-  student_count?: number;
+}
+
+export interface ClassWithStudentCount extends Class {
+  student_count: number;
 }
 
 export interface ClassEnrollment {

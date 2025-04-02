@@ -41,7 +41,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       // Modified query to explicitly filter by student IDs
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, email, Email, progress');
+        .select('id, name, Email, progress');
         
       
       if (error) {

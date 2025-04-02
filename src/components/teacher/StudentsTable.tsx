@@ -62,6 +62,8 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
     return lastActivity || 'Never';
   };
 
+  console.log("StudentsTable received students:", students);
+
   return (
     <Card>
       <CardHeader>
@@ -82,10 +84,10 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
       <CardContent>
         {loading ? (
           <div className="text-center py-8">Loading students data...</div>
-        ) : !students.length ? (
+        ) : !students || students.length === 0 ? (
           <div className="text-center py-8">
             <p>No students added to your class yet.</p>
-            <p className="text-muted-foreground text-sm mt-2">Add students using their Supabase ID to track their progress</p>
+            <p className="text-muted-foreground text-sm mt-2">Add students using their email address to track their progress</p>
           </div>
         ) : (
           <Table>

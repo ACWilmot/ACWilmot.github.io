@@ -33,7 +33,17 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       }
 
       console.log("Fetched students:", data);
-      return data as unknown as Student[] || [];
+      
+      // Transform the data to match the Student type
+      const studentData = data?.map(profile => ({
+        id: profile.id,
+        name: profile.name,
+        email: profile.email || profile.Email,
+        progress: profile.progress as Student['progress']
+      })) || [];
+      
+      console.log("Transformed student data:", studentData);
+      return studentData;
     } catch (error) {
       console.error('Error fetching students:', error);
       toast.error("Failed to fetch students");

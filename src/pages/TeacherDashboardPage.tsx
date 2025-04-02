@@ -11,7 +11,7 @@ import StudentsTable from '@/components/teacher/StudentsTable';
 
 const TeacherDashboardPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, userRole, addStudent, getStudents } = useAuth();
+  const { isAuthenticated, userRole, addStudent, getStudents, user } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 

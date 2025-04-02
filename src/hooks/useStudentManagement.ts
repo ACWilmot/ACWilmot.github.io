@@ -35,7 +35,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       // Fetch student profiles in a single query
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, email, Email, progress')
         .in('id', validStudentIds);
         
       if (error) {

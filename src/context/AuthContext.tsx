@@ -1,32 +1,12 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from "sonner";
-import { UserRole, Student, Teacher } from '@/types/userTypes';
-
-type UserProgress = {
-  completed: number;
-  correct: number;
-  lastAttempted: string | null;
-};
-
-type Profile = {
-  id: string;
-  name: string;
-  role: UserRole;
-  progress: {
-    [subject: string]: UserProgress
-  };
-  students?: string[];
-};
-
-type RegisterData = {
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
-};
+import { Profile, RegisterData, Student, UserRole } from '@/types/userTypes';
+import { fetchUserProfile, registerUser } from '@/utils/authUtils';
+import { useAuthActions } from '@/hooks/useAuthActions';
+import { useProgressActions } from '@/hooks/useProgressActions';
+import { useTeacherActions } from '@/hooks/useTeacherActions';
 
 interface AuthContextType {
   user: Profile | null;
@@ -61,7 +41,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (currentSession?.user) {
           // Defer profile fetch to prevent auth deadlock
           setTimeout(async () => {
-            await fetchUserProfile(currentSession.user.id);
+            const profile = await fetchUserProfile(currentSession.user.id);
+            setUser(profile);
           }, 0);
         } else {
           setUser(null);
@@ -74,7 +55,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setSession(currentSession);
       
       if (currentSession?.user) {
-        await fetchUserProfile(currentSession.user.id);
+        const profile = await fetchUserProfile(currentSession.user.id);
+        setUser(profile);
       }
       
       setLoading(false);
@@ -85,357 +67,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select()
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-
-      if (data) {
-        setUser(data as Profile);
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
+  const { login, teacherLogin, logout } = useAuthActions(user, setUser);
+  const { updateProgress, resetProgress, resetSubjectProgress } = useProgressActions(user, setUser);
+  const { getStudents, addStudent, removeStudent } = useTeacherActions(user, setUser);
+  
   const register = async (data: RegisterData): Promise<boolean> => {
-    const { name, email, password, role } = data;
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { 
-            name,
-            role
-          }
-        }
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return false;
-      }
-
-      toast.success("Registration successful! Check your email for verification.");
-      return true;
-    } catch (error) {
-      console.error("Error during registration:", error);
-      toast.error("Registration failed");
-      return false;
-    }
-  };
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return false;
-      }
-
-      toast.success("Logged in successfully");
-      return true;
-    } catch (error) {
-      console.error("Error during login:", error);
-      toast.error("Login failed");
-      return false;
-    }
-  };
-
-  const teacherLogin = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return false;
-      }
-
-      // Verify that the user is a teacher
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select()
-          .eq('id', data.user.id)
-          .single();
-
-        if (profileError || !profile || profile.role !== 'teacher') {
-          toast.error("Access denied. This account does not have teacher privileges.");
-          await supabase.auth.signOut();
-          return false;
-        }
-      }
-
-      toast.success("Logged in successfully as teacher");
-      return true;
-    } catch (error) {
-      console.error("Error during teacher login:", error);
-      toast.error("Teacher login failed");
-      return false;
-    }
-  };
-
-  const logout = async (): Promise<void> => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      
-      setUser(null);
-      toast.info("Logged out successfully");
-    } catch (error) {
-      console.error("Error during logout:", error);
-      toast.error("Logout failed");
-    }
-  };
-
-  const updateProgress = async (subject: string, completed: number, correct: number): Promise<void> => {
-    if (!user) return;
-
-    try {
-      const lastAttempted = new Date().toISOString().split('T')[0];
-      
-      const newProgress = {
-        ...user.progress,
-        [subject]: {
-          completed,
-          correct,
-          lastAttempted
-        }
-      };
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          progress: newProgress
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Error updating progress:', error);
-        toast.error("Failed to update progress");
-        return;
-      }
-
-      setUser({
-        ...user,
-        progress: newProgress
-      });
-    } catch (error) {
-      console.error('Error updating progress:', error);
-      toast.error("Failed to update progress");
-    }
-  };
-
-  const resetProgress = async (): Promise<void> => {
-    if (!user) return;
-
-    try {
-      const resetSubjects = {
-        maths: {
-          completed: 0,
-          correct: 0,
-          lastAttempted: new Date().toISOString().split('T')[0]
-        },
-        english: {
-          completed: 0,
-          correct: 0,
-          lastAttempted: new Date().toISOString().split('T')[0]
-        },
-        verbal: {
-          completed: 0,
-          correct: 0,
-          lastAttempted: new Date().toISOString().split('T')[0]
-        },
-        nonVerbal: {
-          completed: 0,
-          correct: 0,
-          lastAttempted: new Date().toISOString().split('T')[0]
-        }
-      };
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          progress: resetSubjects
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Error resetting progress:', error);
-        toast.error("Failed to reset progress");
-        return;
-      }
-
-      setUser({
-        ...user,
-        progress: resetSubjects
-      });
-
-      toast.success("Progress reset successfully");
-    } catch (error) {
-      console.error('Error resetting progress:', error);
-      toast.error("Failed to reset progress");
-    }
-  };
-
-  const resetSubjectProgress = async (subject: string): Promise<void> => {
-    if (!user) return;
-
-    try {
-      const newProgress = {
-        ...user.progress,
-        [subject]: {
-          completed: 0,
-          correct: 0,
-          lastAttempted: new Date().toISOString().split('T')[0]
-        }
-      };
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          progress: newProgress
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Error resetting subject progress:', error);
-        toast.error("Failed to reset progress");
-        return;
-      }
-
-      setUser({
-        ...user,
-        progress: newProgress
-      });
-
-      toast.success(`${subject} progress reset successfully`);
-    } catch (error) {
-      console.error('Error resetting subject progress:', error);
-      toast.error("Failed to reset progress");
-    }
-  };
-
-  const getStudents = async (): Promise<Student[]> => {
-    if (!user || user.role !== 'teacher' || !user.students) {
-      return [];
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select()
-        .in('id', user.students);
-
-      if (error) {
-        console.error('Error fetching students:', error);
-        toast.error("Failed to fetch students");
-        return [];
-      }
-
-      return data as Student[] || [];
-    } catch (error) {
-      console.error('Error fetching students:', error);
-      toast.error("Failed to fetch students");
-      return [];
-    }
-  };
-
-  const addStudent = async (studentId: string): Promise<boolean> => {
-    if (!user || user.role !== 'teacher') {
-      return false;
-    }
-
-    try {
-      const students = [...(user.students || [])];
-      
-      if (!students.includes(studentId)) {
-        students.push(studentId);
-        
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            students
-          })
-          .eq('id', user.id);
-
-        if (error) {
-          console.error('Error adding student:', error);
-          toast.error("Failed to add student");
-          return false;
-        }
-
-        setUser({
-          ...user,
-          students
-        });
-        
-        toast.success("Student added successfully");
-        return true;
-      }
-      
-      return true; // Student already in list
-    } catch (error) {
-      console.error('Error adding student:', error);
-      toast.error("Failed to add student");
-      return false;
-    }
-  };
-
-  const removeStudent = async (studentId: string): Promise<boolean> => {
-    if (!user || user.role !== 'teacher' || !user.students) {
-      return false;
-    }
-
-    try {
-      const students = user.students.filter(id => id !== studentId);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          students
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Error removing student:', error);
-        toast.error("Failed to remove student");
-        return false;
-      }
-
-      setUser({
-        ...user,
-        students
-      });
-      
-      toast.success("Student removed successfully");
-      return true;
-    } catch (error) {
-      console.error('Error removing student:', error);
-      toast.error("Failed to remove student");
-      return false;
-    }
+    return await registerUser(data);
   };
 
   return (

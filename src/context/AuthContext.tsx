@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "sonner";
-import { AssignmentAttempt } from '@/types/questionTypes';
+import type { AssignmentAttempt } from '@/types/questionTypes';
 
 export type UserType = 'student' | 'teacher';
 
@@ -45,7 +45,7 @@ export type Assignment = {
   createdAt: string;
 };
 
-export { AssignmentAttempt };
+export type { AssignmentAttempt };
 
 interface AuthContextType {
   user: User | null;

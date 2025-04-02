@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Card } from '@/components/ui/card';
 import { ChevronDown, ChevronUp, User, CheckCircle, XCircle } from 'lucide-react';
-import { useAuth, Assignment, AssignmentAttempt } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
+import type { Assignment, AssignmentAttempt } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
 interface AssignmentAttemptsProps {

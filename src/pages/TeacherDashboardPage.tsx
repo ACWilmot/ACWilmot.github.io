@@ -26,7 +26,7 @@ const TeacherDashboardPage = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [studentIdInput, setStudentIdInput] = useState('');
+  const [studentEmailInput, setStudentEmailInput] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated || userRole !== 'teacher') {
@@ -48,11 +48,11 @@ const TeacherDashboardPage = () => {
   );
 
   const handleAddStudent = async () => {
-    if (!studentIdInput.trim()) return;
+    if (!studentEmailInput.trim()) return;
 
-    const success = await addStudent(studentIdInput.trim());
+    const success = await addStudent(studentEmailInput.trim());
     if (success) {
-      setStudentIdInput('');
+      setStudentEmailInput('');
       // Refresh student list
       const updatedStudents = await getStudents();
       setStudents(updatedStudents);
@@ -139,14 +139,14 @@ const TeacherDashboardPage = () => {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Add Student</CardTitle>
-            <CardDescription>Enter a student's ID to add them to your class</CardDescription>
+            <CardDescription>Enter a student's email to add them to your class</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2">
               <Input 
-                placeholder="Student ID" 
-                value={studentIdInput} 
-                onChange={(e) => setStudentIdInput(e.target.value)}
+                placeholder="Student Email" 
+                value={studentEmailInput} 
+                onChange={(e) => setStudentEmailInput(e.target.value)}
               />
               <Button onClick={handleAddStudent}>
                 <UserPlus className="h-4 w-4 mr-2" />

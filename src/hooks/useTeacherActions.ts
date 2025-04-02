@@ -21,7 +21,7 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
         return [];
       }
 
-      return data as Student[] || [];
+      return data as unknown as Student[] || [];
     } catch (error) {
       console.error('Error fetching students:', error);
       toast.error("Failed to fetch students");
@@ -29,12 +29,27 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
     }
   };
 
-  const addStudent = async (studentId: string): Promise<boolean> => {
+  const addStudent = async (studentEmail: string): Promise<boolean> => {
     if (!user || user.role !== 'teacher') {
       return false;
     }
 
     try {
+      // First fetch the student profile based on email
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('name', studentEmail); // Note: We're using the name field which contains email for student lookup
+      
+      if (userError || !userData || userData.length === 0) {
+        console.error('Error finding student by email:', userError || 'Student not found');
+        toast.error("Student not found. Please check the email address.");
+        return false;
+      }
+      
+      const studentId = userData[0].id;
+      console.log("Found student ID:", studentId, "for email:", studentEmail);
+      
       // Get current students array or initialize empty array
       const students = [...(user.students || [])];
       
@@ -63,6 +78,7 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
         return true;
       }
       
+      toast.info("Student is already in your class");
       return true; // Student already in list
     } catch (error) {
       console.error('Error adding student:', error);

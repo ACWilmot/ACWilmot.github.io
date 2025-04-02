@@ -93,3 +93,57 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
     return false;
   }
 }
+
+// Add this utility function to add Student1 to Teacher1's class for testing purposes
+export async function setupTestStudentTeacherRelationship(): Promise<void> {
+  try {
+    // Find Teacher1 by email
+    const { data: teacherData, error: teacherError } = await supabase
+      .from('profiles')
+      .select()
+      .eq('name', 'Teacher1')
+      .single();
+      
+    if (teacherError || !teacherData) {
+      console.error('Could not find Teacher1:', teacherError);
+      return;
+    }
+    
+    // Find Student1 by email
+    const { data: studentData, error: studentError } = await supabase
+      .from('profiles')
+      .select()
+      .eq('name', 'Student1')
+      .single();
+      
+    if (studentError || !studentData) {
+      console.error('Could not find Student1:', studentError);
+      return;
+    }
+    
+    // Add Student1 to Teacher1's students array if not already there
+    const students = [...(teacherData.students || [])];
+    if (!students.includes(studentData.id)) {
+      students.push(studentData.id);
+      
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ students })
+        .eq('id', teacherData.id);
+        
+      if (updateError) {
+        console.error('Failed to update Teacher1 with Student1:', updateError);
+        return;
+      }
+      
+      console.log('Successfully added Student1 to Teacher1\'s class');
+    } else {
+      console.log('Student1 is already in Teacher1\'s class');
+    }
+  } catch (error) {
+    console.error('Error setting up test relationship:', error);
+  }
+}
+
+// Call this function once to ensure Student1 is in Teacher1's class
+setupTestStudentTeacherRelationship();

@@ -46,35 +46,18 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       )}
       
       <div className="space-y-3 mb-6">
-        {Array.isArray(question.options) ? (
-          // Handle array options
-          question.options.map((option, index) => (
-            <Option
-              key={index}
-              option={option}
-              index={index}
-              isSelected={userAnswer === option}
-              isCorrect={question.correctAnswer === option}
-              showCorrectness={!!userAnswer}
-              onSelect={() => onAnswer(option)}
-              imageUrl={question.optionImages?.[index]}
-            />
-          ))
-        ) : (
-          // Handle object options (A, B, C, D format)
-          Object.entries(question.options).map(([key, value], index) => (
-            <Option
-              key={key}
-              option={value}
-              index={index}
-              isSelected={userAnswer === key}
-              isCorrect={question.correctAnswer === key}
-              showCorrectness={!!userAnswer}
-              onSelect={() => onAnswer(key)}
-              imageUrl={question.optionImages?.[index]}
-            />
-          ))
-        )}
+        {question.options.map((option, index) => (
+          <Option
+            key={index}
+            option={option}
+            index={index}
+            isSelected={userAnswer === option}
+            isCorrect={question.correctAnswer === option}
+            showCorrectness={!!userAnswer}
+            onSelect={() => onAnswer(option)}
+            imageUrl={question.optionImages?.[index]}
+          />
+        ))}
       </div>
       
       <AnimatePresence>

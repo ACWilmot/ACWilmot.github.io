@@ -1,473 +1,317 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useToast } from "@/components/ui/use-toast";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { toast } from "sonner";
 
-// Define types
-export type UserType = 'student' | 'teacher';
-
-export interface StudentProgress {
-  correct: number;
-  completed: number;
-  lastAttempted?: string;
-}
-
-export interface UserProgress {
-  maths: StudentProgress;
-  english: StudentProgress;
-  verbal: StudentProgress;
-  nonVerbal: StudentProgress;
-}
-
-export interface User {
+type User = {
   id: string;
   name: string;
-  email?: string;
-  password?: string;
-  progress?: UserProgress;
-}
+  email: string;
+  progress: {
+    [subject: string]: {
+      completed: number;
+      correct: number;
+      lastAttempted: string;
+    }
+  }
+};
 
-export interface Assignment {
-  id: string;
-  title: string;
-  description?: string;
-  subject: 'maths' | 'english' | 'verbal' | 'nonVerbal';
-  dueDate?: string;
-  createdAt: string;
-}
-
-export interface AssignmentAttempt {
-  assignmentId: string;
-  completed: boolean;
-  score?: number;
-  total?: number;
-  date: string;
-}
-
-export interface StudentData {
-  id: string;
+type RegisterData = {
   name: string;
+  email: string;
   password: string;
-  classId: string;
-  progress: UserProgress;
-  assignmentAttempts: AssignmentAttempt[];
-}
-
-export interface ClassData {
-  id: string;
-  teacherId: string;
-  name: string;
-  students: string[]; // Student IDs
-  assignments: Assignment[];
-}
+};
 
 interface AuthContextType {
   user: User | null;
-  userType: UserType | null;
   isAuthenticated: boolean;
-  login: (type: UserType) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (userData: { name: string; email?: string; password?: string; userType: UserType }) => Promise<boolean>;
-  getClassesByTeacher: () => ClassData[];
-  getClassById: (classId: string) => ClassData | undefined;
-  createClass: (className: string) => Promise<boolean>;
-  addStudentToClass: (studentName: string, classId: string, password: string) => Promise<boolean>;
-  getStudentsByClass: (classId: string) => StudentData[];
-  assignExercise: (classId: string, assignment: Omit<Assignment, 'id' | 'createdAt'>) => Promise<boolean>;
-  updateProgress: (subject: keyof UserProgress, totalQuestions: number, score: number) => void;
-  resetSubjectProgress: (subject: keyof UserProgress) => void;
-  getAssignmentsForStudent: () => Assignment[];
+  register: (data: RegisterData) => Promise<boolean>;
+  updateProgress: (subject: string, completed: number, correct: number) => void;
+  resetProgress: () => void;
+  resetSubjectProgress: (subject: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create a demo class with 30 students
-const demoClassId = uuidv4();
-const demoClass: ClassData = {
-  id: demoClassId,
-  teacherId: "teacher-demo",
-  name: "Demo Class",
-  students: [],
-  assignments: []
+// Local storage keys
+const USER_STORAGE_KEY = 'quiz_app_user';
+const USERS_STORAGE_KEY = 'quiz_app_users';
+
+// Helper function to hash a password
+const hashPassword = async (password: string): Promise<string> => {
+  // Convert the password string to a Uint8Array
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  
+  // Use SHA-256 to hash the password
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  
+  // Convert the hash to a hex string
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return hashHex;
 };
 
-const demoStudents: StudentData[] = Array.from({ length: 30 }, (_, i) => ({
-  id: `student-${i+1}`,
-  name: `Student${i+1}`,
-  password: "password", 
-  classId: demoClassId,
-  progress: {
-    maths: { correct: 0, completed: 0 },
-    english: { correct: 0, completed: 0 },
-    verbal: { correct: 0, completed: 0 },
-    nonVerbal: { correct: 0, completed: 0 }
-  },
-  assignmentAttempts: []
-}));
-
-// Update demoClass.students with the student IDs
-demoClass.students = demoStudents.map(student => student.id);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userType, setUserType] = useState<UserType | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [classes, setClasses] = useState<ClassData[]>(() => {
-    const storedClasses = localStorage.getItem('classes');
-    if (storedClasses) {
-      const parsedClasses = JSON.parse(storedClasses);
-      // Check if demo class already exists
-      if (!parsedClasses.some((c: ClassData) => c.name === "Demo Class")) {
-        return [...parsedClasses, demoClass];
-      }
-      return parsedClasses;
-    }
-    return [demoClass];
-  });
-  const [students, setStudents] = useState<StudentData[]>(() => {
-    const storedStudents = localStorage.getItem('students');
-    if (storedStudents) {
-      const parsedStudents = JSON.parse(storedStudents);
-      // Check if demo students already exist
-      if (!parsedStudents.some((s: StudentData) => s.name === "Student1")) {
-        return [...parsedStudents, ...demoStudents];
-      }
-      return parsedStudents;
-    }
-    return demoStudents;
-  });
-
-  const { toast } = useToast();
-
+  
+  // Load user from localStorage on initial render
   useEffect(() => {
-    // Load authentication state from localStorage
-    const storedAuth = localStorage.getItem('auth');
-    if (storedAuth) {
-      const authData = JSON.parse(storedAuth);
-      setUser(authData.user);
-      setUserType(authData.userType);
-      setIsAuthenticated(authData.isAuthenticated);
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to parse stored user:', error);
+        localStorage.removeItem(USER_STORAGE_KEY);
+      }
     }
   }, []);
 
+  // Initialize users in localStorage if not present
   useEffect(() => {
-    localStorage.setItem('classes', JSON.stringify(classes));
-  }, [classes]);
+    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+    if (!storedUsers) {
+      // Initialize with empty users object
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify({}));
+    }
+  }, []);
 
-  useEffect(() => {
-    localStorage.setItem('students', JSON.stringify(students));
-  }, [students]);
+  const register = async (data: RegisterData): Promise<boolean> => {
+    const { name, email, password } = data;
 
-  const login = (type: UserType) => {
-    const newUser = {
-      id: uuidv4(),
-      name: type === 'teacher' ? 'Teacher User' : 'Student User'
-    };
-    setUser(newUser);
-    setUserType(type);
-    setIsAuthenticated(true);
+    // Get existing users
+    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+    const users = storedUsers ? JSON.parse(storedUsers) : {};
 
-    // Save authentication state to localStorage
-    localStorage.setItem('auth', JSON.stringify({
-      user: newUser,
-      userType: type,
-      isAuthenticated: true
-    }));
+    // Check if email already exists
+    if (users[email]) {
+      toast.error("Email already registered");
+      return false;
+    }
 
-    return true; // Return true to indicate successful login
-  };
-
-  const register = async (userData: { name: string; email?: string; password?: string; userType: UserType }): Promise<boolean> => {
     try {
-      // In a real app, we would register the user with a backend
-      // For now, just set the user state as if they've logged in
+      // Hash the password before storing
+      const hashedPassword = await hashPassword(password);
+
+      // Create new user
       const newUser: User = {
-        id: uuidv4(),
-        name: userData.name,
-        email: userData.email,
-        password: userData.password
+        id: `user_${Date.now()}`,
+        name,
+        email,
+        progress: {
+          maths: {
+            completed: 0,
+            correct: 0,
+            lastAttempted: new Date().toISOString().split('T')[0]
+          },
+          english: {
+            completed: 0,
+            correct: 0,
+            lastAttempted: new Date().toISOString().split('T')[0]
+          },
+          verbal: {
+            completed: 0,
+            correct: 0,
+            lastAttempted: new Date().toISOString().split('T')[0]
+          },
+          nonVerbal: {
+            completed: 0,
+            correct: 0,
+            lastAttempted: new Date().toISOString().split('T')[0]
+          }
+        }
       };
 
-      setUser(newUser);
-      setUserType(userData.userType);
-      setIsAuthenticated(true);
+      // Add to users with hashed password
+      users[email] = {
+        name,
+        password: hashedPassword, // Store the hashed password
+        userData: newUser
+      };
 
-      // Save authentication state to localStorage
-      localStorage.setItem('auth', JSON.stringify({
-        user: newUser,
-        userType: userData.userType,
-        isAuthenticated: true
-      }));
-
-      toast({
-        title: "Success",
-        description: "Account created successfully"
-      });
-      
+      // Save to localStorage
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+      toast.success("Registration successful");
       return true;
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create account"
-      });
+      console.error("Error during registration:", error);
+      toast.error("Registration failed");
+      return false;
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    // Get users from localStorage
+    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+    const users = storedUsers ? JSON.parse(storedUsers) : {};
+
+    // Check if user exists
+    if (users[email]) {
+      try {
+        // Hash the provided password
+        const hashedPassword = await hashPassword(password);
+        
+        // Compare with stored hash
+        if (users[email].password === hashedPassword) {
+          const userData = users[email].userData;
+          setUser(userData);
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+          toast.success("Logged in successfully");
+          return true;
+        } else {
+          toast.error("Invalid credentials");
+          return false;
+        }
+      } catch (error) {
+        console.error("Error during login:", error);
+        toast.error("Login failed");
+        return false;
+      }
+    } else {
+      toast.error("Invalid credentials");
       return false;
     }
   };
 
   const logout = () => {
     setUser(null);
-    setUserType(null);
-    setIsAuthenticated(false);
-    // Clear authentication state from localStorage
-    localStorage.removeItem('auth');
+    localStorage.removeItem(USER_STORAGE_KEY);
+    toast.info("Logged out successfully");
   };
 
-  const getClassesByTeacher = () => {
-    // For simplicity, return all classes. In a real app, filter by teacher ID.
-    return classes;
-  };
+  const updateProgress = (subject: string, completed: number, correct: number) => {
+    if (!user) return;
 
-  const getClassById = (classId: string) => {
-    return classes.find(c => c.id === classId);
-  };
-
-  const createClass = async (className: string): Promise<boolean> => {
-    try {
-      const newClass: ClassData = {
-        id: uuidv4(),
-        teacherId: user?.id || '',
-        name: className,
-        students: [],
-        assignments: []
-      };
-
-      setClasses(prevClasses => [...prevClasses, newClass]);
-      
-      toast({
-        title: "Success",
-        description: "Class created successfully"
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create class"
-      });
-      return false;
-    }
-  };
-
-  const addStudentToClass = async (studentName: string, classId: string, password: string): Promise<boolean> => {
-    try {
-      const newStudent: StudentData = {
-        id: uuidv4(),
-        name: studentName,
-        password: password,
-        classId: classId,
-        progress: {
-          maths: { correct: 0, completed: 0 },
-          english: { correct: 0, completed: 0 },
-          verbal: { correct: 0, completed: 0 },
-          nonVerbal: { correct: 0, completed: 0 }
-        },
-        assignmentAttempts: []
-      };
-
-      setStudents(prevStudents => [...prevStudents, newStudent]);
-
-      // Update the class with the new student
-      setClasses(prevClasses => {
-        return prevClasses.map(cls => {
-          if (cls.id === classId) {
-            return {
-              ...cls,
-              students: [...cls.students, newStudent.id]
-            };
-          }
-          return cls;
-        });
-      });
-
-      toast({
-        title: "Success",
-        description: "Student added successfully"
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add student"
-      });
-      return false;
-    }
-  };
-
-  const getStudentsByClass = (classId: string) => {
-    return students.filter(student => student.classId === classId);
-  };
-
-  const assignExercise = async (
-    classId: string, 
-    assignment: Omit<Assignment, 'id' | 'createdAt'>
-  ): Promise<boolean> => {
-    try {
-      const newAssignment: Assignment = {
-        id: uuidv4(),
-        ...assignment,
-        createdAt: new Date().toISOString()
-      };
-
-      setClasses(prevClasses => {
-        return prevClasses.map(cls => {
-          if (cls.id === classId) {
-            return {
-              ...cls,
-              assignments: [...cls.assignments, newAssignment]
-            };
-          }
-          return cls;
-        });
-      });
-
-      toast({
-        title: "Success",
-        description: "Assignment assigned successfully"
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to assign assignment"
-      });
-      return false;
-    }
-  };
-
-  const getAssignmentsForStudent = () => {
-    if (!user || userType !== 'student') return [];
-    
-    // Find all classes where this student is a member
-    const userClasses = classes.filter(cls => 
-      cls.students.includes(user.id)
-    );
-    
-    // Get all assignments from those classes
-    const assignments: Assignment[] = [];
-    userClasses.forEach(cls => {
-      assignments.push(...cls.assignments);
-    });
-    
-    return assignments;
-  };
-
-  const updateProgress = (subject: keyof UserProgress, totalQuestions: number, score: number) => {
-    setUser(prevUser => {
-      if (!prevUser || !prevUser.progress) {
-        const newProgress: UserProgress = {
-          maths: { correct: 0, completed: 0 },
-          english: { correct: 0, completed: 0 },
-          verbal: { correct: 0, completed: 0 },
-          nonVerbal: { correct: 0, completed: 0 }
-        };
-        newProgress[subject] = {
-          correct: score,
-          completed: totalQuestions,
-          lastAttempted: new Date().toLocaleDateString()
-        };
-        return {
-          ...prevUser,
-          progress: newProgress
-        };
+    const updatedUser = {
+      ...user,
+      progress: {
+        ...user.progress,
+        [subject]: {
+          completed,
+          correct,
+          lastAttempted: new Date().toISOString().split('T')[0]
+        }
       }
+    };
 
-      const updatedProgress = { ...prevUser.progress };
-      updatedProgress[subject] = {
-        correct: (updatedProgress[subject]?.correct || 0) + score,
-        completed: (updatedProgress[subject]?.completed || 0) + totalQuestions,
-        lastAttempted: new Date().toLocaleDateString()
-      };
+    setUser(updatedUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
 
-      return {
-        ...prevUser,
-        progress: updatedProgress
-      };
-    });
-
-    // Update localStorage after state update
-    setTimeout(() => {
-      if (user) {
-        localStorage.setItem('auth', JSON.stringify({
-          user,
-          userType,
-          isAuthenticated
-        }));
+    // Update user data in users list
+    if (user.email) {
+      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        if (users[user.email]) {
+          users[user.email].userData = updatedUser;
+          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+        }
       }
-    }, 0);
+    }
   };
 
-  const resetSubjectProgress = (subject: keyof UserProgress) => {
-    setUser(prevUser => {
-      if (!prevUser || !prevUser.progress) return prevUser;
+  const resetProgress = () => {
+    if (!user) return;
 
-      const updatedProgress = { ...prevUser.progress };
-      updatedProgress[subject] = {
-        correct: 0,
+    const resetSubjects = {
+      maths: {
         completed: 0,
-        lastAttempted: undefined
-      };
-
-      return {
-        ...prevUser,
-        progress: updatedProgress
-      };
-    });
-
-    // Update localStorage after state update
-    setTimeout(() => {
-      if (user) {
-        localStorage.setItem('auth', JSON.stringify({
-          user,
-          userType,
-          isAuthenticated
-        }));
+        correct: 0,
+        lastAttempted: new Date().toISOString().split('T')[0]
+      },
+      english: {
+        completed: 0,
+        correct: 0,
+        lastAttempted: new Date().toISOString().split('T')[0]
+      },
+      verbal: {
+        completed: 0,
+        correct: 0,
+        lastAttempted: new Date().toISOString().split('T')[0]
+      },
+      nonVerbal: {
+        completed: 0,
+        correct: 0,
+        lastAttempted: new Date().toISOString().split('T')[0]
       }
-    }, 0);
+    };
 
-    toast({
-      title: "Success",
-      description: `Progress for ${subject} has been reset`
-    });
+    const updatedUser = {
+      ...user,
+      progress: resetSubjects
+    };
+
+    setUser(updatedUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+
+    // Update user data in users list
+    if (user.email) {
+      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        if (users[user.email]) {
+          users[user.email].userData = updatedUser;
+          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+        }
+      }
+    }
+
+    toast.success("Progress reset successfully");
   };
 
-  const value = {
-    user,
-    userType,
-    isAuthenticated,
-    login,
-    logout,
-    getClassesByTeacher,
-    getClassById,
-    createClass,
-    addStudentToClass,
-    getStudentsByClass,
-    assignExercise,
-    updateProgress,
-    resetSubjectProgress,
-    getAssignmentsForStudent,
-    register
+  const resetSubjectProgress = (subject: string) => {
+    if (!user) return;
+
+    const updatedUser = {
+      ...user,
+      progress: {
+        ...user.progress,
+        [subject]: {
+          completed: 0,
+          correct: 0,
+          lastAttempted: new Date().toISOString().split('T')[0]
+        }
+      }
+    };
+
+    setUser(updatedUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+
+    // Update user data in users list
+    if (user.email) {
+      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        if (users[user.email]) {
+          users[user.email].userData = updatedUser;
+          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+        }
+      }
+    }
+
+    toast.success(`${subject} progress reset successfully`);
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: !!user,
+      login,
+      logout,
+      register,
+      updateProgress,
+      resetProgress,
+      resetSubjectProgress
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');

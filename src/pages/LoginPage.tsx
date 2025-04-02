@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useToast } from '@/hooks/use-toast';
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,17 +15,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Mail, Key, LogIn, User, GraduationCap, School } from 'lucide-react';
+import { Mail, Key, LogIn } from 'lucide-react';
 import Header from '@/components/Header';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
-  identifier: z.string().min(1, {
-    message: "Username/Email is required.",
+  email: z.string().email({
+    message: "Please enter a valid email address.",
   }),
   password: z.string().min(1, {
     message: "Password is required.",
@@ -33,53 +33,33 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, userType } = useAuth();
-  const [loginType, setLoginType] = useState<'student' | 'teacher'>('student');
   const { toast } = useToast();
+  const { login, isAuthenticated } = useAuth();
 
   // Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
-      if (userType === 'teacher') {
-        navigate('/teacher-dashboard');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     }
-  }, [isAuthenticated, navigate, userType]);
+  }, [isAuthenticated, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      identifier: "",
+      email: "",
       password: "",
       rememberMe: false,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // We're simplifying the login for demo purposes
-    try {
-      // Call the login function
-      login(loginType);
-      
-      toast({
-        title: "Success",
-        description: "Logged in successfully",
-      });
-      
-      // Direct to appropriate page based on user type
-      if (loginType === 'teacher') {
-        navigate('/teacher-dashboard');
-      } else {
+    const success = await login(values.email, values.password);
+    
+    if (success) {
+      // Redirect to home page after login
+      setTimeout(() => {
         navigate('/');
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Login failed",
-        variant: "destructive"
-      });
+      }, 1000);
     }
   }
 
@@ -95,160 +75,69 @@ const LoginPage = () => {
               Sign in to your account to continue
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input className="pl-10" placeholder="name@example.com" {...field} />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input className="pl-10" type="password" placeholder="Enter your password" {...field} />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex items-center space-x-2">
+                  <FormField
+                    control={form.control}
+                    name="rememberMe"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Remember me</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-          <Tabs defaultValue="student" className="w-full" onValueChange={(value) => setLoginType(value as 'student' | 'teacher')}>
-            <TabsList className="grid grid-cols-2 mx-auto w-[80%] mb-4">
-              <TabsTrigger value="student" className="flex items-center gap-2">
-                <GraduationCap className="h-4 w-4" />
-                <span>Student</span>
-              </TabsTrigger>
-              <TabsTrigger value="teacher" className="flex items-center gap-2">
-                <School className="h-4 w-4" />
-                <span>Teacher</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="student">
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="identifier"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Username</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                              <Input className="pl-10" placeholder="Enter your username" {...field} />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                              <Input className="pl-10" type="password" placeholder="Enter your password" {...field} />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex items-center space-x-2">
-                      <FormField
-                        control={form.control}
-                        name="rememberMe"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>Remember me</FormLabel>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <p className="text-sm text-muted-foreground">
-                      Demo students: Student1 through Student30, password: "password"
-                    </p>
-
-                    <Button type="submit" className="w-full" size="lg">
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Sign In
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </TabsContent>
-
-            <TabsContent value="teacher">
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="identifier"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                              <Input className="pl-10" placeholder="name@example.com" {...field} />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                              <Input className="pl-10" type="password" placeholder="Enter your password" {...field} />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex items-center space-x-2">
-                      <FormField
-                        control={form.control}
-                        name="rememberMe"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>Remember me</FormLabel>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <p className="text-sm text-muted-foreground">
-                      Demo teacher: teacher@demo.com, password: "password"
-                    </p>
-
-                    <Button type="submit" className="w-full" size="lg">
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Sign In
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </TabsContent>
-          </Tabs>
-
+                <Button type="submit" className="w-full" size="lg">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm text-muted-foreground mt-2">
               Don't have an account?{" "}

@@ -161,7 +161,7 @@ const QuestionsPage = () => {
                 value={subject}
                 className="capitalize"
               >
-                {subject === 'nonVerbal' ? 'Non-Verbal' : subject}
+                {subject === 'non-verbal' ? 'Non-Verbal' : subject}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -205,29 +205,15 @@ const QuestionsPage = () => {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {Array.isArray(question.options) ? (
-                                // Handle array options
-                                question.options.map((option, index) => (
-                                  <TableRow key={index} className={option === question.correctAnswer ? "bg-green-50" : ""}>
-                                    <TableCell>{String.fromCharCode(65 + index)}</TableCell>
-                                    <TableCell>{option}</TableCell>
-                                    <TableCell>
-                                      {option === question.correctAnswer ? "✓" : ""}
-                                    </TableCell>
-                                  </TableRow>
-                                ))
-                              ) : (
-                                // Handle object options (A, B, C, D format)
-                                Object.entries(question.options).map(([key, value]) => (
-                                  <TableRow key={key} className={key === question.correctAnswer ? "bg-green-50" : ""}>
-                                    <TableCell>{key}</TableCell>
-                                    <TableCell>{value}</TableCell>
-                                    <TableCell>
-                                      {key === question.correctAnswer ? "✓" : ""}
-                                    </TableCell>
-                                  </TableRow>
-                                ))
-                              )}
+                              {question.options.map((option, index) => (
+                                <TableRow key={index} className={option === question.correctAnswer ? "bg-green-50" : ""}>
+                                  <TableCell>{String.fromCharCode(65 + index)}</TableCell>
+                                  <TableCell>{option}</TableCell>
+                                  <TableCell>
+                                    {option === question.correctAnswer ? "✓" : ""}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
                             </TableBody>
                           </Table>
                           

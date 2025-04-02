@@ -9,7 +9,7 @@ const sampleQuestions: SubjectQuestions = {
   'maths': mathsQuestions,
   'english': englishQuestions,
   'verbal': verbalQuestions,
-  'nonVerbal': nonVerbalQuestions
+  'non-verbal': nonVerbalQuestions
 };
 
 export default sampleQuestions;

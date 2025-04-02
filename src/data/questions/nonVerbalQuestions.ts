@@ -3,7 +3,7 @@ import { Question } from '@/types/questionTypes';
 const nonVerbalQuestions: Question[] = [
   {
     id: 'nv1',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape comes next in the sequence? [Circle, Square, Triangle, Circle, Square, ?]',
     options: ['Circle', 'Square', 'Triangle', 'Pentagon'],
     correctAnswer: 'Triangle',
@@ -11,7 +11,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv2',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you fold the flat shape on the left, which 3D object would it form?',
     options: ['Cube', 'Pyramid', 'Cylinder', 'Cone'],
     correctAnswer: 'Cube',
@@ -19,7 +19,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv3',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of the following shapes does NOT belong in the group?',
     options: ['Triangle', 'Square', 'Pentagon', 'Oval'],
     correctAnswer: 'Oval',
@@ -27,7 +27,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv4',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If the pattern continues, how many dots will be in the next figure?',
     options: ['7', '8', '9', '10'],
     correctAnswer: '9',
@@ -35,7 +35,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv5',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image is the mirror reflection of the given shape?',
     options: ['Image A', 'Image B', 'Image C', 'Image D'],
     correctAnswer: 'Image B',
@@ -43,7 +43,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv6',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which pattern would complete the sequence?',
     options: ['Pattern A', 'Pattern B', 'Pattern C', 'Pattern D'],
     correctAnswer: 'Pattern C',
@@ -51,7 +51,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv7',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which piece completes the puzzle?',
     options: ['Piece 1', 'Piece 2', 'Piece 3', 'Piece 4'],
     correctAnswer: 'Piece 3',
@@ -59,7 +59,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv8',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you rotate the shape on the left 90 degrees clockwise, which shape would you get?',
     options: ['Shape A', 'Shape B', 'Shape C', 'Shape D'],
     correctAnswer: 'Shape B',
@@ -67,7 +67,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv9',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the cube from the opposite side?',
     options: ['View A', 'View B', 'View C', 'View D'],
     correctAnswer: 'View C',
@@ -75,7 +75,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv10',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this grid pattern sequence?',
     options: ['Pattern 1', 'Pattern 2', 'Pattern 3', 'Pattern 4'],
     correctAnswer: 'Pattern 2',
@@ -83,7 +83,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv11',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which figure completes the analogy? Figure A is to Figure B as Figure C is to ?',
     options: ['Figure D', 'Figure E', 'Figure F', 'Figure G'],
     correctAnswer: 'Figure E',
@@ -91,7 +91,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv12',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which is the odd one out?',
     options: ['Design 1', 'Design 2', 'Design 3', 'Design 4'],
     correctAnswer: 'Design 3',
@@ -99,7 +99,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv13',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If the sequence continues, which figure comes next?',
     options: ['Figure A', 'Figure B', 'Figure C', 'Figure D'],
     correctAnswer: 'Figure A',
@@ -107,7 +107,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv14',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which object would look like this when viewed from above?',
     options: ['Object 1', 'Object 2', 'Object 3', 'Object 4'],
     correctAnswer: 'Object 2',
@@ -115,7 +115,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv15',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which pattern follows the rule shown in the first three examples?',
     options: ['Example A', 'Example B', 'Example C', 'Example D'],
     correctAnswer: 'Example C',
@@ -123,7 +123,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv16',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you unfold this cube, which net would you get?',
     options: ['Net 1', 'Net 2', 'Net 3', 'Net 4'],
     correctAnswer: 'Net 3',
@@ -131,7 +131,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv17',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image shows the correct shadow of the 3D object when light shines from above?',
     options: ['Shadow A', 'Shadow B', 'Shadow C', 'Shadow D'],
     correctAnswer: 'Shadow A',
@@ -139,7 +139,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv18',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the correct image when the given pattern is folded along the dotted lines?',
     options: ['Result 1', 'Result 2', 'Result 3', 'Result 4'],
     correctAnswer: 'Result 2',
@@ -147,7 +147,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv19',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape does NOT belong in the group?',
     options: ['Shape A', 'Shape B', 'Shape C', 'Shape D'],
     correctAnswer: 'Shape C',
@@ -155,7 +155,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv20',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this sequence: 2, 6, 12, 20, ?',
     options: ['24', '28', '30', '36'],
     correctAnswer: '30',
@@ -163,7 +163,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv21',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the paper after it has been hole-punched and unfolded?',
     options: ['Pattern A', 'Pattern B', 'Pattern C', 'Pattern D'],
     correctAnswer: 'Pattern B',
@@ -171,7 +171,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv22',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which figure completes the grid?',
     options: ['Figure 1', 'Figure 2', 'Figure 3', 'Figure 4'],
     correctAnswer: 'Figure 3',
@@ -179,7 +179,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv23',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If the pattern continues, which shape comes next?',
     options: ['Triangle', 'Square', 'Pentagon', 'Hexagon'],
     correctAnswer: 'Pentagon',
@@ -187,7 +187,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv24',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the reflection of the given shape across the vertical axis?',
     options: ['Option A', 'Option B', 'Option C', 'Option D'],
     correctAnswer: 'Option C',
@@ -195,7 +195,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv25',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which design follows the same rule as the examples?',
     options: ['Design W', 'Design X', 'Design Y', 'Design Z'],
     correctAnswer: 'Design X',
@@ -203,7 +203,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv26',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you rotate this 3D object 90 degrees to the right, what would it look like?',
     options: ['View 1', 'View 2', 'View 3', 'View 4'],
     correctAnswer: 'View 2',
@@ -211,7 +211,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv27',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which diagram represents the relationship: "All A are B, and some B are C"?',
     options: ['Diagram 1', 'Diagram 2', 'Diagram 3', 'Diagram 4'],
     correctAnswer: 'Diagram 2',
@@ -219,7 +219,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv28',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image would you see if you looked at the given shape from directly above?',
     options: ['Image A', 'Image B', 'Image C', 'Image D'],
     correctAnswer: 'Image C',
@@ -227,7 +227,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv29',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the correct combination of shapes used to create the final figure?',
     options: ['Combination 1', 'Combination 2', 'Combination 3', 'Combination 4'],
     correctAnswer: 'Combination 3',
@@ -235,7 +235,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv30',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this sequence?',
     options: ['Figure A', 'Figure B', 'Figure C', 'Figure D'],
     correctAnswer: 'Figure D',
@@ -243,7 +243,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv31',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option is the missing piece that completes the pattern?',
     options: ['Piece 1', 'Piece 2', 'Piece 3', 'Piece 4'],
     correctAnswer: 'Piece 3',
@@ -251,7 +251,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv32',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you combine shapes A and B, which result would you get?',
     options: ['Result W', 'Result X', 'Result Y', 'Result Z'],
     correctAnswer: 'Result Y',
@@ -259,7 +259,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv33',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape is the odd one out?',
     options: ['Sphere', 'Cube', 'Cylinder', 'Cone'],
     correctAnswer: 'Cube',
@@ -267,7 +267,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv34',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What would the pattern look like after the next iteration?',
     options: ['Pattern W', 'Pattern X', 'Pattern Y', 'Pattern Z'],
     correctAnswer: 'Pattern X',
@@ -275,7 +275,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv35',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option represents the correct folded version of the flat pattern?',
     options: ['Model 1', 'Model 2', 'Model 3', 'Model 4'],
     correctAnswer: 'Model 2',
@@ -283,7 +283,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv36',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What number comes next in the sequence: 2, 3, 5, 8, 12, 17, ?',
     options: ['21', '23', '24', '25'],
     correctAnswer: '23',
@@ -291,7 +291,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv37',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which is the odd one out based on its visual properties?',
     options: ['Square', 'Circle', 'Triangle', 'Rectangle'],
     correctAnswer: 'Circle',
@@ -299,7 +299,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv38',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you fold the given net, which 3D shape would you form?',
     options: ['Tetrahedron', 'Cube', 'Octahedron', 'Dodecahedron'],
     correctAnswer: 'Tetrahedron',
@@ -307,7 +307,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv39',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image shows the correct reflection of the given shape across the vertical axis?',
     options: ['Image 1', 'Image 2', 'Image 3', 'Image 4'],
     correctAnswer: 'Image 2',
@@ -315,7 +315,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv40',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this pattern sequence?',
     options: ['Pattern A', 'Pattern B', 'Pattern C', 'Pattern D'],
     correctAnswer: 'Pattern A',
@@ -323,7 +323,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv41',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape does NOT belong in this group?',
     options: ['Cube', 'Sphere', 'Pyramid', 'Cone'],
     correctAnswer: 'Cube',
@@ -331,7 +331,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv42',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you rotate the given 3D object 180°, what would it look like?',
     options: ['View 1', 'View 2', 'View 3', 'View 4'],
     correctAnswer: 'View 3',
@@ -339,7 +339,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv43',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which pattern completes the grid?',
     options: ['Pattern W', 'Pattern X', 'Pattern Y', 'Pattern Z'],
     correctAnswer: 'Pattern X',
@@ -347,7 +347,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv44',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What number comes next in this sequence: 1, 4, 9, 16, 25, ?',
     options: ['30', '36', '42', '49'],
     correctAnswer: '36',
@@ -355,7 +355,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv45',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of these shapes has the greatest number of lines of symmetry?',
     options: ['Equilateral triangle', 'Square', 'Regular pentagon', 'Regular hexagon'],
     correctAnswer: 'Regular hexagon',
@@ -363,7 +363,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv46',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape would you get if you sliced a cube horizontally through its center?',
     options: ['Circle', 'Triangle', 'Square', 'Rectangle'],
     correctAnswer: 'Square',
@@ -371,7 +371,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv47',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which diagram correctly represents the relationship: "Some A are B, all B are C"?',
     options: ['Diagram 1', 'Diagram 2', 'Diagram 3', 'Diagram 4'],
     correctAnswer: 'Diagram 3',
@@ -379,7 +379,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv48',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the paper after it has been folded according to the instructions and hole-punched once?',
     options: ['Result A', 'Result B', 'Result C', 'Result D'],
     correctAnswer: 'Result B',
@@ -387,7 +387,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv49',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this sequence: ◯, △, □, ◯, △, ?',
     options: ['△', '□', '◯', '▽'],
     correctAnswer: '□',
@@ -395,7 +395,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv50',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image shows the correct view of the 3D object from above?',
     options: ['View A', 'View B', 'View C', 'View D'],
     correctAnswer: 'View C',
@@ -403,7 +403,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv51',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What number comes next in this sequence: 3, 6, 4, 8, 5, ?',
     options: ['7', '10', '12', '15'],
     correctAnswer: '10',
@@ -411,7 +411,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv52',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape is formed when two cones are joined at their bases?',
     options: ['Cylinder', 'Sphere', 'Torus', 'Spindle'],
     correctAnswer: 'Spindle',
@@ -419,7 +419,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv53',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the net that, when folded, creates the given 3D shape?',
     options: ['Net 1', 'Net 2', 'Net 3', 'Net 4'],
     correctAnswer: 'Net 3',
@@ -427,7 +427,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv54',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this sequence: AB, EF, IJ, MN, ?',
     options: ['OP', 'QR', 'ST', 'UV'],
     correctAnswer: 'QR',
@@ -435,7 +435,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv55',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of these has rotational symmetry but NOT line symmetry?',
     options: ['Square', 'Regular pentagon', 'Swastika symbol', 'Equilateral triangle'],
     correctAnswer: 'Swastika symbol',
@@ -443,7 +443,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv56',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next number in this pattern: 2, 6, 12, 20, 30, ?',
     options: ['36', '40', '42', '48'],
     correctAnswer: '42',
@@ -451,7 +451,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv57',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image shows the correct unfolded version of the given cube?',
     options: ['Image A', 'Image B', 'Image C', 'Image D'],
     correctAnswer: 'Image A',
@@ -459,7 +459,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv58',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you rotate shape X 90° clockwise and overlay it with shape Y, which result would you get?',
     options: ['Result 1', 'Result 2', 'Result 3', 'Result 4'],
     correctAnswer: 'Result 3',
@@ -467,7 +467,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv59',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next letter in this sequence: A, C, F, J, ?',
     options: ['M', 'N', 'O', 'P'],
     correctAnswer: 'O',
@@ -475,7 +475,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv60',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which is the odd one out based on its 3D properties?',
     options: ['Cube', 'Rectangular prism', 'Pyramid', 'Cuboid'],
     correctAnswer: 'Pyramid',
@@ -483,15 +483,15 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv61',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this number pattern: 81, 36, 16, 9, ?',
     options: ['4', '6', '5', '8'],
     correctAnswer: '4',
-    explanation: 'These are square numbers: 81=9², 36=6², 16=4², 9=3², so the next number is 4=2².'
+    explanation: 'These are square numbers decreasing: 81=9², 36=6², 16=4², 9=3², so the next number is 4=2².'
   },
   {
     id: 'nv62',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option provides a pattern that can be repeated to tile a plane with no gaps or overlaps?',
     options: ['Pentagon', 'Square', 'Regular Hexagon', 'Circle'],
     correctAnswer: 'Square',
@@ -499,7 +499,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv63',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which sequence follows the pattern established by 2, 6, 18, 54?',
     options: ['3, 9, 27, 81', '4, 8, 16, 32', '5, 10, 20, 40', '3, 6, 12, 24'],
     correctAnswer: '3, 9, 27, 81',
@@ -507,7 +507,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv64',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape has exactly 8 edges?',
     options: ['Cube', 'Square-based pyramid', 'Triangular prism', 'Tetrahedron'],
     correctAnswer: 'Square-based pyramid',
@@ -515,7 +515,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv65',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you combine shapes P and Q by overlapping them, which result would you get?',
     options: ['Combined Shape 1', 'Combined Shape 2', 'Combined Shape 3', 'Combined Shape 4'],
     correctAnswer: 'Combined Shape 3',
@@ -523,7 +523,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv66',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this pattern: ◆◆◇, ◆◇◇, ◇◇◇, ?',
     options: ['◆◆◆', '◆◇◆', '◇◆◇', '◇◇◆'],
     correctAnswer: '◆◆◆',
@@ -531,7 +531,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv67',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which shape can be created by rotating a rectangle around one of its sides?',
     options: ['Sphere', 'Cylinder', 'Cone', 'Torus'],
     correctAnswer: 'Cylinder',
@@ -539,7 +539,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv68',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next number in this sequence: 5, 8, 12, 17, 23, ?',
     options: ['28', '29', '30', '32'],
     correctAnswer: '30',
@@ -547,7 +547,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv69',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image shows the correct shadow of the 3D object when light shines from the left?',
     options: ['Shadow 1', 'Shadow 2', 'Shadow 3', 'Shadow 4'],
     correctAnswer: 'Shadow 2',
@@ -555,7 +555,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv70',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this sequence: ▢, ▢▢, ▢▢▢, ▢▢, ?',
     options: ['▢', '▢▢▢', '▢▢▢▢', '▢▢▢▢▢'],
     correctAnswer: '▢',
@@ -563,7 +563,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv71',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of these shapes has the smallest ratio of perimeter to area?',
     options: ['Circle', 'Square', 'Equilateral Triangle', 'Rectangle'],
     correctAnswer: 'Circle',
@@ -571,7 +571,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv72',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If you unfold the given 3D shape, which net would you get?',
     options: ['Net W', 'Net X', 'Net Y', 'Net Z'],
     correctAnswer: 'Net Y',
@@ -579,7 +579,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv73',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next letter pair in this sequence: AZ, BY, CX, ?',
     options: ['DU', 'DV', 'DW', 'EW'],
     correctAnswer: 'DW',
@@ -587,7 +587,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv74',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the correct combination of shapes needed to create the given compound shape?',
     options: ['Combination 1', 'Combination 2', 'Combination 3', 'Combination 4'],
     correctAnswer: 'Combination 2',
@@ -595,7 +595,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv75',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next number in this pattern: 2, 4, 7, 11, 16, ?',
     options: ['21', '22', '23', '24'],
     correctAnswer: '22',
@@ -603,7 +603,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv76',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which 3D object has exactly 6 vertices?',
     options: ['Cube', 'Triangular prism', 'Octahedron', 'Square-based pyramid'],
     correctAnswer: 'Triangular prism',
@@ -611,7 +611,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv77',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'If shape A is rotated 180° and combined with shape B, which result would you get?',
     options: ['Result I', 'Result II', 'Result III', 'Result IV'],
     correctAnswer: 'Result III',
@@ -619,7 +619,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv78',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this sequence: ●○○, ○●○, ○○●, ?',
     options: ['●●●', '○○○', '●○○', '●●○'],
     correctAnswer: '●○○',
@@ -627,7 +627,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv79',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the correct cross-section of a cone cut parallel to its base?',
     options: ['Triangle', 'Rectangle', 'Circle', 'Ellipse'],
     correctAnswer: 'Circle',
@@ -635,7 +635,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv80',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next number in this sequence: 1, 1, 2, 3, 5, 8, ?',
     options: ['11', '12', '13', '15'],
     correctAnswer: '13',
@@ -643,7 +643,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv81',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the correct mirror image of the given shape across a horizontal axis?',
     options: ['Image P', 'Image Q', 'Image R', 'Image S'],
     correctAnswer: 'Image R',
@@ -651,7 +651,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv82',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next pattern in this sequence?',
     options: ['Pattern 1', 'Pattern 2', 'Pattern 3', 'Pattern 4'],
     correctAnswer: 'Pattern 2',
@@ -659,7 +659,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv83',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which 3D shape has more faces than edges?',
     options: ['Cube', 'Tetrahedron', 'Octahedron', 'None of these'],
     correctAnswer: 'None of these',
@@ -667,7 +667,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv84',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this letter pattern: Z, W, T, Q, ?',
     options: ['N', 'M', 'O', 'P'],
     correctAnswer: 'N',
@@ -675,7 +675,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv85',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of these has the greatest volume for the same height and base dimensions?',
     options: ['Pyramid', 'Prism', 'Cone', 'Cylinder'],
     correctAnswer: 'Cylinder',
@@ -683,7 +683,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv86',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next number in this pattern: 3, 8, 15, 24, 35, ?',
     options: ['42', '45', '48', '50'],
     correctAnswer: '48',
@@ -691,7 +691,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv87',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image shows the correct result after the given shape is rotated 270° counterclockwise?',
     options: ['Result A', 'Result B', 'Result C', 'Result D'],
     correctAnswer: 'Result B',
@@ -699,7 +699,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv88',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What shape comes next in this sequence: △, □, ○, △, □, ?',
     options: ['□', '○', '△', '◇'],
     correctAnswer: '○',
@@ -707,7 +707,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv89',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which 3D object has exactly 5 faces?',
     options: ['Cube', 'Tetrahedron', 'Square-based pyramid', 'Triangular prism'],
     correctAnswer: 'Square-based pyramid',
@@ -715,7 +715,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv90',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next shape in this pattern: ◯, ◐, ●, ◐, ?',
     options: ['◑', '◯', '●', '◒'],
     correctAnswer: '◯',
@@ -723,7 +723,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv91',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of these has the greatest volume for the same height and base dimensions?',
     options: ['Pyramid', 'Prism', 'Cone', 'Cylinder'],
     correctAnswer: 'Cylinder',
@@ -731,7 +731,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv92',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this sequence: 16, 8, 4, 2, ?',
     options: ['0', '1', '0.5', '-1'],
     correctAnswer: '1',
@@ -739,7 +739,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv93',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which image shows the correct view of the 3D object from the right side?',
     options: ['View P', 'View Q', 'View R', 'View S'],
     correctAnswer: 'View Q',
@@ -747,7 +747,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv94',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What appears next in this pattern sequence?',
     options: ['Pattern W', 'Pattern X', 'Pattern Y', 'Pattern Z'],
     correctAnswer: 'Pattern Z',
@@ -755,7 +755,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv95',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of these is NOT a regular polyhedron?',
     options: ['Tetrahedron', 'Cube', 'Rectangular prism', 'Icosahedron'],
     correctAnswer: 'Rectangular prism',
@@ -763,7 +763,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv96',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next number in this sequence: 7, 12, 19, 28, 39, ?',
     options: ['48', '49', '50', '52'],
     correctAnswer: '52',
@@ -771,7 +771,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv97',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which option shows the correct top view of the given 3D structure?',
     options: ['Top View 1', 'Top View 2', 'Top View 3', 'Top View 4'],
     correctAnswer: 'Top View 3',
@@ -779,7 +779,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv98',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What comes next in this pattern: AABABC?',
     options: ['A', 'B', 'C', 'D'],
     correctAnswer: 'A',
@@ -787,7 +787,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv99',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'Which of these has the same number of faces, edges, and vertices?',
     options: ['Cube', 'Tetrahedron', 'Octahedron', 'None of these'],
     correctAnswer: 'Tetrahedron',
@@ -795,7 +795,7 @@ const nonVerbalQuestions: Question[] = [
   },
   {
     id: 'nv100',
-    subject: 'nonVerbal',
+    subject: 'non-verbal',
     text: 'What is the next number in this sequence: 1, 2, 6, 24, 120, ?',
     options: ['620', '720', '600', '520'],
     correctAnswer: '720',

@@ -5,11 +5,10 @@ import { Book, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserProfile from './UserProfile';
-import DonateButton from './DonateButton';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, userType } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between glass fixed top-0 z-50 animate-slide-down">
@@ -21,19 +20,18 @@ const Header: React.FC = () => {
         <span className="text-xl font-display font-medium tracking-tight">SmartPrep</span>
       </div>
       
+      {/* Center the navigation items */}
       <nav className="hidden md:flex items-center justify-center flex-1 mx-4">
         <div className="flex items-center gap-8">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/quiz">Practice</NavLink>
           {isAuthenticated && <NavLink href="/progress">My Progress</NavLink>}
-          {isAuthenticated && userType === 'teacher' && <NavLink href="/teacher-dashboard">Teacher Dashboard</NavLink>}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>
       </nav>
 
       <div className="flex items-center gap-2">
-        <DonateButton />
         {isAuthenticated ? (
           <UserProfile />
         ) : (

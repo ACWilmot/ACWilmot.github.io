@@ -1,17 +1,20 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 
-type User = {
+type UserProgress = {
+  completed: number;
+  correct: number;
+  lastAttempted: string | null;
+};
+
+type Profile = {
   id: string;
   name: string;
-  email: string;
   progress: {
-    [subject: string]: {
-      completed: number;
-      correct: number;
-      lastAttempted: string;
-    }
+    [subject: string]: UserProgress
   }
 };
 
@@ -22,119 +25,96 @@ type RegisterData = {
 };
 
 interface AuthContextType {
-  user: User | null;
+  user: Profile | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<boolean>;
-  updateProgress: (subject: string, completed: number, correct: number) => void;
-  resetProgress: () => void;
-  resetSubjectProgress: (subject: string) => void;
+  updateProgress: (subject: string, completed: number, correct: number) => Promise<void>;
+  resetProgress: () => Promise<void>;
+  resetSubjectProgress: (subject: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Local storage keys
-const USER_STORAGE_KEY = 'quiz_app_user';
-const USERS_STORAGE_KEY = 'quiz_app_users';
-
-// Helper function to hash a password
-const hashPassword = async (password: string): Promise<string> => {
-  // Convert the password string to a Uint8Array
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  
-  // Use SHA-256 to hash the password
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  
-  // Convert the hash to a hex string
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  return hashHex;
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  
-  // Load user from localStorage on initial render
+  const [user, setUser] = useState<Profile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize auth state
   useEffect(() => {
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem(USER_STORAGE_KEY);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
+          // Defer profile fetch to prevent auth deadlock
+          setTimeout(async () => {
+            await fetchUserProfile(currentSession.user.id);
+          }, 0);
+        } else {
+          setUser(null);
+        }
       }
-    }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
+        await fetchUserProfile(currentSession.user.id);
+      }
+      
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Initialize users in localStorage if not present
-  useEffect(() => {
-    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-    if (!storedUsers) {
-      // Initialize with empty users object
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify({}));
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (data) {
+        setUser(data as Profile);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
-  }, []);
+  };
 
   const register = async (data: RegisterData): Promise<boolean> => {
     const { name, email, password } = data;
 
-    // Get existing users
-    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-    const users = storedUsers ? JSON.parse(storedUsers) : {};
-
-    // Check if email already exists
-    if (users[email]) {
-      toast.error("Email already registered");
-      return false;
-    }
-
     try {
-      // Hash the password before storing
-      const hashedPassword = await hashPassword(password);
-
-      // Create new user
-      const newUser: User = {
-        id: `user_${Date.now()}`,
-        name,
+      const { error } = await supabase.auth.signUp({
         email,
-        progress: {
-          maths: {
-            completed: 0,
-            correct: 0,
-            lastAttempted: new Date().toISOString().split('T')[0]
-          },
-          english: {
-            completed: 0,
-            correct: 0,
-            lastAttempted: new Date().toISOString().split('T')[0]
-          },
-          verbal: {
-            completed: 0,
-            correct: 0,
-            lastAttempted: new Date().toISOString().split('T')[0]
-          },
-          nonVerbal: {
-            completed: 0,
-            correct: 0,
-            lastAttempted: new Date().toISOString().split('T')[0]
-          }
+        password,
+        options: {
+          data: { name }
         }
-      };
+      });
 
-      // Add to users with hashed password
-      users[email] = {
-        name,
-        password: hashedPassword, // Store the hashed password
-        userData: newUser
-      };
+      if (error) {
+        toast.error(error.message);
+        return false;
+      }
 
-      // Save to localStorage
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-      toast.success("Registration successful");
+      toast.success("Registration successful! Check your email for verification.");
       return true;
     } catch (error) {
       console.error("Error during registration:", error);
@@ -144,155 +124,168 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Get users from localStorage
-    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-    const users = storedUsers ? JSON.parse(storedUsers) : {};
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-    // Check if user exists
-    if (users[email]) {
-      try {
-        // Hash the provided password
-        const hashedPassword = await hashPassword(password);
-        
-        // Compare with stored hash
-        if (users[email].password === hashedPassword) {
-          const userData = users[email].userData;
-          setUser(userData);
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
-          toast.success("Logged in successfully");
-          return true;
-        } else {
-          toast.error("Invalid credentials");
-          return false;
-        }
-      } catch (error) {
-        console.error("Error during login:", error);
-        toast.error("Login failed");
+      if (error) {
+        toast.error(error.message);
         return false;
       }
-    } else {
-      toast.error("Invalid credentials");
+
+      toast.success("Logged in successfully");
+      return true;
+    } catch (error) {
+      console.error("Error during login:", error);
+      toast.error("Login failed");
       return false;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem(USER_STORAGE_KEY);
-    toast.info("Logged out successfully");
+  const logout = async (): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      
+      setUser(null);
+      toast.info("Logged out successfully");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      toast.error("Logout failed");
+    }
   };
 
-  const updateProgress = (subject: string, completed: number, correct: number) => {
+  const updateProgress = async (subject: string, completed: number, correct: number): Promise<void> => {
     if (!user) return;
 
-    const updatedUser = {
-      ...user,
-      progress: {
+    try {
+      const lastAttempted = new Date().toISOString().split('T')[0];
+      
+      const newProgress = {
         ...user.progress,
         [subject]: {
           completed,
           correct,
+          lastAttempted
+        }
+      };
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          progress: newProgress
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating progress:', error);
+        toast.error("Failed to update progress");
+        return;
+      }
+
+      setUser({
+        ...user,
+        progress: newProgress
+      });
+    } catch (error) {
+      console.error('Error updating progress:', error);
+      toast.error("Failed to update progress");
+    }
+  };
+
+  const resetProgress = async (): Promise<void> => {
+    if (!user) return;
+
+    try {
+      const resetSubjects = {
+        maths: {
+          completed: 0,
+          correct: 0,
+          lastAttempted: new Date().toISOString().split('T')[0]
+        },
+        english: {
+          completed: 0,
+          correct: 0,
+          lastAttempted: new Date().toISOString().split('T')[0]
+        },
+        verbal: {
+          completed: 0,
+          correct: 0,
+          lastAttempted: new Date().toISOString().split('T')[0]
+        },
+        nonVerbal: {
+          completed: 0,
+          correct: 0,
           lastAttempted: new Date().toISOString().split('T')[0]
         }
-      }
-    };
+      };
 
-    setUser(updatedUser);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          progress: resetSubjects
+        })
+        .eq('id', user.id);
 
-    // Update user data in users list
-    if (user.email) {
-      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-      if (storedUsers) {
-        const users = JSON.parse(storedUsers);
-        if (users[user.email]) {
-          users[user.email].userData = updatedUser;
-          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-        }
+      if (error) {
+        console.error('Error resetting progress:', error);
+        toast.error("Failed to reset progress");
+        return;
       }
+
+      setUser({
+        ...user,
+        progress: resetSubjects
+      });
+
+      toast.success("Progress reset successfully");
+    } catch (error) {
+      console.error('Error resetting progress:', error);
+      toast.error("Failed to reset progress");
     }
   };
 
-  const resetProgress = () => {
+  const resetSubjectProgress = async (subject: string): Promise<void> => {
     if (!user) return;
 
-    const resetSubjects = {
-      maths: {
-        completed: 0,
-        correct: 0,
-        lastAttempted: new Date().toISOString().split('T')[0]
-      },
-      english: {
-        completed: 0,
-        correct: 0,
-        lastAttempted: new Date().toISOString().split('T')[0]
-      },
-      verbal: {
-        completed: 0,
-        correct: 0,
-        lastAttempted: new Date().toISOString().split('T')[0]
-      },
-      nonVerbal: {
-        completed: 0,
-        correct: 0,
-        lastAttempted: new Date().toISOString().split('T')[0]
-      }
-    };
-
-    const updatedUser = {
-      ...user,
-      progress: resetSubjects
-    };
-
-    setUser(updatedUser);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-
-    // Update user data in users list
-    if (user.email) {
-      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-      if (storedUsers) {
-        const users = JSON.parse(storedUsers);
-        if (users[user.email]) {
-          users[user.email].userData = updatedUser;
-          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-        }
-      }
-    }
-
-    toast.success("Progress reset successfully");
-  };
-
-  const resetSubjectProgress = (subject: string) => {
-    if (!user) return;
-
-    const updatedUser = {
-      ...user,
-      progress: {
+    try {
+      const newProgress = {
         ...user.progress,
         [subject]: {
           completed: 0,
           correct: 0,
           lastAttempted: new Date().toISOString().split('T')[0]
         }
-      }
-    };
+      };
 
-    setUser(updatedUser);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          progress: newProgress
+        })
+        .eq('id', user.id);
 
-    // Update user data in users list
-    if (user.email) {
-      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-      if (storedUsers) {
-        const users = JSON.parse(storedUsers);
-        if (users[user.email]) {
-          users[user.email].userData = updatedUser;
-          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-        }
+      if (error) {
+        console.error('Error resetting subject progress:', error);
+        toast.error("Failed to reset progress");
+        return;
       }
+
+      setUser({
+        ...user,
+        progress: newProgress
+      });
+
+      toast.success(`${subject} progress reset successfully`);
+    } catch (error) {
+      console.error('Error resetting subject progress:', error);
+      toast.error("Failed to reset progress");
     }
-
-    toast.success(`${subject} progress reset successfully`);
   };
 
   return (
@@ -306,7 +299,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       resetProgress,
       resetSubjectProgress
     }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

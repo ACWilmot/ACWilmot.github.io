@@ -1,11 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student } from '@/types/userTypes';
 
 export const useStudentManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   const getStudents = async (): Promise<Student[]> => {
-    if (!user || user.role !== 'teacher' || !user.students || user.students.length === 0) {
+    if (!user || user.role !== 'teacher' || !user.students) {
+      console.log("Unable to fetch students: Missing user data, invalid role, or no students array");
       return [];
     }
 
@@ -22,42 +22,34 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       
       console.log("Fetching students with valid IDs:", validStudentIds);
       
-      // Fetch one student at a time to debug which student might be causing issues
-      let studentData: Student[] = [];
+      // Initialize default progress structure
+      const defaultProgress = {
+        maths: { completed: 0, correct: 0, lastAttempted: null },
+        english: { completed: 0, correct: 0, lastAttempted: null },
+        verbal: { completed: 0, correct: 0, lastAttempted: null },
+        nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
+      };
       
-      for (const studentId of validStudentIds) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', studentId)
-            .single();
-          
-          if (error) {
-            console.error(`Error fetching student ${studentId}:`, error);
-            continue;
-          }
-          
-          if (data) {
-            console.log(`Student ${studentId} data:`, data);
-            
-            // Transform to Student type with proper null checking
-            studentData.push({
-              id: data.id,
-              name: data.name || 'Unknown Student',
-              email: data.email || data.Email || 'No Email',
-              progress: data.progress as Student['progress'] || {
-                maths: { completed: 0, correct: 0, lastAttempted: null },
-                english: { completed: 0, correct: 0, lastAttempted: null },
-                verbal: { completed: 0, correct: 0, lastAttempted: null },
-                nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
-              }
-            });
-          }
-        } catch (innerError) {
-          console.error(`Error processing student ${studentId}:`, innerError);
-        }
+      // Fetch student profiles in a single query
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', validStudentIds);
+        
+      if (error) {
+        console.error('Error fetching student profiles:', error);
+        return [];
       }
+      
+      console.log("Fetched raw student profiles:", data);
+      
+      // Transform data to Student type with proper null checks
+      const studentData: Student[] = data.map(profile => ({
+        id: profile.id,
+        name: profile.name || 'Unknown Student',
+        email: profile.email || profile.Email || 'No Email',
+        progress: profile.progress || defaultProgress
+      }));
       
       console.log("Transformed student data:", studentData);
       return studentData;

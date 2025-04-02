@@ -32,7 +32,6 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
     // Initialize with default values in case progress data is missing
     let totalCompleted = 0;
     let totalCorrect = 0;
-    let subjectCount = 0;
 
     // Check if progress exists
     if (student.progress) {
@@ -41,7 +40,6 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
         if (subjectProgress) {
           totalCompleted += subjectProgress.completed || 0;
           totalCorrect += subjectProgress.correct || 0;
-          subjectCount++;
         }
       }
     }
@@ -68,7 +66,7 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
         }
       }
     }
-    return lastActivity || 'Never';
+    return lastActivity ? new Date(lastActivity).toLocaleDateString() : 'Never';
   };
 
   console.log("StudentsTable received students:", students);

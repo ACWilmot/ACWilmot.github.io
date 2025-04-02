@@ -32,11 +32,17 @@ const formSchema = z.object({
 
 const TeacherLoginPage = () => {
   const navigate = useNavigate();
-  const { teacherLogin, isAuthenticated, userRole } = useAuth();
+  const { teacherLogin, isAuthenticated, userRole, user } = useAuth();
+  
+  // Add debugging console log
+  React.useEffect(() => {
+    console.log("Current auth state in TeacherLoginPage:", { isAuthenticated, userRole, userId: user?.id });
+  }, [isAuthenticated, userRole, user]);
 
   // Redirect if already authenticated as a teacher
   React.useEffect(() => {
     if (isAuthenticated && userRole === 'teacher') {
+      console.log("Teacher authenticated, redirecting to dashboard");
       navigate('/teacher/dashboard');
     }
   }, [isAuthenticated, userRole, navigate]);
@@ -51,13 +57,17 @@ const TeacherLoginPage = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Attempting teacher login with:", values.email);
     const success = await teacherLogin(values.email, values.password);
     
     if (success) {
+      console.log("Teacher login successful, redirecting");
       // Redirect to teacher dashboard after login
       setTimeout(() => {
         navigate('/teacher/dashboard');
       }, 1000);
+    } else {
+      console.log("Teacher login failed");
     }
   }
 

@@ -68,7 +68,7 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
       return false;
     }
 
-    // If it's a teacher, make sure to update the profile with an empty students array
+    // If it's a teacher, make sure to update the profile with role and empty students array
     if (role === 'teacher' && authData?.user) {
       const { error: updateError } = await supabase
         .from('profiles')

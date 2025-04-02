@@ -44,16 +44,22 @@ export const useAuthActions = (user: Profile | null, setUser: (user: Profile | n
         const profile = await fetchUserProfile(data.user.id);
         
         console.log("Teacher login attempt - profile:", profile);
+        console.log("Role from profile:", profile?.role);
         
         if (!profile || profile.role !== 'teacher') {
+          console.error("Access denied - Not a teacher account:", profile);
           toast.error("Access denied. This account does not have teacher privileges.");
           await supabase.auth.signOut();
           return false;
         }
+        
+        setUser(profile);
+        toast.success("Logged in successfully as teacher");
+        return true;
       }
 
-      toast.success("Logged in successfully as teacher");
-      return true;
+      toast.error("Could not retrieve user information");
+      return false;
     } catch (error) {
       console.error("Error during teacher login:", error);
       toast.error("Teacher login failed");

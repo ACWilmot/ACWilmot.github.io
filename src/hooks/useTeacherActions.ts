@@ -44,9 +44,7 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
         // Update the profile with the new students array
         const { error } = await supabase
           .from('profiles')
-          .update({
-            students
-          })
+          .update({ students })
           .eq('id', user.id);
 
         if (error) {
@@ -83,9 +81,7 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
       
       const { error } = await supabase
         .from('profiles')
-        .update({
-          students
-        })
+        .update({ students })
         .eq('id', user.id);
 
       if (error) {

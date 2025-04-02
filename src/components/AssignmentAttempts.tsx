@@ -81,8 +81,10 @@ const AssignmentAttempts = ({ classId, assignmentId }: AssignmentAttemptsProps) 
                 );
               }
               
-              const percentage = attempt.score > 0 ? 
-                Math.round((attempt.score / attempt.total) * 100) : 0;
+              // Handle the case where total might be undefined
+              const total = attempt.total || 100; // Default to 100 if total is not available
+              const percentage = attempt.score !== undefined && attempt.score > 0 ? 
+                Math.round((attempt.score / total) * 100) : 0;
                 
               let statusColor = "text-amber-500";
               if (percentage >= 70) statusColor = "text-green-600";
@@ -111,7 +113,7 @@ const AssignmentAttempts = ({ classId, assignmentId }: AssignmentAttemptsProps) 
                           <XCircle className={`h-4 w-4 mr-1 ${statusColor}`} />
                         )}
                         <span className={`font-medium ${statusColor}`}>
-                          {percentage}% ({attempt.score}/{attempt.total})
+                          {percentage}% ({attempt.score || 0}/{total})
                         </span>
                       </div>
                     </div>

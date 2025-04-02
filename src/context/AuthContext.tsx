@@ -40,6 +40,7 @@ export interface AssignmentAttempt {
   assignmentId: string;
   completed: boolean;
   score?: number;
+  total?: number;
   date: string;
 }
 

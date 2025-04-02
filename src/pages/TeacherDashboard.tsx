@@ -57,6 +57,9 @@ const newStudentSchema = z.object({
   studentName: z.string().min(2, {
     message: 'Student name must be at least 2 characters',
   }),
+  password: z.string().min(6, {
+    message: 'Password must be at least 6 characters',
+  }),
   classId: z.string().min(1, {
     message: 'Please select a class',
   }),
@@ -98,6 +101,7 @@ const TeacherDashboard = () => {
     resolver: zodResolver(newStudentSchema),
     defaultValues: {
       studentName: '',
+      password: '',
       classId: '',
     },
   });
@@ -156,7 +160,7 @@ const TeacherDashboard = () => {
   };
 
   const handleAddStudent = async (data: z.infer<typeof newStudentSchema>) => {
-    const success = await addStudentToClass(data.studentName, data.classId);
+    const success = await addStudentToClass(data.studentName, data.classId, data.password);
     if (success) {
       if (data.classId === selectedClass) {
         loadStudents(data.classId);
@@ -366,6 +370,19 @@ const TeacherDashboard = () => {
                               <FormLabel>Student Name</FormLabel>
                               <FormControl>
                                 <Input placeholder="Enter student name" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={studentForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Enter student password" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -865,7 +882,7 @@ const TeacherDashboard = () => {
                           <div className="flex flex-col items-center">
                             <Book className="h-12 w-12 text-muted-foreground mb-4" />
                             <h3 className="font-medium text-lg mb-2">No Assignments Yet</h3>
-                            <p className="text-muted-foreground mb-4">
+                            <p className="text-muted-foreground mb-4 text-center">
                               Create your first assignment for this class
                             </p>
                             <Button onClick={() => setIsAssigningExercise(true)}>

@@ -62,24 +62,24 @@ const LoginPage = () => {
     // We're simplifying the login for demo purposes
     // In a real app, we'd pass the identifier and password to the login function
     try {
-      // Call the login function and store the result
-      const loginSuccessful = login(loginType);
+      // Call the login function without checking its return value directly
+      login(loginType);
       
-      // Check if login was successful
-      if (loginSuccessful) {
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
-        });
-        // Redirect based on user type
-        setTimeout(() => {
-          if (userType === 'teacher') {
-            navigate('/teacher-dashboard');
-          } else {
-            navigate('/');
-          }
-        }, 1000);
-      }
+      // Since the login function updates the isAuthenticated state in AuthContext,
+      // we should display the success message and let the useEffect handle the redirect
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+      
+      // Optionally set a timeout for the redirect for better UX
+      setTimeout(() => {
+        if (userType === 'teacher') {
+          navigate('/teacher-dashboard');
+        } else {
+          navigate('/');
+        }
+      }, 1000);
     } catch (error) {
       toast({
         title: "Error",

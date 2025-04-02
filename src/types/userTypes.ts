@@ -40,4 +40,5 @@ export interface RegisterData {
   email: string;
   password: string;
   role: UserRole;
+  teacherEmail?: string;
 }

@@ -48,7 +48,7 @@ export const resetSubjects = {
 };
 
 export async function registerUser(data: RegisterData): Promise<boolean> {
-  const { name, email, password, role } = data;
+  const { name, email, password, role, teacherEmail } = data;
 
   try {
     // First create the auth user
@@ -82,6 +82,42 @@ export async function registerUser(data: RegisterData): Promise<boolean> {
         console.error("Error updating teacher profile:", updateError);
         toast.error("Registration incomplete: Failed to set teacher role");
         return false;
+      }
+    }
+    
+    // If the user provided a teacher email, add the student to that teacher's class
+    if (teacherEmail && role === 'student' && authData?.user) {
+      // Find the teacher by email
+      const { data: teacherData, error: teacherError } = await supabase
+        .from('profiles')
+        .select('id, students')
+        .eq('name', teacherEmail)
+        .eq('role', 'teacher')
+        .single();
+      
+      if (!teacherError && teacherData) {
+        // Add the new student to the teacher's students array
+        const students = [...(teacherData.students || [])];
+        if (!students.includes(authData.user.id)) {
+          students.push(authData.user.id);
+          
+          // Update the teacher's profile
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ students })
+            .eq('id', teacherData.id);
+            
+          if (updateError) {
+            console.error("Error adding student to teacher's class:", updateError);
+            // Don't fail registration if this step fails
+            toast.warning("Registration successful, but couldn't add you to teacher's class");
+          } else {
+            toast.success("Registration successful! You've been added to your teacher's class.");
+          }
+        }
+      } else {
+        console.error("Error finding teacher:", teacherError);
+        toast.warning("Registration successful, but couldn't find specified teacher");
       }
     }
 

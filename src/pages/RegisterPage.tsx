@@ -12,6 +12,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,9 @@ const formSchema = z.object({
   confirmPassword: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
+  teacherEmail: z.string().email({
+    message: "Please enter a valid teacher email address.",
+  }).optional().or(z.literal('')),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -55,6 +59,7 @@ const RegisterPage = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      teacherEmail: "",
     },
   });
 
@@ -65,7 +70,8 @@ const RegisterPage = () => {
       name: values.name,
       email: values.email,
       password: values.password,
-      role: 'student'
+      role: 'student',
+      teacherEmail: values.teacherEmail || undefined
     });
     
     if (success) {
@@ -145,6 +151,22 @@ const RegisterPage = () => {
                       <FormControl>
                         <Input type="password" placeholder="Confirm your password" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="teacherEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teacher Email (Optional)</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="Your teacher's email address" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        If provided, you'll be added to your teacher's class
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

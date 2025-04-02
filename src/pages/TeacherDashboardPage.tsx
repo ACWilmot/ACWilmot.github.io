@@ -25,9 +25,18 @@ const TeacherDashboardPage = () => {
       try {
         setLoading(true);
         console.log("Fetching students from TeacherDashboardPage...");
+        console.log("Current teacher user:", user);
+        
         const studentsList = await getStudents();
         console.log("Teachers dashboard received students:", studentsList);
+        
         setStudents(studentsList || []);
+        
+        // Log what's being passed to the StudentsTable
+        console.log("StudentsTable will receive:", {
+          studentsCount: studentsList?.length || 0,
+          studentsData: studentsList
+        });
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -36,13 +45,14 @@ const TeacherDashboardPage = () => {
     };
 
     fetchStudents();
-  }, [isAuthenticated, userRole, navigate, getStudents]);
+  }, [isAuthenticated, userRole, navigate, getStudents, user]);
 
   const handleAddStudent = async (studentEmail: string) => {
     const success = await addStudent(studentEmail);
     if (success) {
       // Refresh student list
       try {
+        console.log("Refreshing student list after successful add");
         const updatedStudents = await getStudents();
         console.log("Updated student list after adding:", updatedStudents);
         setStudents(updatedStudents || []);
@@ -77,3 +87,4 @@ const TeacherDashboardPage = () => {
 };
 
 export default TeacherDashboardPage;
+

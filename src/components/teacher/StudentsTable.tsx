@@ -23,6 +23,12 @@ interface StudentsTableProps {
 const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
+  console.log("StudentsTable render with:", { 
+    studentsCount: students.length,
+    loadingState: loading,
+    firstStudent: students.length > 0 ? students[0] : null
+  });
+
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -136,3 +142,4 @@ const StudentsTable: React.FC<StudentsTableProps> = ({ students, loading }) => {
 };
 
 export default StudentsTable;
+

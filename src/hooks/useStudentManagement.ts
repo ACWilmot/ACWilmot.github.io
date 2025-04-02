@@ -32,7 +32,14 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
       };
       
-      // Fetch student profiles in a single query
+      // Fetch student profiles in a single query with detailed logging
+      console.log("Executing Supabase query with parameters:", {
+        table: 'profiles',
+        columns: 'id, name, email, Email, progress',
+        filter: 'id in validStudentIds',
+        validStudentIds
+      });
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('id, name, email, Email, progress')
@@ -44,6 +51,27 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       }
       
       console.log("Fetched raw student profiles:", data);
+      
+      if (!data || data.length === 0) {
+        console.log("No student profiles found in database for the provided IDs");
+        // Check if the IDs exist in the profiles table at all
+        const { data: idCheck, error: idCheckError } = await supabase
+          .from('profiles')
+          .select('id')
+          .in('id', validStudentIds);
+        
+        if (idCheckError) {
+          console.error('Error checking if student IDs exist:', idCheckError);
+        } else {
+          console.log("ID check results:", idCheck);
+          if (idCheck.length === 0) {
+            console.log("None of the student IDs exist in the profiles table");
+          } else {
+            console.log(`Found ${idCheck.length} out of ${validStudentIds.length} IDs in profiles table`);
+          }
+        }
+        return [];
+      }
       
       // Transform data to Student type with proper null checks
       const studentData: Student[] = data.map(profile => {
@@ -217,3 +245,4 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     removeStudent
   };
 };
+

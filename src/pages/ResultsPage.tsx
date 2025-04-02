@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,6 +7,7 @@ import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Question } from '@/types/questionTypes';
 
 const ResultsPage = () => {
   const navigate = useNavigate();
@@ -22,7 +22,6 @@ const ResultsPage = () => {
   
   const { isAuthenticated, updateProgress } = useAuth();
   
-  // If no subject is selected, redirect to home
   useEffect(() => {
     if (!selectedSubject) {
       navigate('/');
@@ -31,7 +30,6 @@ const ResultsPage = () => {
   
   const { score, totalQuestions, percentage } = getResults();
   
-  // Save progress for authenticated users
   useEffect(() => {
     if (isAuthenticated && selectedSubject && questions.length > 0) {
       updateProgress(selectedSubject, totalQuestions, score);
@@ -59,7 +57,6 @@ const ResultsPage = () => {
     navigate('/');
   };
 
-  // Helper function to get the answer text from the option key
   const getAnswerText = (question: Question, optionKey: string): string => {
     if (Array.isArray(question.options)) {
       const index = optionKey.charCodeAt(0) - 65; // Convert A->0, B->1, etc.
@@ -71,7 +68,6 @@ const ResultsPage = () => {
 
   const grade = getGrade();
 
-  // Filter questions to only show those with answers
   const answeredQuestions = questions.filter(question => userAnswers[question.id]);
 
   return (

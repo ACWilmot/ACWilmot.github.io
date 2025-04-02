@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "sonner";
+import { AssignmentAttempt } from '@/types/questionTypes';
 
 export type UserType = 'student' | 'teacher';
 
@@ -17,6 +17,7 @@ type User = {
     }
   }
   classId?: string; // For students
+  assignmentAttempts?: AssignmentAttempt[]; // For students
 };
 
 type RegisterData = {
@@ -44,6 +45,8 @@ export type Assignment = {
   createdAt: string;
 };
 
+export { AssignmentAttempt };
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -63,6 +66,9 @@ interface AuthContextType {
   assignExercise: (classId: string, assignment: Omit<Assignment, 'id' | 'createdAt'>) => Promise<boolean>;
   getAssignmentsForStudent: () => Assignment[];
   getAssignmentsByClass: (classId: string) => Assignment[];
+  // New functions for assignment attempts
+  recordAssignmentAttempt: (assignmentId: string, completed: number, correct: number, totalQuestions: number) => void;
+  getAssignmentAttempts: (assignmentId: string) => AssignmentAttempt[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -678,6 +684,68 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return targetClass.assignments;
   };
 
+  const recordAssignmentAttempt = (assignmentId: string, completed: number, correct: number, totalQuestions: number) => {
+    if (!user || user.userType !== 'student') return;
+
+    const attempt: AssignmentAttempt = {
+      id: `attempt_${Date.now()}`,
+      studentId: user.id,
+      studentName: user.name,
+      assignmentId,
+      completed,
+      correct,
+      date: new Date().toISOString(),
+      totalQuestions
+    };
+
+    const updatedUser = {
+      ...user,
+      assignmentAttempts: [...(user.assignmentAttempts || []), attempt]
+    };
+
+    setUser(updatedUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+
+    // Update user data in users list
+    const userKey = user.email || user.name;
+    if (userKey) {
+      const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        if (users[userKey]) {
+          users[userKey].userData = updatedUser;
+          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+        }
+      }
+    }
+
+    toast.success("Assignment progress recorded");
+  };
+
+  const getAssignmentAttempts = (assignmentId: string): AssignmentAttempt[] => {
+    if (!user || user.userType !== 'teacher') {
+      // Students shouldn't be able to see other student attempts
+      return [];
+    }
+
+    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+    if (!storedUsers) return [];
+    
+    const users = JSON.parse(storedUsers);
+    const attempts: AssignmentAttempt[] = [];
+    
+    Object.values(users).forEach((userData: any) => {
+      const userAttempts = userData.userData.assignmentAttempts || [];
+      const matchingAttempts = userAttempts.filter(
+        (attempt: AssignmentAttempt) => attempt.assignmentId === assignmentId
+      );
+      attempts.push(...matchingAttempts);
+    });
+    
+    // Sort by date (most recent first)
+    return attempts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -696,7 +764,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       getStudentsByClass,
       assignExercise,
       getAssignmentsForStudent,
-      getAssignmentsByClass
+      getAssignmentsByClass,
+      recordAssignmentAttempt,
+      getAssignmentAttempts
     }}>
       {children}
     </AuthContext.Provider>

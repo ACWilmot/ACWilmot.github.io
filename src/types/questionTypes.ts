@@ -16,3 +16,14 @@ export interface Question {
 }
 
 export type SubjectQuestions = Record<string, Question[]>;
+
+export interface AssignmentAttempt {
+  id: string;
+  studentId: string;
+  studentName: string;
+  assignmentId: string;
+  completed: number;
+  correct: number;
+  date: string;
+  totalQuestions: number;
+}

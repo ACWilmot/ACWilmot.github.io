@@ -15,6 +15,7 @@ import ProgressPage from "./pages/ProgressPage";
 import NotFound from "./pages/NotFound";
 import AboutPage from "./pages/AboutPage";
 import QuestionsPage from "./pages/QuestionsPage";
+import ViteRefresh from "@/components/ViteRefresh";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
       <AuthProvider>
         <QuizProvider>
           <BrowserRouter>
+            <ViteRefresh />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/quiz" element={<QuizPage />} />

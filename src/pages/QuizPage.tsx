@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Clock } from 'lucide-react';
+import QuestionCard from '@/components/QuestionCard';
+import { toast } from 'sonner';
 
 const QuizPage = () => {
   const navigate = useNavigate();
@@ -15,14 +17,15 @@ const QuizPage = () => {
   const { 
     startQuiz, 
     currentQuestion, 
-    currentQuestionIndex, // Make sure we're using this from context
+    currentQuestionIndex,
     selectedOptions, 
     selectOption, 
     submitQuiz, 
     quizInProgress,
-    questions
+    questions,
+    goToNextQuestion
   } = useQuiz();
-  const { isAuthenticated, userType } = useAuth();
+  const { isAuthenticated, userType, recordAssignmentAttempt } = useAuth();
   
   const [subject, setSubject] = useState<string>(
     (location.state as any)?.preSelectedSubject || "maths"
@@ -31,6 +34,18 @@ const QuizPage = () => {
   const [numQuestions, setNumQuestions] = useState<number>(10);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [timePerQuestion, setTimePerQuestion] = useState<number>(60);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [isAssignment, setIsAssignment] = useState(false);
+  const [assignmentId, setAssignmentId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    // Handle assignment state if passed via location
+    const assignmentData = (location.state as any)?.assignment;
+    if (assignmentData) {
+      setIsAssignment(true);
+      setAssignmentId(assignmentData.id);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     // Redirect teacher to dashboard
@@ -46,14 +61,43 @@ const QuizPage = () => {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (quizInProgress && timeLeft === 0) {
-      submitQuiz();
-      navigate('/results');
+      finishQuiz();
     }
-  }, [quizInProgress, timeLeft, submitQuiz, navigate]);
+  }, [quizInProgress, timeLeft]);
 
   const handleStartQuiz = () => {
     startQuiz(subject, difficulty, numQuestions);
     setTimeLeft(numQuestions * timePerQuestion);
+  };
+
+  const handleSelectOption = (questionId: string, answer: string) => {
+    selectOption(questionId, answer);
+    setShowExplanation(true);
+    
+    // Add a delay before automatically going to the next question
+    setTimeout(() => {
+      if (currentQuestionIndex < questions.length - 1) {
+        goToNextQuestion();
+        setShowExplanation(false);
+      }
+    }, 2000);
+  };
+
+  const finishQuiz = () => {
+    submitQuiz();
+    
+    // Record assignment attempt if this was an assignment
+    if (isAssignment && assignmentId) {
+      const completed = questions.length;
+      const correct = questions.filter(
+        (q) => selectedOptions[q.id] === q.correctAnswer
+      ).length;
+      
+      recordAssignmentAttempt(assignmentId, completed, correct, questions.length);
+      toast.success("Assignment completed successfully!");
+    }
+    
+    navigate('/results');
   };
 
   const formatTime = (seconds: number) => {
@@ -69,72 +113,6 @@ const QuizPage = () => {
       setSubject(preSelectedSubject);
     }
   }, [location.state]);
-
-  // Helper function to render question content safely
-  const renderQuestionContent = () => {
-    if (!currentQuestion) return null;
-    
-    // Handle different question format types
-    if (typeof currentQuestion.content === 'string') {
-      return <div dangerouslySetInnerHTML={{ __html: currentQuestion.content }} className="prose max-w-none mb-8" />;
-    } else if (typeof currentQuestion.text === 'string') {
-      return <div className="prose max-w-none mb-8">{currentQuestion.text}</div>;
-    }
-    return null;
-  };
-
-  // Helper function to render question options
-  const renderQuestionOptions = () => {
-    if (!currentQuestion) return null;
-
-    // Check if options is an object with A, B, C, D properties
-    const isObjectOptions = currentQuestion.options && 
-      typeof currentQuestion.options === 'object' &&
-      'A' in currentQuestion.options;
-
-    return (
-      <Tabs defaultValue={selectedOptions[currentQuestion.id] || 'none'} onValueChange={(value) => selectOption(currentQuestion.id, value)}>
-        <TabsList className="grid grid-cols-4 mb-6">
-          <TabsTrigger value="A">A</TabsTrigger>
-          <TabsTrigger value="B">B</TabsTrigger>
-          <TabsTrigger value="C">C</TabsTrigger>
-          <TabsTrigger value="D">D</TabsTrigger>
-        </TabsList>
-        
-        {isObjectOptions ? (
-          <>
-            <TabsContent value="A" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).A }} className="prose max-w-none" />
-            </TabsContent>
-            <TabsContent value="B" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).B }} className="prose max-w-none" />
-            </TabsContent>
-            <TabsContent value="C" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).C }} className="prose max-w-none" />
-            </TabsContent>
-            <TabsContent value="D" className="border p-4 rounded-lg">
-              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).D }} className="prose max-w-none" />
-            </TabsContent>
-          </>
-        ) : (
-          <>
-            {Array.isArray(currentQuestion.options) && currentQuestion.options.map((option, index) => {
-              const optionKey = String.fromCharCode(65 + index); // A, B, C, D...
-              return (
-                <TabsContent key={optionKey} value={optionKey} className="border p-4 rounded-lg">
-                  <div className="prose max-w-none">{option}</div>
-                </TabsContent>
-              );
-            })}
-          </>
-        )}
-        
-        <TabsContent value="none">
-          <div className="border p-4 rounded-lg text-center text-muted-foreground">Select an answer above</div>
-        </TabsContent>
-      </Tabs>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -152,9 +130,14 @@ const QuizPage = () => {
         
         {!quizInProgress ? (
           <>
-            <h1 className="text-3xl font-display font-bold mb-2">Start a Practice Quiz</h1>
+            <h1 className="text-3xl font-display font-bold mb-2">
+              {isAssignment ? "Complete Assignment" : "Start a Practice Quiz"}
+            </h1>
             <p className="text-muted-foreground mb-8">
-              Customize your quiz settings and start practicing
+              {isAssignment 
+                ? "Complete this assignment to track your progress" 
+                : "Customize your quiz settings and start practicing"
+              }
             </p>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -233,7 +216,7 @@ const QuizPage = () => {
                   </div>
                   
                   <Button className="w-full" onClick={handleStartQuiz}>
-                    Start Quiz
+                    {isAssignment ? "Start Assignment" : "Start Quiz"}
                   </Button>
                 </div>
               </div>
@@ -274,7 +257,7 @@ const QuizPage = () => {
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-xl font-display font-medium">
-                Question {currentQuestion.number || (currentQuestionIndex + 1)} of {questions.length}
+                Question {currentQuestion?.number || (currentQuestionIndex + 1)} of {questions.length}
               </h1>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -283,8 +266,14 @@ const QuizPage = () => {
             </div>
             
             <div className="min-h-[60vh]">
-              {renderQuestionContent()}
-              {renderQuestionOptions()}
+              {currentQuestion && (
+                <QuestionCard 
+                  question={currentQuestion}
+                  userAnswer={selectedOptions[currentQuestion.id]}
+                  onAnswer={(answer) => handleSelectOption(currentQuestion.id, answer)}
+                  showExplanation={showExplanation}
+                />
+              )}
             </div>
 
             <div className="mt-8 space-x-2 flex justify-between">
@@ -292,17 +281,17 @@ const QuizPage = () => {
                 variant="outline"
                 onClick={() => {
                   if (window.confirm("Are you sure you want to finish the quiz early?")) {
-                    submitQuiz();
-                    navigate('/results');
+                    finishQuiz();
                   }
                 }}
               >
                 Finish Quiz
               </Button>
-              <Button onClick={() => {
-                submitQuiz();
-                navigate('/results');
-              }} className="bg-primary">
+              <Button 
+                onClick={finishQuiz}
+                className="bg-primary"
+                disabled={Object.keys(selectedOptions).length === 0}
+              >
                 Submit Answers
               </Button>
             </div>

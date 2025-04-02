@@ -52,11 +52,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             <Option
               key={index}
               option={option}
+              optionKey={String.fromCharCode(65 + index)} // A, B, C, D...
               index={index}
-              isSelected={userAnswer === option}
-              isCorrect={question.correctAnswer === option}
+              isSelected={userAnswer === String.fromCharCode(65 + index)}
+              isCorrect={question.correctAnswer === String.fromCharCode(65 + index)}
               showCorrectness={!!userAnswer}
-              onSelect={() => onAnswer(option)}
+              onSelect={() => onAnswer(String.fromCharCode(65 + index))}
               imageUrl={question.optionImages?.[index]}
             />
           ))
@@ -66,6 +67,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             <Option
               key={key}
               option={value}
+              optionKey={key}
               index={index}
               isSelected={userAnswer === key}
               isCorrect={question.correctAnswer === key}
@@ -99,6 +101,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
 interface OptionProps {
   option: string;
+  optionKey: string;
   index: number;
   isSelected: boolean;
   isCorrect: boolean;
@@ -109,6 +112,7 @@ interface OptionProps {
 
 const Option: React.FC<OptionProps> = ({
   option,
+  optionKey,
   index,
   isSelected,
   isCorrect,
@@ -141,7 +145,7 @@ const Option: React.FC<OptionProps> = ({
         !isSelected && showCorrectness && isCorrect && "bg-green-100 text-green-600",
         !isSelected && !showCorrectness && "bg-secondary text-muted-foreground",
       )}>
-        {letters[index]}
+        {optionKey || letters[index]}
       </span>
       
       <div className="flex-grow flex flex-col">
@@ -158,7 +162,7 @@ const Option: React.FC<OptionProps> = ({
           <div className="mt-2">
             <img 
               src={imageUrl} 
-              alt={`Option ${letters[index]}`} 
+              alt={`Option ${optionKey || letters[index]}`} 
               className="rounded-md max-h-32 object-contain"
             />
           </div>

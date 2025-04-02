@@ -27,9 +27,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AuthProvider>
-        <QuizProvider>
-          <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <QuizProvider>
             <ViteRefresh />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -45,9 +45,9 @@ const App = () => (
               <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </QuizProvider>
-      </AuthProvider>
+          </QuizProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

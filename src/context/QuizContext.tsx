@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question } from '@/types/questionTypes';
@@ -49,12 +48,12 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getCurrentQuestion = (): Question => {
     return questions[currentQuestionIndex] || {
       id: '',
-      number: 0,
-      content: '',
+      text: '',
       subject: 'maths',
       difficulty: 'easy',
-      options: { A: '', B: '', C: '', D: '' },
-      correctAnswer: 'A'
+      options: [],
+      correctAnswer: 'A',
+      explanation: ''
     };
   };
 

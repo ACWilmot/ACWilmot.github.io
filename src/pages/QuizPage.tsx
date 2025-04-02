@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Clock } from 'lucide-react';
 
-// Rest of the QuizPage component
 const QuizPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,6 +59,72 @@ const QuizPage = () => {
       setSubject(preSelectedSubject);
     }
   }, [location.state]);
+
+  // Helper function to render question content safely
+  const renderQuestionContent = () => {
+    if (!currentQuestion) return null;
+    
+    // Handle different question format types
+    if (typeof currentQuestion.content === 'string') {
+      return <div dangerouslySetInnerHTML={{ __html: currentQuestion.content }} className="prose max-w-none mb-8" />;
+    } else if (typeof currentQuestion.text === 'string') {
+      return <div className="prose max-w-none mb-8">{currentQuestion.text}</div>;
+    }
+    return null;
+  };
+
+  // Helper function to render question options
+  const renderQuestionOptions = () => {
+    if (!currentQuestion) return null;
+
+    // Check if options is an object with A, B, C, D properties
+    const isObjectOptions = currentQuestion.options && 
+      typeof currentQuestion.options === 'object' &&
+      'A' in currentQuestion.options;
+
+    return (
+      <Tabs defaultValue={selectedOptions[currentQuestion.id] || 'none'} onValueChange={(value) => selectOption(currentQuestion.id, value)}>
+        <TabsList className="grid grid-cols-4 mb-6">
+          <TabsTrigger value="A">A</TabsTrigger>
+          <TabsTrigger value="B">B</TabsTrigger>
+          <TabsTrigger value="C">C</TabsTrigger>
+          <TabsTrigger value="D">D</TabsTrigger>
+        </TabsList>
+        
+        {isObjectOptions ? (
+          <>
+            <TabsContent value="A" className="border p-4 rounded-lg">
+              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).A }} className="prose max-w-none" />
+            </TabsContent>
+            <TabsContent value="B" className="border p-4 rounded-lg">
+              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).B }} className="prose max-w-none" />
+            </TabsContent>
+            <TabsContent value="C" className="border p-4 rounded-lg">
+              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).C }} className="prose max-w-none" />
+            </TabsContent>
+            <TabsContent value="D" className="border p-4 rounded-lg">
+              <div dangerouslySetInnerHTML={{ __html: (currentQuestion.options as any).D }} className="prose max-w-none" />
+            </TabsContent>
+          </>
+        ) : (
+          <>
+            {Array.isArray(currentQuestion.options) && currentQuestion.options.map((option, index) => {
+              const optionKey = String.fromCharCode(65 + index); // A, B, C, D...
+              return (
+                <TabsContent key={optionKey} value={optionKey} className="border p-4 rounded-lg">
+                  <div className="prose max-w-none">{option}</div>
+                </TabsContent>
+              );
+            })}
+          </>
+        )}
+        
+        <TabsContent value="none">
+          <div className="border p-4 rounded-lg text-center text-muted-foreground">Select an answer above</div>
+        </TabsContent>
+      </Tabs>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -198,7 +263,9 @@ const QuizPage = () => {
         ) : (
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-xl font-display font-medium">Question {currentQuestion.number} of {numQuestions}</h1>
+              <h1 className="text-xl font-display font-medium">
+                Question {currentQuestion.number || (currentQuestionIndex + 1)} of {numQuestions}
+              </h1>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className={`font-mono ${timeLeft < 30 ? 'text-red-500' : ''}`}>{formatTime(timeLeft)}</span>
@@ -206,32 +273,8 @@ const QuizPage = () => {
             </div>
             
             <div className="min-h-[60vh]">
-              <div dangerouslySetInnerHTML={{ __html: currentQuestion.content }} className="prose max-w-none mb-8" />
-              
-              <Tabs defaultValue={selectedOptions[currentQuestion.id] || 'none'} onValueChange={(value) => selectOption(currentQuestion.id, value)}>
-                <TabsList className="grid grid-cols-4 mb-6">
-                  <TabsTrigger value="A">A</TabsTrigger>
-                  <TabsTrigger value="B">B</TabsTrigger>
-                  <TabsTrigger value="C">C</TabsTrigger>
-                  <TabsTrigger value="D">D</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="A" className="border p-4 rounded-lg">
-                  <div dangerouslySetInnerHTML={{ __html: currentQuestion.options.A }} className="prose max-w-none" />
-                </TabsContent>
-                <TabsContent value="B" className="border p-4 rounded-lg">
-                  <div dangerouslySetInnerHTML={{ __html: currentQuestion.options.B }} className="prose max-w-none" />
-                </TabsContent>
-                <TabsContent value="C" className="border p-4 rounded-lg">
-                  <div dangerouslySetInnerHTML={{ __html: currentQuestion.options.C }} className="prose max-w-none" />
-                </TabsContent>
-                <TabsContent value="D" className="border p-4 rounded-lg">
-                  <div dangerouslySetInnerHTML={{ __html: currentQuestion.options.D }} className="prose max-w-none" />
-                </TabsContent>
-                <TabsContent value="none">
-                  <div className="border p-4 rounded-lg text-center text-muted-foreground">Select an answer above</div>
-                </TabsContent>
-              </Tabs>
+              {renderQuestionContent()}
+              {renderQuestionOptions()}
             </div>
 
             <div className="mt-8 space-x-2 flex justify-between">
@@ -246,7 +289,10 @@ const QuizPage = () => {
               >
                 Finish Quiz
               </Button>
-              <Button onClick={() => submitQuiz()} className="bg-primary">
+              <Button onClick={() => {
+                submitQuiz();
+                navigate('/results');
+              }} className="bg-primary">
                 Submit Answers
               </Button>
             </div>

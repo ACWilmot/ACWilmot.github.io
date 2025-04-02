@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Profile } from '@/types/userTypes';
+import { Profile, UserProgress } from '@/types/userTypes';
 
 export async function fetchUserProfile(userId: string): Promise<Profile | null> {
   try {
@@ -16,7 +16,26 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
     }
 
     console.log("Fetched profile:", data);
-    return data as Profile;
+    
+    // Convert the JSON data to our Profile type with proper type safety
+    if (data) {
+      const profile: Profile = {
+        id: data.id,
+        name: data.name,
+        role: data.role as 'student' | 'teacher',
+        progress: data.progress as { [subject: string]: UserProgress },
+        students: data.students || []
+      };
+      
+      // Only add email if it exists in the data
+      if (data.email) {
+        profile.email = data.email;
+      }
+      
+      return profile;
+    }
+    
+    return null;
   } catch (error) {
     console.error('Error fetching profile:', error);
     return null;

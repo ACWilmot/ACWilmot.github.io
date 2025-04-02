@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student } from '@/types/userTypes';
@@ -37,34 +36,23 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
-      // Since we can't query profiles by email (as it doesn't exist in profiles table),
-      // we need to first get the user ID from auth.users
       console.log("Looking up student with email:", studentEmail);
       
-      // Get all users and filter on client side
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      
-      if (authError) {
-        console.error('Error finding users:', authError);
-        toast.error("Error searching for student");
-        return false;
-      }
-      
-      // Find users using the admin API
-      const { data: usersData, error: usersError } = await supabase.functions.invoke('get-user-by-email', {
+      // Use our edge function to safely look up users by email
+      const { data: userData, error: userError } = await supabase.functions.invoke('get-user-by-email', {
         body: { email: studentEmail }
       });
       
-      if (usersError || !usersData) {
-        console.error('Error finding student:', usersError || 'No user found');
+      if (userError || !userData) {
+        console.error('Error finding student:', userError || 'No user data returned');
         toast.error("Student not found. Please check the email address.");
         return false;
       }
       
-      const studentId = usersData.id;
+      const studentId = userData.id;
       
       if (!studentId) {
-        console.error('Student not found with email:', studentEmail);
+        console.error('Student ID not found for email:', studentEmail);
         toast.error("Student not found. Please check the email address.");
         return false;
       }
@@ -74,33 +62,34 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       // Get current students array or initialize empty array
       const students = [...(user.students || [])];
       
-      if (!students.includes(studentId)) {
-        students.push(studentId);
-        
-        // Update the profile with the new students array
-        const { error } = await supabase
-          .from('profiles')
-          .update({ students })
-          .eq('id', user.id);
-
-        if (error) {
-          console.error('Error adding student:', error);
-          toast.error("Failed to add student");
-          return false;
-        }
-
-        // Update local state
-        setUser({
-          ...user,
-          students
-        });
-        
-        toast.success("Student added successfully");
+      if (students.includes(studentId)) {
+        toast.info("Student is already in your class");
         return true;
       }
       
-      toast.info("Student is already in your class");
-      return true; // Student already in list
+      // Add the student ID to the array
+      students.push(studentId);
+      
+      // Update the teacher's profile with the new students array
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ students })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Error adding student:', updateError);
+        toast.error("Failed to add student");
+        return false;
+      }
+
+      // Update local state
+      setUser({
+        ...user,
+        students
+      });
+      
+      toast.success("Student added successfully");
+      return true;
     } catch (error) {
       console.error('Error adding student:', error);
       toast.error("Failed to add student");

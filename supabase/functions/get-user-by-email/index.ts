@@ -31,15 +31,24 @@ serve(async (req) => {
     }
 
     // Use the admin API to look up a user by email
-    const { data: user, error } = await supabase.auth.admin.getUserByEmail(email)
+    // Note: In Supabase v2, getUserByEmail is not part of auth.admin
+    // We'll use auth.admin.listUsers to find the user by email instead
+    const { data: users, error: listError } = await supabase.auth.admin.listUsers({
+      filter: {
+        email: email
+      }
+    })
 
-    if (error) {
-      console.error('Error looking up user by email:', error)
+    if (listError) {
+      console.error('Error looking up user by email:', listError)
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: listError.message }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       )
     }
+
+    // Look for the matching user
+    const user = users?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
 
     if (!user) {
       return new Response(

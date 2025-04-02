@@ -14,11 +14,20 @@ export interface Student {
   };
 }
 
-export interface Teacher {
+export interface Class {
   id: string;
   name: string;
-  email?: string; // Keep this optional in the interface for frontend use
-  students: string[]; // Array of student IDs
+  description: string | null;
+  created_at: string;
+  teacher_id: string;
+  student_count?: number;
+}
+
+export interface ClassEnrollment {
+  id: string;
+  class_id: string;
+  student_id: string;
+  enrolled_at: string;
 }
 
 export type UserProgress = {

@@ -1,66 +1,39 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Layout } from '@/components/Layout';
 import { Users } from 'lucide-react';
-import { Student } from '@/types/userTypes';
-import TeacherDashboardStats from '@/components/teacher/TeacherDashboardStats';
-import AddStudentForm from '@/components/teacher/AddStudentForm';
-import StudentsTable from '@/components/teacher/StudentsTable';
+import ClassesManagement from '@/components/teacher/ClassesManagement';
+import ClassStudentsManagement from '@/components/teacher/ClassStudentsManagement';
 
 const TeacherDashboardPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, userRole, addStudent, getStudents, user } = useAuth();
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    isAuthenticated, 
+    userRole, 
+    user, 
+    getClasses, 
+    createClass, 
+    addStudentToClass, 
+    removeStudentFromClass, 
+    getClassStudents 
+  } = useAuth();
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Redirect if not authenticated or not a teacher
+  React.useEffect(() => {
     if (!isAuthenticated || userRole !== 'teacher') {
       navigate('/teacher/login');
-      return;
     }
+  }, [isAuthenticated, userRole, navigate]);
 
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        console.log("Fetching students from TeacherDashboardPage...");
-        console.log("Current teacher user:", user);
-        
-        const studentsList = await getStudents();
-        console.log("Teachers dashboard received students:", studentsList);
-        
-        setStudents(studentsList || []);
-        
-        // Log what's being passed to the StudentsTable
-        console.log("StudentsTable will receive:", {
-          studentsCount: studentsList?.length || 0,
-          studentsData: studentsList
-        });
-      } catch (error) {
-        console.error("Error fetching students:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleClassSelect = (classId: string) => {
+    setSelectedClassId(classId);
+  };
 
-    fetchStudents();
-  }, [isAuthenticated, userRole, navigate, getStudents, user]);
-
-  const handleAddStudent = async (studentEmail: string) => {
-    const success = await addStudent(studentEmail);
-    if (success) {
-      // Refresh student list
-      try {
-        console.log("Refreshing student list after successful add");
-        const updatedStudents = await getStudents();
-        console.log("Updated student list after adding:", updatedStudents);
-        setStudents(updatedStudents || []);
-      } catch (error) {
-        console.error("Error refreshing student list:", error);
-      }
-    }
-    return success;
+  const handleBack = () => {
+    setSelectedClassId(null);
   };
 
   return (
@@ -73,18 +46,31 @@ const TeacherDashboardPage = () => {
               Teacher Dashboard
             </h1>
             <p className="text-muted-foreground mt-1">
-              Monitor your students' progress and performance
+              {selectedClassId 
+                ? "Manage students and monitor progress in this class" 
+                : "Create and manage your classes"}
             </p>
           </div>
         </div>
 
-        <TeacherDashboardStats students={students} loading={loading} />
-        <AddStudentForm onAddStudent={handleAddStudent} />
-        <StudentsTable students={students} loading={loading} />
+        {selectedClassId ? (
+          <ClassStudentsManagement
+            classId={selectedClassId}
+            getClassStudents={getClassStudents}
+            addStudentToClass={addStudentToClass}
+            removeStudentFromClass={removeStudentFromClass}
+            onBack={handleBack}
+          />
+        ) : (
+          <ClassesManagement
+            getClasses={getClasses}
+            createClass={createClass}
+            onClassSelect={handleClassSelect}
+          />
+        )}
       </div>
     </Layout>
   );
 };
 
 export default TeacherDashboardPage;
-

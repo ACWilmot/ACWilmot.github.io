@@ -37,26 +37,28 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
-      // First fetch the student profile based on email
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', studentEmail) // Using email field to find the student
-        .maybeSingle();
+      // Since we can't query profiles by email (as it doesn't exist in profiles table),
+      // we need to first get the user ID from auth.users
+      console.log("Looking up student with email:", studentEmail);
       
-      if (userError) {
-        console.error('Error finding student:', userError);
+      const { data: authUsersData, error: authUsersError } = await supabase.auth.admin.listUsers();
+      
+      if (authUsersError) {
+        console.error('Error finding users:', authUsersError);
         toast.error("Error searching for student");
         return false;
       }
       
-      if (!userData) {
+      // Find the student's auth user by email
+      const studentAuthUser = authUsersData?.users.find(user => user.email === studentEmail);
+      
+      if (!studentAuthUser) {
         console.error('Student not found with email:', studentEmail);
         toast.error("Student not found. Please check the email address.");
         return false;
       }
       
-      const studentId = userData.id;
+      const studentId = studentAuthUser.id;
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
       // Get current students array or initialize empty array

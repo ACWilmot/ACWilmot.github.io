@@ -4,7 +4,7 @@ export type UserRole = 'student' | 'teacher';
 export interface Student {
   id: string;
   name: string;
-  email?: string;
+  email?: string; // Keep this optional in the interface for frontend use
   progress: {
     [subject: string]: {
       completed: number;
@@ -17,7 +17,7 @@ export interface Student {
 export interface Teacher {
   id: string;
   name: string;
-  email?: string;
+  email?: string; // Keep this optional in the interface for frontend use
   students: string[]; // Array of student IDs
 }
 
@@ -30,7 +30,7 @@ export type UserProgress = {
 export interface Profile {
   id: string;
   name: string;
-  email?: string;
+  email?: string; // Keep this optional in the interface for frontend use
   role: UserRole;
   progress: {
     [subject: string]: UserProgress

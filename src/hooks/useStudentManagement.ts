@@ -33,8 +33,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, Email, progress')
-        ;
+        .select('id, name, Email, progress')        ;
       
       if (error) {
         console.error('Error fetching student profiles:', error);

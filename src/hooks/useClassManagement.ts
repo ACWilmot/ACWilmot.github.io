@@ -1,9 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student, Class, ClassWithStudentCount, ClassEnrollment } from '@/types/userTypes';
 import { Json } from '@/integrations/supabase/types';
-import { resetSubjects } from '@/utils/progressUtils';
+import { getResetSubjects } from '@/utils/progressUtils';
 
 export const useClassManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   // Get all classes for the current teacher
@@ -207,6 +206,8 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       const studentIds = enrollments.map(enrollment => enrollment.student_id);
       
+      console.log("Student IDs from enrollments:", studentIds);
+      
       // Then get the profile data for these students
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -218,39 +219,57 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         return [];
       }
       
-      // Initialize default progress structure
-      const defaultProgress = resetSubjects;
+      console.log("Raw student profiles:", profiles);
       
-      // Transform data to Student type
+      // Transform data to Student type with robust error handling
       const students: Student[] = profiles.map(profile => {
-        // Ensure progress is properly handled
-        let progressData = defaultProgress;
+        // Ensure progress is properly handled with careful type checking
+        let progressData = getResetSubjects(); // Use the new helper function
         
-        if (profile.progress && typeof profile.progress === 'object' && !Array.isArray(profile.progress)) {
-          const typedProgress = profile.progress as Record<string, any>;
-          
-          progressData = {
-            maths: {
-              completed: typedProgress.maths?.completed || 0,
-              correct: typedProgress.maths?.correct || 0,
-              lastAttempted: typedProgress.maths?.lastAttempted || null
-            },
-            english: {
-              completed: typedProgress.english?.completed || 0,
-              correct: typedProgress.english?.correct || 0,
-              lastAttempted: typedProgress.english?.lastAttempted || null
-            },
-            verbal: {
-              completed: typedProgress.verbal?.completed || 0,
-              correct: typedProgress.verbal?.correct || 0,
-              lastAttempted: typedProgress.verbal?.lastAttempted || null
-            },
-            nonVerbal: {
-              completed: typedProgress.nonVerbal?.completed || 0,
-              correct: typedProgress.nonVerbal?.correct || 0,
-              lastAttempted: typedProgress.nonVerbal?.lastAttempted || null
+        try {
+          if (profile.progress && 
+              typeof profile.progress === 'object' && 
+              !Array.isArray(profile.progress)) {
+            
+            // Safely cast and access progress data with fallbacks
+            const progressObj = profile.progress as Record<string, any>;
+            
+            // Process each subject with safe access patterns
+            if (progressObj.maths) {
+              progressData.maths = {
+                completed: typeof progressObj.maths.completed === 'number' ? progressObj.maths.completed : 0,
+                correct: typeof progressObj.maths.correct === 'number' ? progressObj.maths.correct : 0,
+                lastAttempted: progressObj.maths.lastAttempted || null
+              };
             }
-          };
+            
+            if (progressObj.english) {
+              progressData.english = {
+                completed: typeof progressObj.english.completed === 'number' ? progressObj.english.completed : 0,
+                correct: typeof progressObj.english.correct === 'number' ? progressObj.english.correct : 0,
+                lastAttempted: progressObj.english.lastAttempted || null
+              };
+            }
+            
+            if (progressObj.verbal) {
+              progressData.verbal = {
+                completed: typeof progressObj.verbal.completed === 'number' ? progressObj.verbal.completed : 0,
+                correct: typeof progressObj.verbal.correct === 'number' ? progressObj.verbal.correct : 0,
+                lastAttempted: progressObj.verbal.lastAttempted || null
+              };
+            }
+            
+            if (progressObj.nonVerbal) {
+              progressData.nonVerbal = {
+                completed: typeof progressObj.nonVerbal.completed === 'number' ? progressObj.nonVerbal.completed : 0,
+                correct: typeof progressObj.nonVerbal.correct === 'number' ? progressObj.nonVerbal.correct : 0,
+                lastAttempted: progressObj.nonVerbal.lastAttempted || null
+              };
+            }
+          }
+        } catch (error) {
+          console.error('Error processing student progress data:', error);
+          // We already initialized with default progress above
         }
         
         return {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -11,7 +12,16 @@ import { ArrowLeft, Clock } from 'lucide-react';
 const QuizPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { startQuiz, currentQuestion, selectedOptions, selectOption, submitQuiz, quizInProgress } = useQuiz();
+  const { 
+    startQuiz, 
+    currentQuestion, 
+    currentQuestionIndex, // Make sure we're using this from context
+    selectedOptions, 
+    selectOption, 
+    submitQuiz, 
+    quizInProgress,
+    questions
+  } = useQuiz();
   const { isAuthenticated, userType } = useAuth();
   
   const [subject, setSubject] = useState<string>(
@@ -264,7 +274,7 @@ const QuizPage = () => {
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-xl font-display font-medium">
-                Question {currentQuestion.number || (currentQuestionIndex + 1)} of {numQuestions}
+                Question {currentQuestion.number || (currentQuestionIndex + 1)} of {questions.length}
               </h1>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />

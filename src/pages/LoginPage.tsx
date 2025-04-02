@@ -62,10 +62,11 @@ const LoginPage = () => {
     // We're simplifying the login for demo purposes
     // In a real app, we'd pass the identifier and password to the login function
     try {
-      // Since login returns a boolean, we need to capture it explicitly
+      // Call the login function and store the result
       const loginSuccessful = login(loginType);
       
-      if (loginSuccessful === true) {
+      // Check if login was successful
+      if (loginSuccessful) {
         toast({
           title: "Success",
           description: "Logged in successfully",

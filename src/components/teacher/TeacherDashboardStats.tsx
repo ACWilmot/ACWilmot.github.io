@@ -17,14 +17,22 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
   
   // Calculate average accuracy
   const calculateAverageAccuracy = () => {
-    if (!students.length) return '-';
+    if (!students || students.length === 0) return '-';
     
-    const average = Math.round(
-      students.reduce((sum, student) => {
-        return sum + calculateStudentProgress(student).overallAccuracy;
-      }, 0) / students.length
-    );
+    let totalAccuracy = 0;
+    let studentsWithProgress = 0;
     
+    students.forEach(student => {
+      const studentProgress = calculateStudentProgress(student);
+      if (studentProgress.totalCompleted > 0) {
+        totalAccuracy += studentProgress.overallAccuracy;
+        studentsWithProgress++;
+      }
+    });
+    
+    if (studentsWithProgress === 0) return '-';
+    
+    const average = Math.round(totalAccuracy / studentsWithProgress);
     return `${average}%`;
   };
   
@@ -32,12 +40,15 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
   const calculateStudentProgress = (student: Student) => {
     let totalCompleted = 0;
     let totalCorrect = 0;
-    let subjectCount = 0;
 
-    for (const subject in student.progress) {
-      totalCompleted += student.progress[subject].completed;
-      totalCorrect += student.progress[subject].correct;
-      subjectCount++;
+    if (student && student.progress) {
+      for (const subject in student.progress) {
+        const subjectProgress = student.progress[subject];
+        if (subjectProgress) {
+          totalCompleted += subjectProgress.completed || 0;
+          totalCorrect += subjectProgress.correct || 0;
+        }
+      }
     }
 
     const overallAccuracy = totalCompleted > 0 
@@ -89,11 +100,7 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
           <CardTitle className="text-lg">Average Accuracy</CardTitle>
         </CardHeader>
         <CardContent>
-          {!loading && students.length > 0 ? (
-            <div className="text-3xl font-bold">{calculateAverageAccuracy()}</div>
-          ) : (
-            <div className="text-3xl font-bold">-</div>
-          )}
+          <div className="text-3xl font-bold">{calculateAverageAccuracy()}</div>
         </CardContent>
       </Card>
     </div>

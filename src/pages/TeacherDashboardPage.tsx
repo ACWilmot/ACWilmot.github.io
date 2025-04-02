@@ -27,7 +27,7 @@ const TeacherDashboardPage = () => {
         console.log("Fetching students from TeacherDashboardPage...");
         const studentsList = await getStudents();
         console.log("Teachers dashboard received students:", studentsList);
-        setStudents(studentsList);
+        setStudents(studentsList || []);
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -45,7 +45,7 @@ const TeacherDashboardPage = () => {
       try {
         const updatedStudents = await getStudents();
         console.log("Updated student list after adding:", updatedStudents);
-        setStudents(updatedStudents);
+        setStudents(updatedStudents || []);
       } catch (error) {
         console.error("Error refreshing student list:", error);
       }

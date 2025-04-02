@@ -10,11 +10,21 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
-      console.log("Fetching students with IDs:", user.students);
+      // Filter out any non-UUID values (like email addresses) that might be in the students array
+      const validStudentIds = user.students.filter(id => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
+      
+      if (validStudentIds.length === 0) {
+        console.log("No valid student IDs found");
+        return [];
+      }
+      
+      console.log("Fetching students with valid IDs:", validStudentIds);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .in('id', user.students);
+        .in('id', validStudentIds);
 
       if (error) {
         console.error('Error fetching students:', error);
@@ -61,20 +71,25 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
       // Get current students array or initialize empty array
-      const students = [...(user.students || [])];
+      // Filter to ensure we only have valid UUIDs in the array
+      let currentStudents = [...(user.students || [])];
+      // Remove any non-UUID values that might be in the array
+      currentStudents = currentStudents.filter(id => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
       
-      if (students.includes(studentId)) {
+      if (currentStudents.includes(studentId)) {
         toast.info("Student is already in your class");
         return true;
       }
       
       // Add the student ID to the array
-      students.push(studentId);
+      currentStudents.push(studentId);
       
       // Update the teacher's profile with the new students array
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ students })
+        .update({ students: currentStudents })
         .eq('id', user.id);
 
       if (updateError) {
@@ -86,7 +101,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       // Update local state
       setUser({
         ...user,
-        students
+        students: currentStudents
       });
       
       toast.success("Student added successfully");
@@ -104,7 +119,12 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
-      const students = user.students.filter(id => id !== studentId);
+      // Make sure we're only working with valid UUIDs
+      const validStudents = user.students.filter(id => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
+      
+      const students = validStudents.filter(id => id !== studentId);
       
       const { error } = await supabase
         .from('profiles')

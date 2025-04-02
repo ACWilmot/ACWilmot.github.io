@@ -32,16 +32,13 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       };
       
       // Fetch student profiles in a single query with detailed logging
-      console.log("Executing Supabase query with parameters:", {
-        table: 'profiles',
-        columns: 'id, name, email, Email, progress',
-       
-      });
+      console.log("Executing Supabase query to fetch students with IDs:", validStudentIds);
       
       // Modified query to explicitly filter by student IDs
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, Email, progress');
+        .select('id, name, Email, progress')
+        .in('id', validStudentIds);  // This explicitly filters to only return rows where id is in validStudentIds
         
       
       if (error) {

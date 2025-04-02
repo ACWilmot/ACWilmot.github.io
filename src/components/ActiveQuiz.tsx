@@ -32,20 +32,9 @@ export default function ActiveQuiz({
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // This function will now handle mapping letter options to actual answer text
+  // Handle option selection by passing only the option key (A, B, C, D)
   const handleOptionSelect = (questionId: string, optionKey: string) => {
-    // Get the actual answer text based on the option key
-    let answerText = "";
-    if (Array.isArray(currentQuestion.options)) {
-      // For array-style options, find the correct index
-      const index = optionKey.charCodeAt(0) - 65; // Convert A->0, B->1, etc.
-      answerText = currentQuestion.options[index];
-    } else {
-      // For object-style options (A, B, C, D keys)
-      answerText = currentQuestion.options[optionKey];
-    }
-    
-    // Now pass both the key and the text to the parent component
+    // Pass the option key (A, B, C, D) directly to parent component
     onSelectOption(questionId, optionKey);
   };
 

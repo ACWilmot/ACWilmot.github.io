@@ -59,6 +59,16 @@ const ResultsPage = () => {
     navigate('/');
   };
 
+  // Helper function to get the answer text from the option key
+  const getAnswerText = (question: Question, optionKey: string): string => {
+    if (Array.isArray(question.options)) {
+      const index = optionKey.charCodeAt(0) - 65; // Convert A->0, B->1, etc.
+      return question.options[index] || optionKey;
+    } else {
+      return question.options[optionKey] || optionKey;
+    }
+  };
+
   const grade = getGrade();
 
   // Filter questions to only show those with answers
@@ -167,7 +177,11 @@ const ResultsPage = () => {
             {answeredQuestions.length > 0 ? (
               <div className="space-y-3">
                 {answeredQuestions.map((question) => {
-                  const isCorrect = userAnswers[question.id] === question.correctAnswer;
+                  const userOptionKey = userAnswers[question.id];
+                  const userOptionText = getAnswerText(question, userOptionKey);
+                  const correctOptionKey = question.correctAnswer;
+                  const correctOptionText = getAnswerText(question, correctOptionKey);
+                  const isCorrect = userOptionKey === correctOptionKey;
                   
                   return (
                     <Card key={question.id} className="flex items-center p-4">
@@ -183,16 +197,16 @@ const ResultsPage = () => {
                       
                       <div className="flex-grow">
                         <p className="text-sm font-medium line-clamp-1">{question.text}</p>
-                        <div className="flex text-xs text-muted-foreground">
+                        <div className="flex text-xs text-muted-foreground flex-wrap">
                           <span>Your answer: </span>
                           <span className={isCorrect ? 'text-green-600 ml-1' : 'text-red-600 ml-1'}>
-                            {userAnswers[question.id]}
+                            {userOptionKey} ({userOptionText})
                           </span>
                           {!isCorrect && (
                             <>
                               <span className="mx-1">•</span>
                               <span>Correct: </span>
-                              <span className="text-green-600 ml-1">{question.correctAnswer}</span>
+                              <span className="text-green-600 ml-1">{correctOptionKey} ({correctOptionText})</span>
                             </>
                           )}
                         </div>

@@ -92,8 +92,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const submitQuiz = () => {
-    // Calculate score based on selected options using the option keys (A, B, C, D)
-    // rather than comparing the answer text
+    // Calculate score based on selected options
     let finalScore = 0;
     questions.forEach(question => {
       const selected = selectedOptions[question.id];

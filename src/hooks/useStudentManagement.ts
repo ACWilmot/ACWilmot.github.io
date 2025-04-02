@@ -41,24 +41,34 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       // we need to first get the user ID from auth.users
       console.log("Looking up student with email:", studentEmail);
       
-      const { data: authUsersData, error: authUsersError } = await supabase.auth.admin.listUsers();
+      // Get all users and filter on client side
+      const { data: authData, error: authError } = await supabase.auth.getUser();
       
-      if (authUsersError) {
-        console.error('Error finding users:', authUsersError);
+      if (authError) {
+        console.error('Error finding users:', authError);
         toast.error("Error searching for student");
         return false;
       }
       
-      // Find the student's auth user by email
-      const studentAuthUser = authUsersData?.users.find(user => user.email === studentEmail);
+      // Find users using the admin API
+      const { data: usersData, error: usersError } = await supabase.functions.invoke('get-user-by-email', {
+        body: { email: studentEmail }
+      });
       
-      if (!studentAuthUser) {
+      if (usersError || !usersData) {
+        console.error('Error finding student:', usersError || 'No user found');
+        toast.error("Student not found. Please check the email address.");
+        return false;
+      }
+      
+      const studentId = usersData.id;
+      
+      if (!studentId) {
         console.error('Student not found with email:', studentEmail);
         toast.error("Student not found. Please check the email address.");
         return false;
       }
       
-      const studentId = studentAuthUser.id;
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
       // Get current students array or initialize empty array

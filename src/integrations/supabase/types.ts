@@ -11,6 +11,8 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          email: string | null
+          Email: string | null
           id: string
           name: string
           progress: Json
@@ -18,6 +20,8 @@ export type Database = {
           students: string[] | null
         }
         Insert: {
+          email?: string | null
+          Email?: string | null
           id: string
           name: string
           progress?: Json
@@ -25,6 +29,8 @@ export type Database = {
           students?: string[] | null
         }
         Update: {
+          email?: string | null
+          Email?: string | null
           id?: string
           name?: string
           progress?: Json

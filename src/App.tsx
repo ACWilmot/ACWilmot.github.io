@@ -12,6 +12,7 @@ import ResultsPage from "./pages/ResultsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProgressPage from "./pages/ProgressPage";
+import TeacherDashboard from "./pages/TeacherDashboard";
 import NotFound from "./pages/NotFound";
 import AboutPage from "./pages/AboutPage";
 import QuestionsPage from "./pages/QuestionsPage";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/questions" element={<QuestionsPage />} />
               <Route path="*" element={<NotFound />} />

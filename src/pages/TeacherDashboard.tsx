@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -48,14 +47,12 @@ import {
 import AssignmentAttempts from '@/components/AssignmentAttempts';
 import { AlertCircle, BarChart2, Book, Calendar, CheckCircle, Clock, PlusCircle, School, Send, User, UserPlus, Users } from 'lucide-react';
 
-// Schema for creating a new class
 const newClassSchema = z.object({
   className: z.string().min(2, {
     message: 'Class name must be at least 2 characters',
   }),
 });
 
-// Schema for adding a new student
 const newStudentSchema = z.object({
   studentName: z.string().min(2, {
     message: 'Student name must be at least 2 characters',
@@ -65,7 +62,6 @@ const newStudentSchema = z.object({
   }),
 });
 
-// Schema for creating a new assignment
 const newAssignmentSchema = z.object({
   title: z.string().min(2, {
     message: 'Title must be at least 2 characters',
@@ -81,7 +77,11 @@ const newAssignmentSchema = z.object({
 });
 
 const TeacherDashboard = () => {
-  const { user, isAuthenticated, userType, getClassesByTeacher, createClass, addStudentToClass, getStudentsByClass, assignExercise } = useAuth();
+  const { 
+    user, isAuthenticated, userType, getClassesByTeacher, 
+    createClass, addStudentToClass, getStudentsByClass, 
+    assignExercise, createDemoClass 
+  } = useAuth();
   const navigate = useNavigate();
   
   const [classes, setClasses] = useState<ClassData[]>([]);
@@ -91,7 +91,6 @@ const TeacherDashboard = () => {
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [isAssigningExercise, setIsAssigningExercise] = useState(false);
 
-  // Forms
   const classForm = useForm<z.infer<typeof newClassSchema>>({
     resolver: zodResolver(newClassSchema),
     defaultValues: {
@@ -117,7 +116,6 @@ const TeacherDashboard = () => {
     },
   });
 
-  // Check authentication and role
   React.useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -129,11 +127,9 @@ const TeacherDashboard = () => {
       return;
     }
     
-    // Load teacher's classes
     loadClasses();
   }, [isAuthenticated, userType, navigate]);
 
-  // Load teacher's classes
   const loadClasses = () => {
     const teacherClasses = getClassesByTeacher();
     setClasses(teacherClasses);
@@ -144,19 +140,16 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Load students when a class is selected
   const loadStudents = (classId: string) => {
     const classStudents = getStudentsByClass(classId);
     setStudents(classStudents);
   };
 
-  // Handle class selection change
   const handleClassChange = (classId: string) => {
     setSelectedClass(classId);
     loadStudents(classId);
   };
 
-  // Create a new class
   const handleCreateClass = async (data: z.infer<typeof newClassSchema>) => {
     const success = await createClass(data.className);
     if (success) {
@@ -166,7 +159,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Add a new student to a class
   const handleAddStudent = async (data: z.infer<typeof newStudentSchema>) => {
     const success = await addStudentToClass(data.studentName, data.classId);
     if (success) {
@@ -178,7 +170,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Create a new assignment
   const handleCreateAssignment = async (data: z.infer<typeof newAssignmentSchema>) => {
     const { title, description, subject, dueDate, classId } = data;
     
@@ -197,7 +188,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Calculate class statistics
   const calculateClassStats = (classId: string) => {
     const classStudents = getStudentsByClass(classId);
     
@@ -221,7 +211,6 @@ const TeacherDashboard = () => {
     classStudents.forEach(student => {
       const { progress } = student;
       
-      // Calculate accuracy percentages
       const mathsAccuracy = progress.maths.completed > 0 
         ? (progress.maths.correct / progress.maths.completed) * 100 
         : 0;
@@ -238,13 +227,11 @@ const TeacherDashboard = () => {
         ? (progress.nonVerbal.correct / progress.nonVerbal.completed) * 100 
         : 0;
       
-      // Add to totals
       mathsTotal += mathsAccuracy;
       englishTotal += englishAccuracy;
       verbalTotal += verbalAccuracy;
       nonVerbalTotal += nonVerbalAccuracy;
       
-      // Check if student has completed any exercise
       if (
         progress.maths.completed > 0 ||
         progress.english.completed > 0 ||
@@ -255,7 +242,6 @@ const TeacherDashboard = () => {
       }
     });
     
-    // Calculate averages
     return {
       mathsAvg: Math.round(mathsTotal / classStudents.length),
       englishAvg: Math.round(englishTotal / classStudents.length),
@@ -266,12 +252,18 @@ const TeacherDashboard = () => {
     };
   };
 
-  // Get assignments for a class
   const getAssignments = (classId: string | null): Assignment[] => {
     if (!classId) return [];
     
     const targetClass = classes.find(c => c.id === classId);
     return targetClass ? targetClass.assignments : [];
+  };
+
+  const handleCreateDemoClass = async () => {
+    const success = await createDemoClass();
+    if (success) {
+      loadClasses();
+    }
   };
 
   return (
@@ -290,7 +282,6 @@ const TeacherDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader className="pb-2">
@@ -546,6 +537,11 @@ const TeacherDashboard = () => {
                   </DialogContent>
                 </Dialog>
 
+                <Button variant="outline" className="w-full justify-start" onClick={handleCreateDemoClass}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Create Demo Class
+                </Button>
+
                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/progress')}>
                   <BarChart2 className="mr-2 h-4 w-4" />
                   View My Progress
@@ -554,7 +550,6 @@ const TeacherDashboard = () => {
             </Card>
           </div>
           
-          {/* Main Content */}
           <div className="lg:col-span-3">
             {selectedClass ? (
               <Tabs defaultValue="overview">
@@ -713,7 +708,6 @@ const TeacherDashboard = () => {
                         <TableBody>
                           {students.length > 0 ? (
                             students.map((student) => {
-                              // Calculate accuracy percentages
                               const mathsAccuracy = student.progress.maths.completed > 0 
                                 ? Math.round((student.progress.maths.correct / student.progress.maths.completed) * 100)
                                 : 0;

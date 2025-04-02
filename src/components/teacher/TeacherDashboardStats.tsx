@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Student } from '@/types/userTypes';
+import { useAuth } from '@/context/AuthContext';
 
 interface TeacherDashboardStatsProps {
   students: Student[];
@@ -12,6 +13,8 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
   students, 
   loading 
 }) => {
+  const { user } = useAuth();
+  
   // Calculate average accuracy
   const calculateAverageAccuracy = () => {
     if (!students.length) return '-';
@@ -48,6 +51,18 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
     };
   };
 
+  // Get actual student count, including both fetched students and IDs in the user object
+  const getStudentCount = () => {
+    if (user?.students && user.role === 'teacher') {
+      // Filter to count only valid UUIDs
+      const validStudentIds = user.students.filter(id => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
+      return validStudentIds.length;
+    }
+    return 0;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <Card>
@@ -55,7 +70,7 @@ const TeacherDashboardStats: React.FC<TeacherDashboardStatsProps> = ({
           <CardTitle className="text-lg">Total Students</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{students.length}</div>
+          <div className="text-3xl font-bold">{getStudentCount()}</div>
         </CardContent>
       </Card>
 

@@ -7,35 +7,32 @@ import { Book, Calculator, FileText, PenTool } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { Subject } from '@/context/QuizContext';
 
 const subjectsData = [
   {
-    title: "Mathematics",
+    name: "Mathematics",
     description: "Practice your numerical and mathematical skills",
     icon: <Calculator className="h-5 w-5 text-primary" />,
-    bgClass: "bg-primary/10",
-    subject: "maths"
+    subject: "maths" as Subject
   },
   {
-    title: "English",
+    name: "English",
     description: "Improve your comprehension and grammar",
     icon: <Book className="h-5 w-5 text-green-600" />,
-    bgClass: "bg-green-50",
-    subject: "english"
+    subject: "english" as Subject
   },
   {
-    title: "Verbal Reasoning",
+    name: "Verbal Reasoning",
     description: "Enhance your logic and verbal reasoning skills",
     icon: <PenTool className="h-5 w-5 text-amber-600" />,
-    bgClass: "bg-amber-50",
-    subject: "verbal"
+    subject: "verbal" as Subject
   },
   {
-    title: "Non-verbal Reasoning",
+    name: "Non-verbal Reasoning",
     description: "Develop your spatial awareness and pattern recognition",
     icon: <FileText className="h-5 w-5 text-blue-600" />,
-    bgClass: "bg-blue-50",
-    subject: "nonVerbal"
+    subject: "nonVerbal" as Subject
   }
 ];
 
@@ -72,10 +69,10 @@ const Index = () => {
           {subjectsData.map((subject, index) => (
             <SubjectCard 
               key={index}
-              title={subject.title}
+              subject={subject.subject}
+              name={subject.name}
               description={subject.description}
               icon={subject.icon}
-              bgClass={subject.bgClass}
               onClick={() => navigate('/quiz', { state: { preSelectedSubject: subject.subject } })}
             />
           ))}

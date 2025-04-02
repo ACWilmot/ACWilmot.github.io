@@ -11,6 +11,7 @@ interface SubjectCardProps {
   description: string;
   onClick: () => void;
   className?: string;
+  icon?: React.ReactNode;
 }
 
 const SubjectCard: React.FC<SubjectCardProps> = ({
@@ -19,8 +20,11 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
   description,
   onClick,
   className,
+  icon,
 }) => {
   const getSubjectIcon = () => {
+    if (icon) return icon;
+    
     switch (subject) {
       case 'maths':
         return <Calculator className="h-6 w-6" />;
@@ -28,7 +32,7 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
         return <PenTool className="h-6 w-6" />;
       case 'verbal':
         return <Book className="h-6 w-6" />;
-      case 'non-verbal':
+      case 'nonVerbal':
         return <Brain className="h-6 w-6" />;
       default:
         return <Book className="h-6 w-6" />;
@@ -43,7 +47,7 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
         return 'bg-indigo-50 text-indigo-500 border-indigo-100';
       case 'verbal':
         return 'bg-purple-50 text-purple-500 border-purple-100';
-      case 'non-verbal':
+      case 'nonVerbal':
         return 'bg-pink-50 text-pink-500 border-pink-100';
       default:
         return 'bg-blue-50 text-blue-500 border-blue-100';

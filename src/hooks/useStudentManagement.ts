@@ -11,6 +11,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
+      // Filter out any non-UUID values that might be in the students array
       const validStudentIds = user.students.filter(id => 
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
@@ -22,6 +23,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       
       console.log("Fetching students with valid IDs:", validStudentIds);
       
+      // Initialize default progress structure
       const defaultProgress = {
         maths: { completed: 0, correct: 0, lastAttempted: null },
         english: { completed: 0, correct: 0, lastAttempted: null },
@@ -29,12 +31,15 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
       };
       
+      // Fetch student profiles in a single query with detailed logging
       console.log("Executing Supabase query to fetch students with IDs:", validStudentIds);
       
+      // Modified query to explicitly filter by student IDs
       const { data, error } = await supabase
         .from('profiles')
         .select('id, name, Email, progress')
-        ;
+        .in('id', validStudentIds);  // This explicitly filters to only return rows where id is in validStudentIds
+        
       
       if (error) {
         console.error('Error fetching student profiles:', error);
@@ -45,6 +50,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       
       if (!data || data.length === 0) {
         console.log("No student profiles found in database for the provided IDs");
+        // Check if the IDs exist in the profiles table at all
         const { data: idCheck, error: idCheckError } = await supabase
           .from('profiles')
           .select('id')
@@ -63,10 +69,13 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         return [];
       }
       
+      // Transform data to Student type with proper null checks
       const studentData: Student[] = data.map(profile => {
+        // Ensure progress is properly handled as an object
         let progressData: Student['progress'] = defaultProgress;
         
         if (profile.progress && typeof profile.progress === 'object' && !Array.isArray(profile.progress)) {
+          // Type assertion to help TypeScript understand the structure
           const progress = profile.progress as {
             maths?: { completed?: number; correct?: number; lastAttempted?: string | null };
             english?: { completed?: number; correct?: number; lastAttempted?: string | null };
@@ -101,7 +110,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         return {
           id: profile.id,
           name: profile.name || 'Unknown Student',
-          email: profile.Email || profile.email || 'No Email',
+          email: profile.email || profile.Email || 'No Email',
           progress: progressData
         };
       });
@@ -123,6 +132,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     try {
       console.log("Looking up student with email:", studentEmail);
       
+      // Use our edge function to safely look up users by email
       const { data: userData, error: userError } = await supabase.functions.invoke('get-user-by-email', {
         body: { email: studentEmail }
       });
@@ -143,7 +153,10 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
+      // Get current students array or initialize empty array
+      // Filter to ensure we only have valid UUIDs in the array
       let currentStudents = [...(user.students || [])];
+      // Remove any non-UUID values that might be in the array
       currentStudents = currentStudents.filter(id => 
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
@@ -153,8 +166,10 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         return true;
       }
       
+      // Add the student ID to the array
       currentStudents.push(studentId);
       
+      // Update the teacher's profile with the new students array
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ students: currentStudents })
@@ -166,6 +181,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         return false;
       }
 
+      // Update local state
       setUser({
         ...user,
         students: currentStudents
@@ -186,6 +202,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
     }
 
     try {
+      // Make sure we're only working with valid UUIDs
       const validStudents = user.students.filter(id => 
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
@@ -203,6 +220,7 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
         return false;
       }
 
+      // Update local state
       setUser({
         ...user,
         students

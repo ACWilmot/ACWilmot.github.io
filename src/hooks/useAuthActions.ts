@@ -69,13 +69,21 @@ export const useAuthActions = (user: Profile | null, setUser: (user: Profile | n
 
   const logout = async (): Promise<void> => {
     try {
-      const { error } = await supabase.auth.signOut();
+      console.log("Attempting to log out...");
+      // Clear the local state first
+      setUser(null);
+      
+      // Then sign out from Supabase
+      const { error } = await supabase.auth.signOut({
+        scope: 'local' // Use 'local' scope to avoid the session not found error
+      });
+      
       if (error) {
-        toast.error(error.message);
+        console.error("Error during logout:", error);
+        toast.error(error.message || "Logout failed");
         return;
       }
       
-      setUser(null);
       toast.info("Logged out successfully");
     } catch (error) {
       console.error("Error during logout:", error);

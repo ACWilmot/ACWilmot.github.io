@@ -14,16 +14,22 @@ export type Database = {
           id: string
           name: string
           progress: Json
+          role: string | null
+          students: string[] | null
         }
         Insert: {
           id: string
           name: string
           progress?: Json
+          role?: string | null
+          students?: string[] | null
         }
         Update: {
           id?: string
           name?: string
           progress?: Json
+          role?: string | null
+          students?: string[] | null
         }
         Relationships: []
       }

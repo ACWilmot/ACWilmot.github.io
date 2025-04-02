@@ -34,8 +34,8 @@ export const useStudentManagement = (user: Profile | null, setUser: (user: Profi
       // Fetch student profiles in a single query with detailed logging
       console.log("Executing Supabase query with parameters:", {
         table: 'profiles',
-        columns: 'id, name, email, Email, progress',
-        filter: 'id in validStudentIds',
+        columns: 'id, name, email, Email, progress';
+        
         validStudentIds
       });
       

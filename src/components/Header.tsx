@@ -5,6 +5,7 @@ import { Book, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserProfile from './UserProfile';
+import DonateButton from './DonateButton';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +21,6 @@ const Header: React.FC = () => {
         <span className="text-xl font-display font-medium tracking-tight">SmartPrep</span>
       </div>
       
-      {/* Center the navigation items */}
       <nav className="hidden md:flex items-center justify-center flex-1 mx-4">
         <div className="flex items-center gap-8">
           <NavLink href="/">Home</NavLink>
@@ -32,6 +32,7 @@ const Header: React.FC = () => {
       </nav>
 
       <div className="flex items-center gap-2">
+        <DonateButton />
         {isAuthenticated ? (
           <UserProfile />
         ) : (

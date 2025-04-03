@@ -11,7 +11,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { FolderPlus, Users } from 'lucide-react';
+import { FolderPlus, Users, Loader2 } from 'lucide-react';
 
 interface ClassesManagementProps {
   getClasses: () => Promise<any[]>;
@@ -28,6 +28,8 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
   const [loading, setLoading] = useState(true);
   const [className, setClassName] = useState('');
   const [classDescription, setClassDescription] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchClasses();
@@ -35,11 +37,13 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
 
   const fetchClasses = async () => {
     setLoading(true);
+    setError(null);
     try {
       const classesList = await getClasses();
       setClasses(classesList);
     } catch (error) {
       console.error("Error fetching classes:", error);
+      setError("Failed to load classes. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -48,11 +52,16 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
   const handleCreateClass = async () => {
     if (!className.trim()) return;
 
-    const classId = await createClass(className, classDescription);
-    if (classId) {
-      setClassName('');
-      setClassDescription('');
-      await fetchClasses();
+    setIsCreating(true);
+    try {
+      const classId = await createClass(className, classDescription);
+      if (classId) {
+        setClassName('');
+        setClassDescription('');
+        await fetchClasses();
+      }
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -69,6 +78,7 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
               placeholder="Class Name"
               value={className}
               onChange={(e) => setClassName(e.target.value)}
+              disabled={isCreating}
             />
           </div>
           <div>
@@ -76,13 +86,23 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
               placeholder="Class Description (optional)"
               value={classDescription}
               onChange={(e) => setClassDescription(e.target.value)}
+              disabled={isCreating}
             />
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleCreateClass}>
-            <FolderPlus className="h-4 w-4 mr-2" />
-            Create Class
+          <Button onClick={handleCreateClass} disabled={isCreating || !className.trim()}>
+            {isCreating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <FolderPlus className="h-4 w-4 mr-2" />
+                Create Class
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>
@@ -93,8 +113,20 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
           <CardDescription>Select a class to view and manage its students</CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="text-center py-4 text-red-500">
+              {error}
+              <Button variant="outline" size="sm" className="ml-2" onClick={fetchClasses}>
+                Try Again
+              </Button>
+            </div>
+          )}
+          
           {loading ? (
-            <div className="text-center py-8">Loading classes...</div>
+            <div className="text-center py-8 flex flex-col items-center">
+              <Loader2 className="h-6 w-6 animate-spin mb-2" />
+              <p>Loading classes...</p>
+            </div>
           ) : classes.length === 0 ? (
             <div className="text-center py-8">
               <p>No classes created yet.</p>

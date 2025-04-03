@@ -15,41 +15,33 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching classes for teacher:", user.id);
       
-      // Query classes created by this teacher
-      const { data: classes, error } = await supabase
-        .from('classes')
-        .select('id, name, description, created_at, teacher_id')
-        .eq('teacher_id', user.id);
+      // Use RPC call to avoid RLS recursive policy issues
+      // Define a direct SQL query using the teacher_id filter
+      const { data, error } = await supabase
+        .rpc('get_teacher_classes', {
+          teacher_id_param: user.id
+        });
       
       if (error) {
         console.error('Error fetching classes:', error);
+        toast.error("Failed to fetch classes");
         return [];
       }
       
-      console.log("Fetched classes:", classes);
+      console.log("Fetched classes:", data);
       
-      if (!classes || classes.length === 0) {
+      if (!data || data.length === 0) {
         return [];
       }
       
-      // For each class, get the count of enrolled students
-      const classesWithStudentCount: ClassWithStudentCount[] = await Promise.all(
-        classes.map(async (classItem) => {
-          const { count, error: countError } = await supabase
-            .from('class_enrollments')
-            .select('*', { count: 'exact', head: true })
-            .eq('class_id', classItem.id);
-          
-          if (countError) {
-            console.error('Error counting students in class:', countError);
-            return { ...classItem, student_count: 0 };
-          }
-          
-          return { ...classItem, student_count: count || 0 };
-        })
-      );
-      
-      return classesWithStudentCount;
+      return data.map((classItem: any) => ({
+        id: classItem.id,
+        name: classItem.name,
+        description: classItem.description,
+        created_at: classItem.created_at,
+        teacher_id: classItem.teacher_id,
+        student_count: parseInt(classItem.student_count) || 0
+      }));
     } catch (error) {
       console.error('Error fetching classes:', error);
       toast.error("Failed to fetch classes");
@@ -224,7 +216,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       // Transform data to Student type with robust error handling
       const students: Student[] = profiles.map(profile => {
         // Ensure progress is properly handled with careful type checking
-        let progressData = getResetSubjects(); // Use the new helper function
+        let progressData = getResetSubjects(); // Use the helper function
         
         try {
           if (profile.progress && 

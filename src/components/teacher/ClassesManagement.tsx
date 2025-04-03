@@ -11,7 +11,8 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { FolderPlus, Users, Loader2 } from 'lucide-react';
+import { FolderPlus, Users, Loader2, RefreshCcw } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ClassesManagementProps {
   getClasses: () => Promise<any[]>;
@@ -30,17 +31,20 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
   const [classDescription, setClassDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // Use to force refresh
 
   useEffect(() => {
     fetchClasses();
-  }, []);
+  }, [refreshKey]);
 
   const fetchClasses = async () => {
     setLoading(true);
     setError(null);
     try {
+      console.log("Fetching classes...");
       const classesList = await getClasses();
-      setClasses(classesList);
+      console.log("Classes fetched:", classesList);
+      setClasses(classesList || []);
     } catch (error) {
       console.error("Error fetching classes:", error);
       setError("Failed to load classes. Please try again later.");
@@ -50,19 +54,34 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
   };
 
   const handleCreateClass = async () => {
-    if (!className.trim()) return;
+    if (!className.trim()) {
+      toast.error("Please enter a class name");
+      return;
+    }
 
     setIsCreating(true);
     try {
+      console.log("Creating class:", className, classDescription);
       const classId = await createClass(className, classDescription);
       if (classId) {
+        toast.success("Class created successfully!");
         setClassName('');
         setClassDescription('');
-        await fetchClasses();
+        // Force a refresh of the classes list
+        setRefreshKey(prev => prev + 1);
+      } else {
+        toast.error("Failed to create class");
       }
+    } catch (error) {
+      console.error("Error creating class:", error);
+      toast.error("Failed to create class");
     } finally {
       setIsCreating(false);
     }
+  };
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -108,9 +127,15 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Your Classes</CardTitle>
-          <CardDescription>Select a class to view and manage its students</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Your Classes</CardTitle>
+            <CardDescription>Select a class to view and manage its students</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </CardHeader>
         <CardContent>
           {error && (
@@ -147,7 +172,7 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
                   <TableRow key={classItem.id}>
                     <TableCell className="font-medium">{classItem.name}</TableCell>
                     <TableCell className="hidden md:table-cell">{classItem.description || '-'}</TableCell>
-                    <TableCell>{classItem.student_count}</TableCell>
+                    <TableCell>{classItem.student_count || 0}</TableCell>
                     <TableCell>
                       <Button 
                         variant="outline" 

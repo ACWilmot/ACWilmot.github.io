@@ -15,8 +15,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching classes for teacher:", user.id);
       
-      // Use RPC call to avoid RLS recursive policy issues
-      // Define a direct SQL query using the teacher_id filter
+      // Use RPC call to the function we created to get classes with student counts
       const { data, error } = await supabase
         .rpc('get_teacher_classes', {
           teacher_id_param: user.id
@@ -34,14 +33,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         return [];
       }
       
-      return data.map((classItem: any) => ({
-        id: classItem.id,
-        name: classItem.name,
-        description: classItem.description,
-        created_at: classItem.created_at,
-        teacher_id: classItem.teacher_id,
-        student_count: parseInt(classItem.student_count) || 0
-      }));
+      return data as ClassWithStudentCount[];
     } catch (error) {
       console.error('Error fetching classes:', error);
       toast.error("Failed to fetch classes");
@@ -57,6 +49,8 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
 
     try {
+      console.log("Creating class:", { name, description, teacherId: user.id });
+      
       const { data, error } = await supabase
         .from('classes')
         .insert([
@@ -71,6 +65,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         return null;
       }
       
+      console.log("Class created successfully:", data);
       toast.success("Class created successfully");
       return data.id;
     } catch (error) {

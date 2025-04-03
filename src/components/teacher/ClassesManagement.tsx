@@ -11,7 +11,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { FolderPlus, Users, Loader2, RefreshCcw } from 'lucide-react';
+import { AlertCircle, FolderPlus, Users, Loader2, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ClassesManagementProps {
@@ -27,31 +27,50 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
 }) => {
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [className, setClassName] = useState('');
   const [classDescription, setClassDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0); // Use to force refresh
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
-    fetchClasses();
-  }, [refreshKey]);
+    let isMounted = true;
+    
+    const fetchClassesData = async () => {
+      if (!isMounted) return;
+      
+      setLoading(true);
+      setFetchError(null);
+      
+      try {
+        console.log("Fetching classes...");
+        const classesList = await getClasses();
+        
+        if (!isMounted) return;
+        
+        console.log("Classes fetched:", classesList);
+        setClasses(classesList || []);
+      } catch (error) {
+        if (!isMounted) return;
+        
+        console.error("Error fetching classes:", error);
+        setFetchError("Failed to load classes. Please try again later.");
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setInitialLoad(false);
+        }
+      }
+    };
 
-  const fetchClasses = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      console.log("Fetching classes...");
-      const classesList = await getClasses();
-      console.log("Classes fetched:", classesList);
-      setClasses(classesList || []);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-      setError("Failed to load classes. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchClassesData();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, [getClasses, refreshKey]);
 
   const handleCreateClass = async () => {
     if (!className.trim()) {
@@ -63,6 +82,7 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
     try {
       console.log("Creating class:", className, classDescription);
       const classId = await createClass(className, classDescription);
+      
       if (classId) {
         toast.success("Class created successfully!");
         setClassName('');
@@ -83,6 +103,9 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
   };
+
+  // To help debug loading issues
+  console.log("ClassesManagement render state:", { loading, initialLoad, classesCount: classes.length, fetchError });
 
   return (
     <div className="space-y-8">
@@ -138,10 +161,11 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
           </Button>
         </CardHeader>
         <CardContent>
-          {error && (
-            <div className="text-center py-4 text-red-500">
-              {error}
-              <Button variant="outline" size="sm" className="ml-2" onClick={fetchClasses}>
+          {fetchError && (
+            <div className="text-center py-4 text-red-500 flex items-center justify-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              <span>{fetchError}</span>
+              <Button variant="outline" size="sm" className="ml-2" onClick={handleRefresh}>
                 Try Again
               </Button>
             </div>
@@ -149,8 +173,8 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
           
           {loading ? (
             <div className="text-center py-8 flex flex-col items-center">
-              <Loader2 className="h-6 w-6 animate-spin mb-2" />
-              <p>Loading classes...</p>
+              <Loader2 className="h-8 w-8 animate-spin mb-3" />
+              <p>{initialLoad ? "Loading your classes..." : "Refreshing classes..."}</p>
             </div>
           ) : classes.length === 0 ? (
             <div className="text-center py-8">

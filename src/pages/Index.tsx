@@ -36,49 +36,61 @@ const Index = () => {
   ];
 
   const handleStartSubject = (subject: Subject) => {
+    console.log("Starting quiz for subject:", subject);
     startQuiz(subject);
     navigate('/quiz');
   };
 
   const handleSliderChange = (value: number[]) => {
+    console.log("Setting question count:", value[0]);
     setQuestionCount(value[0]);
+  };
+
+  // Split animations to improve performance
+  const containerAnimation = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    transition: { duration: 0.3 }
+  };
+  
+  const headerAnimation = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.4, delay: 0.1 }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <Header />
 
-      <main className="pt-32 pb-16 px-6 max-w-7xl mx-auto">
+      <main className="pt-28 pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          {...headerAnimation}
+          className="text-center mb-12"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
             className="inline-block mb-3 bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-medium"
           >
             11+ Exam Preparation
           </motion.div>
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
+          <h1 className="text-3xl md:text-5xl font-display font-bold mb-4">
             Master the 11+ Exam with SmartPrep
           </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
             Comprehensive practice for all 11+ subjects with detailed explanations 
             and personalized feedback to help students excel.
           </p>
         </motion.div>
 
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="max-w-md mx-auto mb-12 p-6 bg-card rounded-xl shadow-sm"
+          {...containerAnimation}
+          transition={{ delay: 0.2 }}
+          className="max-w-md mx-auto mb-10 p-6 bg-card rounded-xl shadow-sm"
         >
-          <div className="mb-6">
+          <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <Label htmlFor="question-count">Number of Questions</Label>
               <span className="text-sm font-medium">{questionCount}</span>
@@ -99,18 +111,13 @@ const Index = () => {
           </div>
         </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {subjectInfo.map((subject, index) => (
             <motion.div
               key={subject.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * (index + 1), duration: 0.5 }}
+              transition={{ delay: 0.1 * (index + 1), duration: 0.4 }}
             >
               <SubjectCard
                 subject={subject.id}
@@ -120,19 +127,19 @@ const Index = () => {
               />
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="mt-16 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="mt-14 text-center"
         >
           <h2 className="text-2xl font-display font-semibold mb-6">
             Why SmartPrep Works
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <Feature
               title="Comprehensive Coverage"
               description="Questions covering all subjects required for the 11+ exam preparation."
@@ -159,8 +166,8 @@ interface FeatureProps {
 
 const Feature: React.FC<FeatureProps> = ({ title, description }) => (
   <motion.div
-    whileHover={{ y: -5 }}
-    className="glass p-6 rounded-xl"
+    whileHover={{ y: -3 }}
+    className="glass p-5 rounded-xl"
   >
     <h3 className="text-lg font-display font-medium mb-2">{title}</h3>
     <p className="text-sm text-muted-foreground">{description}</p>

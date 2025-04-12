@@ -154,14 +154,14 @@ const QuestionsPage = () => {
           }}
           className="mx-auto mb-8"
         >
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto">
+          <TabsList className="grid grid-cols-3 w-full max-w-2xl mx-auto">
             {subjects.map(subject => (
               <TabsTrigger 
                 key={subject} 
                 value={subject}
                 className="capitalize"
               >
-                {subject === 'non-verbal' ? 'Non-Verbal' : subject}
+                {subject}
               </TabsTrigger>
             ))}
           </TabsList>

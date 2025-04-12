@@ -57,11 +57,9 @@ const IndexPage = () => {
     }
   };
 
-  // Render components based on screen size
   return (
     <Layout>
       <div className="container max-w-6xl px-4 py-16 md:py-32">
-        {/* Hero section */}
         <div className="text-center mb-12">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
@@ -97,7 +95,6 @@ const IndexPage = () => {
           )}
         </div>
 
-        {/* Main content */}
         {isAuthenticated && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -179,7 +176,6 @@ const IndexPage = () => {
               </motion.div>
             )}
 
-            {/* User Progress Overview */}
             {profile && (
               <motion.div
                 initial={{ opacity: 0 }}

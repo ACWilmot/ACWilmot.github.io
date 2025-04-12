@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -27,7 +26,7 @@ const TeacherDashboardPage = () => {
   useEffect(() => {
     // Add a small delay to ensure auth state is properly checked
     const timer = setTimeout(() => {
-      console.log("Teacher Dashboard auth check:", { isAuthenticated, userRole, userId: user?.id });
+      console.log("Teacher Dashboard auth check:", { isAuthenticated, userRole, user });
       
       if (!isAuthenticated) {
         console.log("User not authenticated, redirecting to login");

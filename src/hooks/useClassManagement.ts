@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student, Class, ClassWithStudentCount, ClassEnrollment } from '@/types/userTypes';
@@ -16,19 +15,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching classes for teacher ID:", user.id);
       
-      // Use direct query rather than RPC to debug any issues
-      const { data: directClasses, error: directError } = await supabase
-        .from('classes')
-        .select('id, name, description, created_at, teacher_id')
-        .eq('teacher_id', user.id);
-        
-      if (directError) {
-        console.error('Error in direct classes query:', directError);
-      } else {
-        console.log("Direct classes query result:", directClasses);
-      }
-      
-      // Now try the RPC call as normal
+      // Use the RPC function to get classes with student count
       const { data, error } = await supabase
         .rpc('get_teacher_classes', {
           teacher_id_param: user.id
@@ -37,7 +24,18 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       if (error) {
         console.error('Error fetching classes with RPC:', error);
         
-        // If RPC fails, use direct query results with a fallback student count of 0
+        // Fall back to direct query if RPC fails
+        const { data: directClasses, error: directError } = await supabase
+          .from('classes')
+          .select('id, name, description, created_at, teacher_id')
+          .eq('teacher_id', user.id);
+          
+        if (directError) {
+          console.error('Error in direct classes query:', directError);
+          toast.error("Failed to fetch classes");
+          return [];
+        }
+        
         if (directClasses && directClasses.length > 0) {
           console.log("Falling back to direct query results");
           const fallbackClasses = directClasses.map(cls => ({
@@ -47,7 +45,6 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
           return fallbackClasses as ClassWithStudentCount[];
         }
         
-        toast.error("Failed to fetch classes");
         return [];
       }
       
@@ -76,6 +73,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Creating class:", { name, description, teacherId: user.id });
       
+      // Since we fixed the RLS policies, this insert should now work correctly
       const { data, error } = await supabase
         .from('classes')
         .insert([
@@ -86,7 +84,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
 
       if (error) {
         console.error('Error creating class:', error);
-        toast.error("Failed to create class");
+        toast.error("Failed to create class: " + error.message);
         return null;
       }
       

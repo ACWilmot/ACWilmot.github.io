@@ -108,6 +108,10 @@ export type Database = {
           student_count: number
         }[]
       }
+      is_class_owner: {
+        Args: { class_row: Database["public"]["Tables"]["classes"]["Row"] }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

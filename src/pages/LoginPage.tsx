@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Key, LogIn, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
-import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
@@ -36,59 +36,23 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [authAttempted, setAuthAttempted] = useState(false);
-  const [loginStartTime, setLoginStartTime] = useState<number | null>(null);
   
-  // Safely access auth context with retry mechanism
-  const [authContext, setAuthContext] = useState<any>(null);
-  const [authRetries, setAuthRetries] = useState(0);
-  
-  useEffect(() => {
-    try {
-      const auth = useAuth();
-      setAuthContext(auth);
-    } catch (error) {
-      console.error("Error accessing auth context:", error);
-      if (authRetries < 5) {
-        setTimeout(() => {
-          setAuthRetries(prev => prev + 1);
-        }, 500);
-      }
-    }
-  }, [authRetries]);
-  
-  const auth = authContext;
-
-  // Handle timeout for login process
-  useEffect(() => {
-    if (loginStartTime && loading) {
-      const timeoutId = setTimeout(() => {
-        if (loading) {
-          setLoading(false);
-          setAuthError("Login is taking longer than expected. Please try again.");
-          toast.error("Login timeout. Please try again.");
+  // Check for existing session on component mount
+  React.useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          console.log("User has an active session, redirecting to home");
+          navigate('/');
         }
-      }, 10000); // 10 second timeout
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [loginStartTime, loading]);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (auth?.isAuthenticated) {
-      console.log("User is authenticated, redirecting to home");
-      navigate('/');
-    }
-  }, [auth?.isAuthenticated, navigate]);
-
-  // Check for auth changes after login attempt
-  useEffect(() => {
-    if (authAttempted && auth?.isAuthenticated) {
-      toast.success("Logged in successfully!");
-      navigate('/');
-    }
-  }, [authAttempted, auth?.isAuthenticated, navigate]);
+      } catch (error) {
+        console.error("Error checking session:", error);
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -103,46 +67,32 @@ const LoginPage = () => {
     try {
       setLoading(true);
       setAuthError(null);
-      setLoginStartTime(Date.now());
       console.log("Attempting login with:", values.email);
       
-      // Check if auth context is available
-      if (!auth || !auth.login) {
-        setAuthError("Authentication system is not available. Please try again later.");
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password
+      });
+      
+      if (error) {
+        console.error("Login error:", error);
+        setAuthError(error.message || "Invalid email or password. Please check your credentials and try again.");
         setLoading(false);
         return;
       }
-
-      const success = await auth.login(values.email, values.password);
-      setAuthAttempted(true);
       
-      if (!success) {
-        setAuthError("Invalid email or password. Please check your credentials and try again.");
+      if (data.session) {
+        toast.success("Logged in successfully!");
+        navigate('/');
+      } else {
+        setAuthError("Login failed. Please try again.");
         setLoading(false);
       }
-      
-      // Note: Don't set loading to false on success as the redirect will happen
     } catch (error) {
       console.error("Login error:", error);
       setAuthError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
-  }
-
-  // If we can't access auth after several retries, show error
-  if (authRetries >= 5 && !auth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center p-8 max-w-md">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-xl font-bold mb-2">Authentication System Error</h2>
-          <p className="mb-4">We're having trouble initializing the authentication system. This might be due to browser privacy settings or network issues.</p>
-          <Button onClick={() => window.location.reload()}>
-            Refresh Page
-          </Button>
-        </div>
-      </div>
-    );
   }
 
   return (

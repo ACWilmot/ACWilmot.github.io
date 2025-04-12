@@ -31,6 +31,7 @@ function App() {
               <Route path="/questions" element={<QuestionsPage />} />
               <Route path="/quiz" element={<QuizPage />} />
               <Route path="/results" element={<ResultsPage />} />
+              {/* Login and register routes don't use the auth context directly */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/teacher-login" element={<TeacherLoginPage />} />

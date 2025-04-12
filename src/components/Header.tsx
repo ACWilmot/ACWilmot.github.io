@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Book, LogIn, UserPlus, GraduationCap } from 'lucide-react';
+import { Book, LogIn, UserPlus, GraduationCap, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserProfile from './UserProfile';
@@ -26,7 +26,8 @@ const Header: React.FC = () => {
           <NavLink href="/">Home</NavLink>
           <NavLink href="/quiz">Practice</NavLink>
           {isAuthenticated && userRole === 'student' && <NavLink href="/progress">My Progress</NavLink>}
-          {isAuthenticated && userRole === 'teacher' && <NavLink href="/teacher/dashboard">Dashboard</NavLink>}
+          {isAuthenticated && userRole === 'teacher' && <NavLink href="/teacher-dashboard">Dashboard</NavLink>}
+          {isAuthenticated && userRole === 'admin' && <NavLink href="/admin">Admin</NavLink>}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>
@@ -47,7 +48,7 @@ const Header: React.FC = () => {
               <span>Register</span>
             </Button>
             
-            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher/login')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher-login')}>
               <GraduationCap className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Teacher</span>
             </Button>

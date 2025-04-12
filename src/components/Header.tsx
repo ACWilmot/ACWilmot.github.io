@@ -27,7 +27,7 @@ const Header: React.FC = () => {
           <NavLink href="/quiz">Practice</NavLink>
           {isAuthenticated && userRole === 'student' && <NavLink href="/progress">My Progress</NavLink>}
           {isAuthenticated && userRole === 'teacher' && <NavLink href="/teacher-dashboard">Dashboard</NavLink>}
-          {isAuthenticated && userRole === 'admin' && <NavLink href="/admin">Admin</NavLink>}
+          {isAuthenticated && <NavLink href="/admin">Admin</NavLink>}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>

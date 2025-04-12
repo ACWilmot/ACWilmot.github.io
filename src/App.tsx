@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QuizProvider } from "@/context/QuizContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { ProfileProvider } from "@/context/ProfileContext";
 import Index from "./pages/Index";
 import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
@@ -29,23 +30,25 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <QuizProvider>
-            <ViteRefresh />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/quiz" element={<QuizPage />} />
-              <Route path="/results" element={<ResultsPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/progress" element={<ProgressPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/questions" element={<QuestionsPage />} />
-              <Route path="/teacher/login" element={<TeacherLoginPage />} />
-              <Route path="/teacher/register" element={<TeacherRegisterPage />} />
-              <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </QuizProvider>
+          <ProfileProvider>
+            <QuizProvider>
+              <ViteRefresh />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/quiz" element={<QuizPage />} />
+                <Route path="/results" element={<ResultsPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/progress" element={<ProgressPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/questions" element={<QuestionsPage />} />
+                <Route path="/teacher/login" element={<TeacherLoginPage />} />
+                <Route path="/teacher/register" element={<TeacherRegisterPage />} />
+                <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </QuizProvider>
+          </ProfileProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

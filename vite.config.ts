@@ -27,4 +27,11 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  build: {
+    sourcemap: true,
+  },
+  // Prevent CSP issues with eval
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  }
 }));

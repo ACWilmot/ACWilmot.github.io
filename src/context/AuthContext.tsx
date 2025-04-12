@@ -17,6 +17,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [sessionChecked, setSessionChecked] = useState<boolean>(false);
   const navigate = useNavigate();
   
   const authActions = useAuthActions(user, setUser);
@@ -27,34 +28,54 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   // Check for auth state changes
   useEffect(() => {
     console.log("AuthProvider useEffect running");
-    let isSessionFetchTimeout = false;
-    let sessionFetchTimer: number;
+    let mounted = true;
+    let sessionFetchTimer: number | null = null;
     
     // Set up auth state listener FIRST (before checking session)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.id);
       
+      if (!mounted) return;
+      
       if (event === 'SIGNED_IN' && session?.user) {
+        // Clear any pending timeout
+        if (sessionFetchTimer) {
+          clearTimeout(sessionFetchTimer);
+          sessionFetchTimer = null;
+        }
+        
         try {
-          const profile = await fetchUserProfile(session.user.id);
-          if (profile) {
-            setIsAuthenticated(true);
-            setUser(profile);
+          // Process login
+          setIsAuthenticated(true);
+          
+          // Use setTimeout to avoid auth deadlock
+          setTimeout(async () => {
+            if (!mounted) return;
             
-            // Redirect based on user role
-            console.log("Redirecting based on role:", profile.role);
-            if (profile.role === 'teacher') {
-              navigate('/teacher/dashboard');
-            } else {
-              navigate('/progress');
+            try {
+              const profile = await fetchUserProfile(session.user.id);
+              if (profile) {
+                setUser(profile);
+                
+                // Redirect based on user role
+                console.log("Redirecting based on role:", profile.role);
+                if (profile.role === 'teacher') {
+                  navigate('/teacher/dashboard');
+                } else {
+                  navigate('/progress');
+                }
+              } else {
+                console.error("No profile found for signed in user");
+                toast.error("Error loading user profile. Please try again.");
+                await supabase.auth.signOut();
+                setIsAuthenticated(false);
+                setUser(null);
+              }
+            } catch (error) {
+              console.error("Error processing user after sign in:", error);
+              toast.error("Authentication error. Please try again.");
             }
-          } else {
-            console.error("No profile found for signed in user");
-            toast.error("Error loading user profile. Please try again.");
-            await supabase.auth.signOut();
-            setIsAuthenticated(false);
-            setUser(null);
-          }
+          }, 0);
         } catch (error) {
           console.error("Error handling sign in:", error);
           toast.error("Authentication error. Please try again.");
@@ -69,43 +90,50 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     const fetchSession = async () => {
       console.log("Fetching session...");
       try {
-        // Add timeout to prevent hanging in incognito mode
+        // Add shorter timeout for session fetch
         sessionFetchTimer = window.setTimeout(() => {
+          if (!mounted) return;
+          
           console.log("Session fetch timeout - possibly in incognito mode");
-          isSessionFetchTimeout = true;
           setIsAuthenticated(false);
           setUser(null);
           setLoading(false);
-        }, 5000); // 5 second timeout
+          setSessionChecked(true);
+        }, 3000); // 3 second timeout
         
         // Check current user auth state
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
         
         // Clear timeout as we got a response
-        clearTimeout(sessionFetchTimer);
+        if (sessionFetchTimer) {
+          clearTimeout(sessionFetchTimer);
+          sessionFetchTimer = null;
+        }
         
-        // If timeout already occurred, don't continue processing
-        if (isSessionFetchTimeout) return;
+        if (!mounted) return;
         
         if (error) {
           console.error("Error fetching session:", error);
           setIsAuthenticated(false);
           setUser(null);
+          setSessionChecked(true);
           setLoading(false);
           return;
         }
         
+        const session = data.session;
         console.log("Session result:", session ? "Session found" : "No session");
         
         // Handle authenticated user
         if (session?.user) {
           console.log("Session found, fetching user profile...");
           try {
+            setIsAuthenticated(true);
+            
             const profile = await fetchUserProfile(session.user.id);
             if (profile) {
               // Update state with user data
               console.log("User profile loaded:", profile.name);
-              setIsAuthenticated(true);
               setUser(profile);
             } else {
               console.error("No profile found for authenticated user");
@@ -130,8 +158,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         setIsAuthenticated(false);
         setUser(null);
       } finally {
-        if (!isSessionFetchTimeout) {
-          clearTimeout(sessionFetchTimer);
+        if (mounted) {
+          setSessionChecked(true);
           setLoading(false);
           console.log("Auth loading complete");
         }
@@ -140,9 +168,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
     fetchSession();
 
-    // Cleanup subscription on unmount
+    // Cleanup subscription and timers on unmount
     return () => {
-      clearTimeout(sessionFetchTimer);
+      mounted = false;
+      if (sessionFetchTimer) {
+        clearTimeout(sessionFetchTimer);
+      }
       subscription.unsubscribe();
     };
   }, [navigate]);

@@ -32,16 +32,26 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [authReady, setAuthReady] = useState<boolean>(false);
+  const [authAttempted, setAuthAttempted] = useState<boolean>(false);
   
-  // Safely access auth context
+  // Safely access auth context with retry logic
   let auth;
   try {
     auth = useAuth();
     if (!authReady) setAuthReady(true);
   } catch (error) {
-    console.log("Auth context not ready yet in ProfileProvider");
+    // If auth context isn't ready yet, just return children and try again later
+    if (!authAttempted) {
+      console.log("Auth context not ready yet in ProfileProvider, will retry");
+      setAuthAttempted(true);
+      
+      // Schedule a retry after a short delay
+      setTimeout(() => {
+        setAuthAttempted(false);
+      }, 500);
+    }
     return <>{children}</>;
   }
 
@@ -55,9 +65,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Use a shorter timeout for profile loading
       const timer = setTimeout(() => {
         try {
+          // Create mock profile data based on auth user
           setProfile({
             id: auth.user!.id,
-            username: auth.user!.email?.split('@')[0] || 'user',
+            username: auth.user!.name || auth.user!.email?.split('@')[0] || 'user',
             email: auth.user!.email || '',
             progress: {
               maths: { correct: 5, completed: 10 },
@@ -74,7 +85,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } finally {
           setIsLoading(false);
         }
-      }, 300); // Reduced timeout
+      }, 300);
       
       return () => clearTimeout(timer);
     } else {

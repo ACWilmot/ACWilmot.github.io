@@ -37,22 +37,42 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authAttempted, setAuthAttempted] = useState(false);
+  const [loginStartTime, setLoginStartTime] = useState<number | null>(null);
   
-  // Safely access auth context and handle potential errors
-  let auth;
-  try {
-    auth = useAuth();
-  } catch (error) {
-    console.error("Error accessing auth context:", error);
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-lg font-medium">Authentication system is initializing...</h2>
-          <p className="text-sm text-muted-foreground mt-2">Please try again in a moment</p>
-        </div>
-      </div>
-    );
-  }
+  // Safely access auth context with retry mechanism
+  const [authContext, setAuthContext] = useState<any>(null);
+  const [authRetries, setAuthRetries] = useState(0);
+  
+  useEffect(() => {
+    try {
+      const auth = useAuth();
+      setAuthContext(auth);
+    } catch (error) {
+      console.error("Error accessing auth context:", error);
+      if (authRetries < 5) {
+        setTimeout(() => {
+          setAuthRetries(prev => prev + 1);
+        }, 500);
+      }
+    }
+  }, [authRetries]);
+  
+  const auth = authContext;
+
+  // Handle timeout for login process
+  useEffect(() => {
+    if (loginStartTime && loading) {
+      const timeoutId = setTimeout(() => {
+        if (loading) {
+          setLoading(false);
+          setAuthError("Login is taking longer than expected. Please try again.");
+          toast.error("Login timeout. Please try again.");
+        }
+      }, 10000); // 10 second timeout
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loginStartTime, loading]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -83,11 +103,13 @@ const LoginPage = () => {
     try {
       setLoading(true);
       setAuthError(null);
+      setLoginStartTime(Date.now());
       console.log("Attempting login with:", values.email);
       
       // Check if auth context is available
       if (!auth || !auth.login) {
         setAuthError("Authentication system is not available. Please try again later.");
+        setLoading(false);
         return;
       }
 
@@ -96,13 +118,31 @@ const LoginPage = () => {
       
       if (!success) {
         setAuthError("Invalid email or password. Please check your credentials and try again.");
+        setLoading(false);
       }
+      
+      // Note: Don't set loading to false on success as the redirect will happen
     } catch (error) {
       console.error("Login error:", error);
       setAuthError("An unexpected error occurred. Please try again.");
-    } finally {
       setLoading(false);
     }
+  }
+
+  // If we can't access auth after several retries, show error
+  if (authRetries >= 5 && !auth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-8 max-w-md">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-xl font-bold mb-2">Authentication System Error</h2>
+          <p className="mb-4">We're having trouble initializing the authentication system. This might be due to browser privacy settings or network issues.</p>
+          <Button onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

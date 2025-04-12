@@ -11,11 +11,15 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
     try {
       const lastAttempted = new Date().toISOString().split('T')[0];
       
+      // Get current progress values to accumulate them
+      const currentProgress = user.progress[subject] || { completed: 0, correct: 0, lastAttempted: null };
+      
+      // Create new progress by adding the new values to existing ones
       const newProgress = {
         ...user.progress,
         [subject]: {
-          completed,
-          correct,
+          completed: currentProgress.completed + completed,
+          correct: currentProgress.correct + correct,
           lastAttempted
         }
       };
@@ -37,6 +41,8 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
         ...user,
         progress: newProgress
       });
+      
+      toast.success("Progress updated successfully");
     } catch (error) {
       console.error('Error updating progress:', error);
       toast.error("Failed to update progress");

@@ -37,10 +37,14 @@ const ResultsPage = () => {
   
   const { score, totalQuestions, percentage } = getResults();
   
-  // Save progress for authenticated users
+  // Save cumulative progress for authenticated users
   useEffect(() => {
     if (isAuthenticated && selectedSubject && questions.length > 0) {
-      updateProgress(selectedSubject, totalQuestions, score);
+      // Only update progress when the user has completed questions
+      if (totalQuestions > 0) {
+        console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);
+        updateProgress(selectedSubject, totalQuestions, score);
+      }
     }
   }, [isAuthenticated, selectedSubject, score, totalQuestions, questions.length, updateProgress]);
   

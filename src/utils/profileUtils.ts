@@ -41,3 +41,21 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
     return null;
   }
 }
+
+// Add a utility function to ensure all subjects have proper progress structure
+export function ensureProgressStructure(progress: { [subject: string]: UserProgress }): { [subject: string]: UserProgress } {
+  const subjects = ['maths', 'english', 'verbal', 'nonVerbal'];
+  const updatedProgress = { ...progress };
+  
+  subjects.forEach(subject => {
+    if (!updatedProgress[subject]) {
+      updatedProgress[subject] = {
+        completed: 0,
+        correct: 0,
+        lastAttempted: null
+      };
+    }
+  });
+  
+  return updatedProgress;
+}

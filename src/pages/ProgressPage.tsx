@@ -47,7 +47,7 @@ const ProgressPage = () => {
               My Progress
             </h1>
             <p className="text-muted-foreground">
-              Track your performance across different subjects
+              Track your cumulative performance across different subjects
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ const ProgressPage = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="capitalize">{subject}</CardTitle>
                   <CardDescription>
-                    Last attempted: {subjectData.lastAttempted}
+                    Last attempted: {subjectData.lastAttempted || 'Never'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -79,11 +79,11 @@ const ProgressPage = () => {
                   <div className="mt-6 grid grid-cols-2 gap-4 text-center">
                     <div className="border rounded-lg p-3">
                       <div className="text-2xl font-bold">{subjectData.completed}</div>
-                      <div className="text-xs text-muted-foreground">Completed</div>
+                      <div className="text-xs text-muted-foreground">Total Questions</div>
                     </div>
                     <div className="border rounded-lg p-3">
                       <div className="text-2xl font-bold">{subjectData.correct}</div>
-                      <div className="text-xs text-muted-foreground">Correct</div>
+                      <div className="text-xs text-muted-foreground">Correct Answers</div>
                     </div>
                   </div>
 
@@ -106,7 +106,7 @@ const ProgressPage = () => {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Reset {subject} progress?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will reset your progress for {subject} only. All completed quizzes and statistics for this subject will be erased.
+                            This will reset your cumulative progress for {subject}. All completed quizzes and statistics for this subject will be erased.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

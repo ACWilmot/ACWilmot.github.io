@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ArrowLeft, List, Shield } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, List, Shield, Printer } from 'lucide-react';
 import Header from '@/components/Header';
 import QuestionCard from '@/components/QuestionCard';
 import ProgressBar from '@/components/ProgressBar';

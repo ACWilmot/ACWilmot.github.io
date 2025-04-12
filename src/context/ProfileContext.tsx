@@ -30,19 +30,19 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const auth = useAuth(); // Store the entire auth context
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      // Simulate loading profile from API
+    if (auth?.user) {
+      // Ensure we have a valid user before attempting to load profile
       setIsLoading(true);
       setTimeout(() => {
         setProfile({
-          id: user.id,
-          username: user.email.split('@')[0],
-          email: user.email,
+          id: auth.user!.id,
+          username: auth.user!.email?.split('@')[0] || 'user',
+          email: auth.user!.email || '',
           progress: {
             maths: { correct: 5, completed: 10 },
             english: { correct: 8, completed: 12 },
@@ -56,7 +56,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } else {
       setProfile(null);
     }
-  }, [user]);
+  }, [auth?.user]);
 
   const updateProfile = async (data: Partial<ProfileData>): Promise<void> => {
     if (!profile) return;

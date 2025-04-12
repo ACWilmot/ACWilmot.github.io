@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -33,15 +33,30 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { login, isAuthenticated } = useAuth();
+  const [loading, setLoading] = React.useState(false);
+  
+  // Safely access auth context and handle potential errors
+  let auth;
+  try {
+    auth = useAuth();
+  } catch (error) {
+    console.error("Error accessing auth context:", error);
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-lg font-medium">Authentication system is initializing...</h2>
+          <p className="text-sm text-muted-foreground mt-2">Please try again in a moment</p>
+        </div>
+      </div>
+    );
+  }
 
   // Redirect if already authenticated
   React.useEffect(() => {
-    if (isAuthenticated) {
+    if (auth?.isAuthenticated) {
       navigate('/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [auth?.isAuthenticated, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,13 +68,25 @@ const LoginPage = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const success = await login(values.email, values.password);
-    
-    if (success) {
-      // Redirect to home page after login
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
+    try {
+      setLoading(true);
+      console.log("Attempting login with:", values.email);
+      const success = await auth.login(values.email, values.password);
+      
+      if (success) {
+        toast.success("Logged in successfully!");
+        // Redirect to home page after login
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+      } else {
+        console.log("Login failed");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -131,9 +158,18 @@ const LoginPage = () => {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Sign In
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                      Signing in...
+                    </span>
+                  ) : (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign In
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>

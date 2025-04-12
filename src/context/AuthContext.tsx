@@ -9,6 +9,7 @@ import { useAuthActions } from '@/hooks/useAuthActions';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useTeacherActions } from '@/hooks/useTeacherActions';
 import { useRegisterUser } from '@/hooks/useRegisterUser';
+import { toast } from 'sonner';
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -29,6 +30,42 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     let isSessionFetchTimeout = false;
     let sessionFetchTimer: number;
     
+    // Set up auth state listener FIRST (before checking session)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.id);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        try {
+          const profile = await fetchUserProfile(session.user.id);
+          if (profile) {
+            setIsAuthenticated(true);
+            setUser(profile);
+            
+            // Redirect based on user role
+            console.log("Redirecting based on role:", profile.role);
+            if (profile.role === 'teacher') {
+              navigate('/teacher/dashboard');
+            } else {
+              navigate('/progress');
+            }
+          } else {
+            console.error("No profile found for signed in user");
+            toast.error("Error loading user profile. Please try again.");
+            await supabase.auth.signOut();
+            setIsAuthenticated(false);
+            setUser(null);
+          }
+        } catch (error) {
+          console.error("Error handling sign in:", error);
+          toast.error("Authentication error. Please try again.");
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+        setUser(null);
+        navigate('/login');
+      }
+    });
+
     const fetchSession = async () => {
       console.log("Fetching session...");
       try {
@@ -63,16 +100,22 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         // Handle authenticated user
         if (session?.user) {
           console.log("Session found, fetching user profile...");
-          const profile = await fetchUserProfile(session.user.id);
-          if (profile) {
-            // Update state with user data
-            console.log("User profile loaded:", profile.name);
-            setIsAuthenticated(true);
-            setUser(profile);
-          } else {
-            console.error("No profile found for authenticated user");
-            // Handle missing profile (e.g., logout)
-            await supabase.auth.signOut();
+          try {
+            const profile = await fetchUserProfile(session.user.id);
+            if (profile) {
+              // Update state with user data
+              console.log("User profile loaded:", profile.name);
+              setIsAuthenticated(true);
+              setUser(profile);
+            } else {
+              console.error("No profile found for authenticated user");
+              // Handle missing profile (e.g., logout)
+              await supabase.auth.signOut();
+              setIsAuthenticated(false);
+              setUser(null);
+            }
+          } catch (error) {
+            console.error("Error fetching user profile:", error);
             setIsAuthenticated(false);
             setUser(null);
           }
@@ -96,30 +139,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     };
 
     fetchSession();
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.id);
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        const profile = await fetchUserProfile(session.user.id);
-        if (profile) {
-          setIsAuthenticated(true);
-          setUser(profile);
-          
-          // Redirect based on user role
-          console.log("Redirecting based on role:", profile.role);
-          if (profile.role === 'teacher') {
-            navigate('/teacher/dashboard');
-          } else {
-            navigate('/progress');
-          }
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    });
 
     // Cleanup subscription on unmount
     return () => {

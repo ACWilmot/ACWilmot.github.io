@@ -2,16 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ArrowLeft, List, Shield, Printer } from 'lucide-react';
 import Header from '@/components/Header';
 import QuestionCard from '@/components/QuestionCard';
-import ProgressBar from '@/components/ProgressBar';
-import PrintableWorksheet from '@/components/PrintableWorksheet';
 import { useQuiz } from '@/context/QuizContext';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from "sonner";
-import { Difficulty } from '@/types/questionTypes';
+
+// Newly extracted components
+import QuizHeader from '@/components/quiz/QuizHeader';
+import QuizControls from '@/components/quiz/QuizControls';
+import WorksheetOptions from '@/components/quiz/WorksheetOptions';
+import QuizProgress from '@/components/quiz/QuizProgress';
 
 const QuizPage = () => {
   const navigate = useNavigate();
@@ -80,15 +81,6 @@ const QuizPage = () => {
     }
   };
 
-  const getDifficultyColor = (difficulty: Difficulty) => {
-    switch (difficulty) {
-      case 'easy': return 'bg-green-500/10 text-green-600';
-      case 'medium': return 'bg-amber-500/10 text-amber-600';
-      case 'hard': return 'bg-rose-500/10 text-rose-600';
-      default: return 'bg-primary/10 text-primary';
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">
@@ -115,60 +107,24 @@ const QuizPage = () => {
       
       <main className="pt-32 pb-16 px-6 max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handleExit}
-              className="h-9 w-9 rounded-full"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back to home</span>
-            </Button>
-            
-            <div>
-              <h1 className="text-xl font-display font-semibold">
-                {selectedSubject?.charAt(0).toUpperCase() + selectedSubject?.slice(1)} Practice
-                {selectedDifficulty !== 'all' && (
-                  <span className={`ml-2 text-sm px-2 py-0.5 rounded-full ${getDifficultyColor(selectedDifficulty as Difficulty)}`}>
-                    {selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)}
-                  </span>
-                )}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {questions.length} questions selected from the question pool
-              </p>
-            </div>
-          </div>
+          <QuizHeader 
+            subject={selectedSubject}
+            difficulty={selectedDifficulty}
+            questionCount={questionCount}
+            totalQuestions={questions.length}
+            onExit={handleExit}
+          />
           
-          <div className="flex flex-wrap items-center gap-2">
-            <ProgressBar 
-              currentQuestion={currentQuestionIndex + 1}
-              totalQuestions={questions.length}
-              className="md:max-w-sm"
-            />
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowWorksheetOption(!showWorksheetOption)}
-              className="flex items-center gap-1.5 ml-2"
-            >
-              <Printer className="h-4 w-4" />
-              {showWorksheetOption ? 'Hide Worksheet Options' : 'Print Worksheet'}
-            </Button>
-          </div>
+          <WorksheetOptions 
+            currentQuestion={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
+            showWorksheetOption={showWorksheetOption}
+            setShowWorksheetOption={setShowWorksheetOption}
+            questions={questions}
+            subject={selectedSubject}
+            difficulty={selectedDifficulty}
+          />
         </div>
-        
-        {showWorksheetOption && (
-          <div className="mb-8">
-            <PrintableWorksheet 
-              questions={questions}
-              subject={selectedSubject}
-              difficulty={selectedDifficulty}
-            />
-          </div>
-        )}
         
         <AnimatePresence mode="wait">
           <QuestionCard
@@ -180,37 +136,15 @@ const QuizPage = () => {
           />
         </AnimatePresence>
         
-        <div className="flex justify-between mt-8 max-w-2xl mx-auto">
-          <Button 
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentQuestionIndex === 0}
-            className="flex items-center gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          
-          <Button
-            onClick={handleNext}
-            disabled={!userAnswer}
-            className="flex items-center gap-2"
-          >
-            {isLastQuestion ? 'Finish Quiz' : 'Next'}
-            {!isLastQuestion && <ChevronRight className="h-4 w-4" />}
-          </Button>
-        </div>
+        <QuizControls 
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          isFirstQuestion={currentQuestionIndex === 0}
+          isLastQuestion={isLastQuestion}
+          isAnswered={!!userAnswer}
+        />
         
-        <div className="mt-16 text-center">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/results')}
-            className="flex items-center gap-2 mx-auto"
-          >
-            <List className="h-4 w-4" />
-            View Progress
-          </Button>
-        </div>
+        <QuizProgress />
       </main>
     </div>
   );

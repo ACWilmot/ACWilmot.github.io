@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student, Class, ClassWithStudentCount, ClassEnrollment } from '@/types/userTypes';
@@ -8,34 +9,58 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
   // Get all classes for the current teacher
   const getClasses = async (): Promise<ClassWithStudentCount[]> => {
     if (!user || user.role !== 'teacher') {
-      console.log("Unable to fetch classes: User is not logged in or not a teacher");
+      console.log("Unable to fetch classes: User is not logged in or not a teacher", { user });
       return [];
     }
 
     try {
-      console.log("Fetching classes for teacher:", user.id);
+      console.log("Fetching classes for teacher ID:", user.id);
       
-      // Use RPC call to the function we created to get classes with student counts
+      // Use direct query rather than RPC to debug any issues
+      const { data: directClasses, error: directError } = await supabase
+        .from('classes')
+        .select('id, name, description, created_at, teacher_id')
+        .eq('teacher_id', user.id);
+        
+      if (directError) {
+        console.error('Error in direct classes query:', directError);
+      } else {
+        console.log("Direct classes query result:", directClasses);
+      }
+      
+      // Now try the RPC call as normal
       const { data, error } = await supabase
         .rpc('get_teacher_classes', {
           teacher_id_param: user.id
         });
       
       if (error) {
-        console.error('Error fetching classes:', error);
+        console.error('Error fetching classes with RPC:', error);
+        
+        // If RPC fails, use direct query results with a fallback student count of 0
+        if (directClasses && directClasses.length > 0) {
+          console.log("Falling back to direct query results");
+          const fallbackClasses = directClasses.map(cls => ({
+            ...cls,
+            student_count: 0
+          }));
+          return fallbackClasses as ClassWithStudentCount[];
+        }
+        
         toast.error("Failed to fetch classes");
         return [];
       }
       
-      console.log("Fetched classes:", data);
+      console.log("RPC fetched classes:", data);
       
       if (!data || data.length === 0) {
+        console.log("No classes found for teacher:", user.id);
         return [];
       }
       
       return data as ClassWithStudentCount[];
     } catch (error) {
-      console.error('Error fetching classes:', error);
+      console.error('Exception when fetching classes:', error);
       toast.error("Failed to fetch classes");
       return [];
     }

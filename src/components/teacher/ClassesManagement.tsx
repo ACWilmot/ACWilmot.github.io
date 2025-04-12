@@ -11,8 +11,9 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { AlertCircle, FolderPlus, Users, Loader2, RefreshCcw } from 'lucide-react';
+import { AlertCircle, FolderPlus, Users, Loader2, RefreshCcw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ClassesManagementProps {
   getClasses: () => Promise<any[]>;
@@ -104,8 +105,13 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
     setRefreshKey(prev => prev + 1);
   };
 
-  // To help debug loading issues
-  console.log("ClassesManagement render state:", { loading, initialLoad, classesCount: classes.length, fetchError });
+  // Debug info in console
+  console.log("ClassesManagement state:", { 
+    loading, 
+    initialLoad, 
+    fetchError, 
+    classesCount: classes.length
+  });
 
   return (
     <div className="space-y-8">
@@ -162,13 +168,15 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
         </CardHeader>
         <CardContent>
           {fetchError && (
-            <div className="text-center py-4 text-red-500 flex items-center justify-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              <span>{fetchError}</span>
-              <Button variant="outline" size="sm" className="ml-2" onClick={handleRefresh}>
-                Try Again
-              </Button>
-            </div>
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>{fetchError}</span>
+                <Button variant="outline" size="sm" className="ml-2" onClick={handleRefresh}>
+                  Try Again
+                </Button>
+              </AlertDescription>
+            </Alert>
           )}
           
           {loading ? (
@@ -179,7 +187,7 @@ const ClassesManagement: React.FC<ClassesManagementProps> = ({
           ) : classes.length === 0 ? (
             <div className="text-center py-8">
               <p>No classes created yet.</p>
-              <p className="text-muted-foreground text-sm mt-2">Create a class to get started</p>
+              <p className="text-muted-foreground text-sm mt-2">Create a class above to get started</p>
             </div>
           ) : (
             <Table>

@@ -36,7 +36,8 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/teacher-login" element={<TeacherLoginPage />} />
               <Route path="/teacher-register" element={<TeacherRegisterPage />} />
-              <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} />
+              <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
+              <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} /> {/* Keep the old route for backward compatibility */}
               <Route path="/progress" element={<ProgressPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="*" element={<NotFound />} />

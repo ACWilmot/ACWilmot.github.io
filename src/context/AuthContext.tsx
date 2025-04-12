@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -25,30 +24,25 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const teacherActions = useTeacherActions(user, setUser);
   const { register } = useRegisterUser();
 
-  // Check for auth state changes
   useEffect(() => {
     console.log("AuthProvider useEffect running");
     let mounted = true;
     let sessionFetchTimer: number | null = null;
     
-    // Set up auth state listener FIRST (before checking session)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.id);
       
       if (!mounted) return;
       
       if (event === 'SIGNED_IN' && session?.user) {
-        // Clear any pending timeout
         if (sessionFetchTimer) {
           clearTimeout(sessionFetchTimer);
           sessionFetchTimer = null;
         }
         
         try {
-          // Process login
           setIsAuthenticated(true);
           
-          // Use setTimeout to avoid auth deadlock
           setTimeout(async () => {
             if (!mounted) return;
             
@@ -57,7 +51,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
               if (profile) {
                 setUser(profile);
                 
-                // Redirect based on user role
                 console.log("Redirecting based on role:", profile.role);
                 if (profile.role === 'teacher') {
                   navigate('/teacher/dashboard');
@@ -90,7 +83,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     const fetchSession = async () => {
       console.log("Fetching session...");
       try {
-        // Add shorter timeout for session fetch
         sessionFetchTimer = window.setTimeout(() => {
           if (!mounted) return;
           
@@ -99,12 +91,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
           setUser(null);
           setLoading(false);
           setSessionChecked(true);
-        }, 3000); // 3 second timeout
+        }, 3000);
         
-        // Check current user auth state
         const { data, error } = await supabase.auth.getSession();
         
-        // Clear timeout as we got a response
         if (sessionFetchTimer) {
           clearTimeout(sessionFetchTimer);
           sessionFetchTimer = null;
@@ -124,7 +114,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         const session = data.session;
         console.log("Session result:", session ? "Session found" : "No session");
         
-        // Handle authenticated user
         if (session?.user) {
           console.log("Session found, fetching user profile...");
           try {
@@ -132,12 +121,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
             
             const profile = await fetchUserProfile(session.user.id);
             if (profile) {
-              // Update state with user data
               console.log("User profile loaded:", profile.name);
               setUser(profile);
             } else {
               console.error("No profile found for authenticated user");
-              // Handle missing profile (e.g., logout)
               await supabase.auth.signOut();
               setIsAuthenticated(false);
               setUser(null);
@@ -148,7 +135,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
             setUser(null);
           }
         } else {
-          // No authenticated user
           console.log("No authenticated session");
           setIsAuthenticated(false);
           setUser(null);
@@ -168,7 +154,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
     fetchSession();
 
-    // Cleanup subscription and timers on unmount
     return () => {
       mounted = false;
       if (sessionFetchTimer) {

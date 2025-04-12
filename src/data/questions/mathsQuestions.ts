@@ -637,4 +637,9 @@ const mathsQuestions: Question[] = [
     text: 'What is the value of 2 × 3 + 4 × 5?',
     options: ['26', '30', '34', '38'],
     correctAnswer: '26',
-    explanation: 'Following the order of operations (PEMDAS): 2 × 3 + 4 × 5 =
+    explanation: 'Following the order of operations (PEMDAS): 2 × 3 + 4 × 5 = 6 + 20 = 26.',
+    difficulty: 'medium'
+  },
+];
+
+export default mathsQuestions;

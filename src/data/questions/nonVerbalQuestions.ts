@@ -679,4 +679,12 @@ const nonVerbalQuestions: Question[] = [
   {
     id: 'nv76',
     subject: 'non-verbal',
-    text: 'Select the image that is the correct Mandel
+    text: 'Select the image that is the correct Mandelbrot set of the given shape.',
+    options: ['Mandelbrot X', 'Mandelbrot Y', 'Mandelbrot Z', 'Mandelbrot W'],
+    correctAnswer: 'Mandelbrot Y',
+    explanation: 'Mandelbrot Y is the only image that correctly shows the complete set defined by the recursive formula z = z² + c.',
+    difficulty: 'medium'
+  }
+];
+
+export default nonVerbalQuestions;

@@ -2,30 +2,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { toast } from "sonner";
-import { Profile, UserRole, RegisterData } from '@/types/userTypes';
-import { fetchUserProfile } from '@/utils/authUtils';
+import { Profile } from '@/types/userTypes';
+import { AuthContextType } from '@/types/authTypes';
+import { fetchUserProfile } from '@/utils/profileUtils';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useTeacherActions } from '@/hooks/useTeacherActions';
-
-interface AuthContextType {
-  isAuthenticated: boolean;
-  userRole: UserRole | null;
-  user: Profile | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  teacherLogin: (email: string, password: string) => Promise<boolean>;
-  logout: () => Promise<void>;
-  register: (data: RegisterData) => Promise<boolean>;
-  updateProgress: (subject: string, completed: number, correct: number) => Promise<void>;
-  resetProgress: () => Promise<void>;
-  resetSubjectProgress: (subject: string) => Promise<void>;
-  getClasses: () => Promise<any[]>;
-  createClass: (name: string, description?: string) => Promise<string | null>;
-  addStudentToClass: (classId: string, studentEmail: string) => Promise<boolean>;
-  removeStudentFromClass: (classId: string, studentId: string) => Promise<boolean>;
-  getClassStudents: (classId: string) => Promise<any[]>;
-}
+import { useRegisterUser } from '@/hooks/useRegisterUser';
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -38,6 +21,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const authActions = useAuthActions(user, setUser);
   const progressActions = useProgressActions(user, setUser);
   const teacherActions = useTeacherActions(user, setUser);
+  const { register } = useRegisterUser();
 
   // Check for auth state changes
   useEffect(() => {
@@ -107,90 +91,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       subscription.unsubscribe();
     };
   }, [navigate]);
-  
-  // Registration function
-  const register = async (data: RegisterData): Promise<boolean> => {
-    try {
-      // Check if user with email already exists
-      const { data: existingUsers, error: lookupError } = await supabase
-        .from('profiles')
-        .select('id')
-        .or(`Email.eq.${data.email},email.eq.${data.email}`);
-
-      if (lookupError) {
-        console.error('Error checking for existing email:', lookupError);
-        toast.error("Registration failed");
-        return false;
-      }
-
-      if (existingUsers && existingUsers.length > 0) {
-        toast.error("A user with this email already exists");
-        return false;
-      }
-
-      // Create new user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            name: data.name,
-            role: data.role
-          }
-        }
-      });
-
-      if (authError || !authData.user) {
-        console.error('Error creating user account:', authError);
-        toast.error(authError?.message || "Registration failed");
-        return false;
-      }
-
-      // Create or update profile in profiles table
-      const profileData: any = {
-        id: authData.user.id,
-        name: data.name,
-        Email: data.email,
-        email: data.email,
-        role: data.role,
-        // Initialize progress for students
-        progress: {
-          maths: { completed: 0, correct: 0, lastAttempted: null },
-          english: { completed: 0, correct: 0, lastAttempted: null },
-          verbal: { completed: 0, correct: 0, lastAttempted: null },
-          nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
-        }
-      };
-
-      // Add any teacher-specific fields if role is teacher
-      if (data.role === 'teacher') {
-        profileData.students = [];
-      }
-
-      // If this is a student with a teacher email, we need to link them
-      if (data.role === 'student' && data.teacherEmail) {
-        // We'll handle this in a future iteration
-      }
-
-      // Create/update the profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert(profileData);
-
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
-        toast.error("Failed to create user profile");
-        return false;
-      }
-
-      toast.success("Registration successful! Please check your email for verification.");
-      return true;
-    } catch (error) {
-      console.error('Registration error:', error);
-      toast.error("Registration failed");
-      return false;
-    }
-  };
 
   const contextValue: AuthContextType = {
     isAuthenticated,

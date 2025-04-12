@@ -1,6 +1,8 @@
 
 import { Subject } from '@/context/QuizContext';
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
 export interface Question {
   id: string;
   subject: Subject;
@@ -8,6 +10,7 @@ export interface Question {
   options: string[];
   correctAnswer: string;
   explanation: string;
+  difficulty: Difficulty;
   imageUrl?: string;
   optionImages?: string[];
 }

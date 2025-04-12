@@ -1,212 +1,228 @@
-
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import SubjectCard from '@/components/SubjectCard';
-import { useQuiz, Subject } from '@/context/QuizContext';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
+import { motion } from 'framer-motion';
+import {
+  Calculator,
+  BookOpen,
+  BookText,
+  ArrowRight,
+  LineChart,
+} from 'lucide-react';
+import { Slider } from "@/components/ui/slider"
 import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/context/ProfileContext';
+import Layout from '@/components/Layout';
+import SubjectCard from '@/components/SubjectCard';
 import { Button } from '@/components/ui/button';
-import { LogIn, UserPlus } from 'lucide-react';
+import ShapeIcon from '@/components/ShapeIcon';
+import DifficultySelector from '@/components/DifficultySelector';
+import { Difficulty } from '@/types/questionTypes';
+import { useQuiz } from '@/context/QuizContext';
 
-const Index = () => {
+const IndexPage = () => {
   const navigate = useNavigate();
-  const { startQuiz, questionCount, setQuestionCount } = useQuiz();
   const { isAuthenticated } = useAuth();
+  const { profile } = useProfile();
+  const [isMobile, setIsMobile] = useState(false);
 
-  const subjectInfo = [
-    {
-      id: 'maths' as Subject,
-      name: 'Mathematics',
-      description: 'Practice numerical reasoning, calculations, and problem-solving skills.',
-    },
-    {
-      id: 'english' as Subject,
-      name: 'English',
-      description: 'Improve comprehension, grammar, vocabulary, and literacy skills.',
-    },
-    {
-      id: 'verbal' as Subject,
-      name: 'Verbal Reasoning',
-      description: 'Enhance logical thinking with word puzzles and language patterns.',
-    },
-    {
-      id: 'non-verbal' as Subject,
-      name: 'Non-verbal Reasoning',
-      description: 'Develop spatial awareness and pattern recognition abilities.',
-    },
-  ];
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
 
-  const handleStartSubject = (subject: Subject) => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-    
-    console.log("Starting quiz for subject:", subject);
-    startQuiz(subject);
-    navigate('/quiz');
-  };
+    handleResize();
+    window.addEventListener('resize', handleResize);
 
-  const handleSliderChange = (value: number[]) => {
-    console.log("Setting question count:", value[0]);
-    setQuestionCount(value[0]);
-  };
-
-  // Split animations to improve performance
-  const containerAnimation = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    transition: { duration: 0.3 }
-  };
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
-  const headerAnimation = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.4, delay: 0.1 }
+  const {
+    startQuiz,
+    selectedSubject,
+    setSelectedSubject,
+    questionCount,
+    setQuestionCount,
+    selectedDifficulty,
+    setSelectedDifficulty
+  } = useQuiz();
+
+  const handleSubjectSelect = (subject: string) => {
+    setSelectedSubject(subject);
   };
 
+  const handleStartQuiz = () => {
+    if (selectedSubject) {
+      startQuiz(selectedSubject);
+      navigate('/quiz');
+    }
+  };
+
+  // Render components based on screen size
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      <Header />
-
-      <main className="pt-28 pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
-        <motion.div
-          {...headerAnimation}
-          className="text-center mb-12"
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="inline-block mb-3 bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-medium"
+    <Layout>
+      <div className="container max-w-6xl px-4 py-16 md:py-32">
+        {/* Hero section */}
+        <div className="text-center mb-12">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl md:text-5xl font-bold font-display mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500"
           >
-            11+ Exam Preparation
-          </motion.div>
-          <h1 className="text-3xl md:text-5xl font-display font-bold mb-4">
-            Master the 11+ Exam with SmartPrep
-          </h1>
-          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
-            Comprehensive practice for all 11+ subjects with detailed explanations 
-            and personalized feedback to help students excel.
-          </p>
-        </motion.div>
-
-        {isAuthenticated ? (
-          <>
-            <motion.div 
-              {...containerAnimation}
-              transition={{ delay: 0.2 }}
-              className="max-w-md mx-auto mb-10 p-6 bg-card rounded-xl shadow-sm"
+            11+ Exam Practice
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+          >
+            Practice tests covering Maths, English, Verbal Reasoning and Non-Verbal Reasoning
+          </motion.p>
+          {!isAuthenticated && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <Label htmlFor="question-count">Number of Questions</Label>
-                  <span className="text-sm font-medium">{questionCount}</span>
-                </div>
-                <Slider 
-                  id="question-count"
-                  defaultValue={[questionCount]} 
-                  max={100} 
-                  min={10} 
-                  step={5}
-                  onValueChange={handleSliderChange}
-                  className="w-full"
-                />
-                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>10</span>
-                  <span>100</span>
-                </div>
-              </div>
+              <Button
+                onClick={() => navigate('/login')}
+                className="rounded-full px-8 py-6"
+                size="lg"
+              >
+                Sign in to Start Practicing
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </motion.div>
+          )}
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              {subjectInfo.map((subject, index) => (
-                <motion.div
-                  key={subject.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * (index + 1), duration: 0.4 }}
-                >
-                  <SubjectCard
-                    subject={subject.id}
-                    name={subject.name}
-                    description={subject.description}
-                    onClick={() => handleStartSubject(subject.id)}
-                  />
-                </motion.div>
-              ))}
-            </div>
-          </>
-        ) : (
+        {/* Main content */}
+        {isAuthenticated && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-            className="max-w-md mx-auto mb-10 p-8 bg-card rounded-xl shadow-sm text-center"
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="max-w-4xl mx-auto"
           >
-            <h2 className="text-xl font-display font-semibold mb-4">Sign in to Start Practicing</h2>
-            <p className="text-muted-foreground mb-6">
-              Create an account or sign in to access practice quizzes for all subjects.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button onClick={() => navigate('/login')} className="flex items-center gap-2">
-                <LogIn className="h-4 w-4" />
-                Sign In
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/register')} className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Register
-              </Button>
+            <div className="mb-8">
+              <h2 className="text-2xl font-display font-semibold mb-6">Choose a subject</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <SubjectCard
+                  title="Maths"
+                  description="Numbers, shapes, and problem solving"
+                  icon={<Calculator className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'maths'}
+                  onClick={() => handleSubjectSelect('maths')}
+                />
+                <SubjectCard
+                  title="English"
+                  description="Vocabulary, grammar, and comprehension"
+                  icon={<BookOpen className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'english'}
+                  onClick={() => handleSubjectSelect('english')}
+                />
+                <SubjectCard
+                  title="Verbal Reasoning"
+                  description="Word problems and logic puzzles"
+                  icon={<BookText className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'verbal'}
+                  onClick={() => handleSubjectSelect('verbal')}
+                />
+                <SubjectCard
+                  title="Non-Verbal Reasoning"
+                  description="Pattern and sequence problems"
+                  icon={<ShapeIcon className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'non-verbal'}
+                  onClick={() => handleSubjectSelect('non-verbal')}
+                />
+              </div>
             </div>
+
+            {selectedSubject && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mb-8"
+              >
+                <h2 className="text-2xl font-display font-semibold mb-6">Select difficulty level</h2>
+                <DifficultySelector 
+                  selectedDifficulty={selectedDifficulty}
+                  onChange={setSelectedDifficulty}
+                  className="mb-6"
+                />
+                
+                <div className="glass p-6 rounded-xl mb-6">
+                  <h3 className="text-lg font-medium mb-4">Number of questions</h3>
+                  <Slider
+                    value={[questionCount]}
+                    min={5}
+                    max={20}
+                    step={5}
+                    onValueChange={(values) => setQuestionCount(values[0])}
+                    className="max-w-md"
+                  />
+                  <div className="flex justify-between max-w-md mt-2 text-sm text-muted-foreground">
+                    <span>5</span>
+                    <span>10</span>
+                    <span>15</span>
+                    <span>20</span>
+                  </div>
+                  <p className="mt-4 text-sm">
+                    You selected {questionCount} questions
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleStartQuiz}
+                  className="w-full md:w-auto rounded-lg"
+                  size="lg"
+                >
+                  Start Practice Test
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
+
+            {/* User Progress Overview */}
+            {profile && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                className="mt-16"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-display font-semibold">Your Progress</h2>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/progress')}
+                    className="flex items-center gap-1.5"
+                  >
+                    <LineChart className="h-4 w-4" />
+                    View Full Stats
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(profile.progress).map(([subject, progress]) => (
+                    <div key={subject} className="glass p-4 rounded-lg">
+                      <h3 className="font-medium capitalize">{subject}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {progress.correct} / {progress.completed} questions correct
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         )}
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="mt-14 text-center"
-        >
-          <h2 className="text-2xl font-display font-semibold mb-6">
-            Why SmartPrep Works
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <Feature
-              title="Comprehensive Coverage"
-              description="Questions covering all subjects required for the 11+ exam preparation."
-            />
-            <Feature
-              title="Clear Explanations"
-              description="Every question comes with a detailed explanation to aid understanding."
-            />
-            <Feature
-              title="Track Progress"
-              description="Monitor improvement over time with detailed performance analytics."
-            />
-          </div>
-        </motion.div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 
-interface FeatureProps {
-  title: string;
-  description: string;
-}
-
-const Feature: React.FC<FeatureProps> = ({ title, description }) => (
-  <motion.div
-    whileHover={{ y: -3 }}
-    className="glass p-5 rounded-xl"
-  >
-    <h3 className="text-lg font-display font-medium mb-2">{title}</h3>
-    <p className="text-sm text-muted-foreground">{description}</p>
-  </motion.div>
-);
-
-export default Index;
+export default IndexPage;

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ArrowLeft, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, List, Shield } from 'lucide-react';
 import Header from '@/components/Header';
 import QuestionCard from '@/components/QuestionCard';
 import ProgressBar from '@/components/ProgressBar';
@@ -10,6 +10,7 @@ import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from "sonner";
+import { Difficulty } from '@/types/questionTypes';
 
 const QuizPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const QuizPage = () => {
     currentQuestionIndex,
     userAnswers,
     selectedSubject,
+    selectedDifficulty,
     isLoading,
     questionCount,
     answerQuestion,
@@ -76,6 +78,15 @@ const QuizPage = () => {
     }
   };
 
+  const getDifficultyColor = (difficulty: Difficulty) => {
+    switch (difficulty) {
+      case 'easy': return 'bg-green-500/10 text-green-600';
+      case 'medium': return 'bg-amber-500/10 text-amber-600';
+      case 'hard': return 'bg-rose-500/10 text-rose-600';
+      default: return 'bg-primary/10 text-primary';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">
@@ -116,6 +127,11 @@ const QuizPage = () => {
             <div>
               <h1 className="text-xl font-display font-semibold">
                 {selectedSubject?.charAt(0).toUpperCase() + selectedSubject?.slice(1)} Practice
+                {selectedDifficulty !== 'all' && (
+                  <span className={`ml-2 text-sm px-2 py-0.5 rounded-full ${getDifficultyColor(selectedDifficulty as Difficulty)}`}>
+                    {selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)}
+                  </span>
+                )}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {questions.length} questions selected from the question pool

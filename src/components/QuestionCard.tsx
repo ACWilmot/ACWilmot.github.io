@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Question } from '@/types/questionTypes';
+import { Question, Difficulty } from '@/types/questionTypes';
 
 interface QuestionCardProps {
   question: Question;
@@ -18,6 +18,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onAnswer,
   showExplanation
 }) => {
+  const getDifficultyColor = (difficulty: Difficulty) => {
+    switch (difficulty) {
+      case 'easy': return 'bg-green-500/10 text-green-600';
+      case 'medium': return 'bg-amber-500/10 text-amber-600';
+      case 'hard': return 'bg-rose-500/10 text-rose-600';
+      default: return 'bg-primary/10 text-primary';
+    }
+  };
+
+  const getDifficultyIcon = (difficulty: Difficulty) => {
+    return (
+      <Shield className="h-3 w-3 mr-1" />
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -29,6 +44,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <div className="flex items-start gap-2 mb-6">
         <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-medium">
           {question.subject.charAt(0).toUpperCase() + question.subject.slice(1)}
+        </span>
+        <span className={`flex items-center px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
+          {getDifficultyIcon(question.difficulty)}
+          {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
         </span>
       </div>
       

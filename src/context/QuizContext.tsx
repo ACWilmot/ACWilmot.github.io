@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
-import { Question } from '@/types/questionTypes';
+import { Question, Difficulty } from '@/types/questionTypes';
 
 export type Subject = 'maths' | 'english' | 'verbal' | 'non-verbal';
 
@@ -10,10 +11,12 @@ interface QuizContextType {
   score: number;
   userAnswers: Record<string, string>;
   selectedSubject: Subject | null;
+  selectedDifficulty: Difficulty | 'all';
   isLoading: boolean;
   questionCount: number;
   setQuestionCount: (count: number) => void;
   setSelectedSubject: (subject: Subject | null) => void;
+  setSelectedDifficulty: (difficulty: Difficulty | 'all') => void;
   startQuiz: (subject: Subject) => void;
   answerQuestion: (questionId: string, answer: string) => void;
   goToNextQuestion: () => void;
@@ -35,6 +38,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [score, setScore] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(10);
 
@@ -45,13 +49,20 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTimeout(() => {
       // Get questions for the selected subject and randomize their order
       const subjectQuestions = [...sampleQuestions[subject]];
-      for (let i = subjectQuestions.length - 1; i > 0; i--) {
+      
+      // Filter by difficulty if a specific difficulty is selected
+      const filteredQuestions = selectedDifficulty === 'all' 
+        ? subjectQuestions 
+        : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
+      
+      // Randomize the filtered questions
+      for (let i = filteredQuestions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [subjectQuestions[i], subjectQuestions[j]] = [subjectQuestions[j], subjectQuestions[i]];
+        [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
       }
       
       // Take only the requested number of questions (or all if less available)
-      const selectedQuestions = subjectQuestions.slice(0, Math.min(questionCount, subjectQuestions.length));
+      const selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       
       setQuestions(selectedQuestions);
       setSelectedSubject(subject);
@@ -117,10 +128,12 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         score,
         userAnswers,
         selectedSubject,
+        selectedDifficulty,
         isLoading,
         questionCount,
         setQuestionCount,
         setSelectedSubject,
+        setSelectedDifficulty,
         startQuiz,
         answerQuestion,
         goToNextQuestion,

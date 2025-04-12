@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, ArrowLeft, List, Shield } from 'lucide-react
 import Header from '@/components/Header';
 import QuestionCard from '@/components/QuestionCard';
 import ProgressBar from '@/components/ProgressBar';
+import PrintableWorksheet from '@/components/PrintableWorksheet';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -30,6 +31,7 @@ const QuizPage = () => {
   } = useQuiz();
   
   const [showExplanation, setShowExplanation] = useState(false);
+  const [showWorksheetOption, setShowWorksheetOption] = useState(false);
   
   // Check authentication and redirect if not authenticated
   useEffect(() => {
@@ -139,12 +141,34 @@ const QuizPage = () => {
             </div>
           </div>
           
-          <ProgressBar 
-            currentQuestion={currentQuestionIndex + 1}
-            totalQuestions={questions.length}
-            className="md:max-w-sm"
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <ProgressBar 
+              currentQuestion={currentQuestionIndex + 1}
+              totalQuestions={questions.length}
+              className="md:max-w-sm"
+            />
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowWorksheetOption(!showWorksheetOption)}
+              className="flex items-center gap-1.5 ml-2"
+            >
+              <Printer className="h-4 w-4" />
+              {showWorksheetOption ? 'Hide Worksheet Options' : 'Print Worksheet'}
+            </Button>
+          </div>
         </div>
+        
+        {showWorksheetOption && (
+          <div className="mb-8">
+            <PrintableWorksheet 
+              questions={questions}
+              subject={selectedSubject}
+              difficulty={selectedDifficulty}
+            />
+          </div>
+        )}
         
         <AnimatePresence mode="wait">
           <QuestionCard

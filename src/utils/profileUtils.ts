@@ -5,6 +5,8 @@ import { resetSubjects } from './progressUtils';
 
 export async function fetchUserProfile(userId: string): Promise<Profile | null> {
   try {
+    console.log("Fetching profile for user ID:", userId);
+    
     const { data, error } = await supabase
       .from('profiles')
       .select()
@@ -16,9 +18,10 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       return null;
     }
 
-    console.log("Fetched profile:", data);
+    console.log("Fetched profile data:", data);
     
     if (!data) {
+      console.error("No profile data returned for user ID:", userId);
       return null;
     }
     
@@ -26,11 +29,13 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
     let progressData: { [subject: string]: UserProgress } = { ...resetSubjects };
     
     if (data.progress && typeof data.progress === 'object' && !Array.isArray(data.progress)) {
+      console.log("Raw progress data:", data.progress);
+      
       // Convert the progress data to ensure it conforms to our UserProgress type
       Object.keys(data.progress).forEach(subject => {
         const subjectData = data.progress[subject];
         if (subjectData && typeof subjectData === 'object') {
-          if (progressData[subject]) {
+          if (progressData[subject] || Object.keys(resetSubjects).includes(subject)) {
             progressData[subject] = {
               completed: typeof subjectData.completed === 'number' ? subjectData.completed : 0,
               correct: typeof subjectData.correct === 'number' ? subjectData.correct : 0,
@@ -39,7 +44,11 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
           }
         }
       });
+    } else {
+      console.warn("Invalid progress data format, using default structure", data.progress);
     }
+    
+    console.log("Processed progress data:", progressData);
     
     // Convert the data to our Profile type
     const profile: Profile = {
@@ -57,6 +66,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       profile.email = data.Email;
     }
     
+    console.log("Final profile object:", profile);
     return profile;
   } catch (error) {
     console.error('Error fetching profile:', error);

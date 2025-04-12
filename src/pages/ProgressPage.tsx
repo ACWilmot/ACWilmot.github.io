@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,20 +8,58 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, BarChart2, RefreshCcw } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ProgressPage = () => {
   const { user, isAuthenticated, resetSubjectProgress } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Redirect if not authenticated
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
+      return;
     }
-  }, [isAuthenticated, navigate]);
 
-  if (!user) {
-    return null;
+    if (user) {
+      console.log("User data loaded:", user);
+      console.log("Progress data:", user.progress);
+      setLoading(false);
+    } else {
+      console.error("User data not available");
+      setError("Failed to load user data");
+      setLoading(false);
+    }
+  }, [isAuthenticated, navigate, user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1 container px-4 pt-32 pb-16 max-w-5xl mx-auto">
+          <div className="text-center">Loading progress data...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1 container px-4 pt-32 pb-16 max-w-5xl mx-auto">
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {error || "Failed to load data. Please try logging in again."}
+            </AlertDescription>
+          </Alert>
+          <Button onClick={() => navigate('/login')}>Return to Login</Button>
+        </main>
+      </div>
+    );
   }
 
   const subjects = Object.keys(user.progress);
@@ -55,6 +93,11 @@ const ProgressPage = () => {
         <div className="grid md:grid-cols-2 gap-6">
           {subjects.map(subject => {
             const subjectData = user.progress[subject];
+            if (!subjectData) {
+              console.error(`Missing data for subject: ${subject}`);
+              return null;
+            }
+            
             const accuracy = subjectData.completed > 0 
               ? Math.round((subjectData.correct / subjectData.completed) * 100) 
               : 0;

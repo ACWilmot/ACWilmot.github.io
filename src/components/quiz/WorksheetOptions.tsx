@@ -4,6 +4,7 @@ import { Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProgressBar from '@/components/ProgressBar';
 import PrintableWorksheet from '@/components/PrintableWorksheet';
+import { Subject } from '@/context/QuizContext';
 
 interface WorksheetOptionsProps {
   currentQuestion: number;
@@ -11,7 +12,7 @@ interface WorksheetOptionsProps {
   showWorksheetOption: boolean;
   setShowWorksheetOption: (show: boolean) => void;
   questions: any[];
-  subject: string | null;
+  subject: Subject | null;
   difficulty: string;
 }
 

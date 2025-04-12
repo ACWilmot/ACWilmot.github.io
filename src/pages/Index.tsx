@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,13 +12,14 @@ import {
 import { Slider } from "@/components/ui/slider"
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
-import Layout from '@/components/Layout';
+import { Layout } from '@/components/Layout';
 import SubjectCard from '@/components/SubjectCard';
 import { Button } from '@/components/ui/button';
 import ShapeIcon from '@/components/ShapeIcon';
 import DifficultySelector from '@/components/DifficultySelector';
 import { Difficulty } from '@/types/questionTypes';
 import { useQuiz } from '@/context/QuizContext';
+import { Subject } from '@/context/QuizContext';
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ const IndexPage = () => {
     setSelectedDifficulty
   } = useQuiz();
 
-  const handleSubjectSelect = (subject: string) => {
+  const handleSubjectSelect = (subject: Subject) => {
     setSelectedSubject(subject);
   };
 
@@ -109,28 +111,28 @@ const IndexPage = () => {
               <h2 className="text-2xl font-display font-semibold mb-6">Choose a subject</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <SubjectCard
-                  title="Maths"
+                  subject="maths"
                   description="Numbers, shapes, and problem solving"
                   icon={<Calculator className="h-5 w-5" />}
                   isSelected={selectedSubject === 'maths'}
                   onClick={() => handleSubjectSelect('maths')}
                 />
                 <SubjectCard
-                  title="English"
+                  subject="english"
                   description="Vocabulary, grammar, and comprehension"
                   icon={<BookOpen className="h-5 w-5" />}
                   isSelected={selectedSubject === 'english'}
                   onClick={() => handleSubjectSelect('english')}
                 />
                 <SubjectCard
-                  title="Verbal Reasoning"
+                  subject="verbal"
                   description="Word problems and logic puzzles"
                   icon={<BookText className="h-5 w-5" />}
                   isSelected={selectedSubject === 'verbal'}
                   onClick={() => handleSubjectSelect('verbal')}
                 />
                 <SubjectCard
-                  title="Non-Verbal Reasoning"
+                  subject="non-verbal"
                   description="Pattern and sequence problems"
                   icon={<ShapeIcon className="h-5 w-5" />}
                   isSelected={selectedSubject === 'non-verbal'}

@@ -1,275 +1,285 @@
-
 import { Question } from '@/types/questionTypes';
 
 const hardQuestions: Question[] = [
   {
-    id: 'e25',
+    id: 'eh1',
     subject: 'english',
-    text: 'Which sentence uses the correct form of the verb?',
-    options: ['Everyone have finished the exam.', 'The team are playing well.', 'Each of the students has submitted their work.', 'Neither of them were available.'],
-    correctAnswer: 'Each of the students has submitted their work.',
-    explanation: '"Each" is singular, so it takes the singular verb "has".',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e32',
-    subject: 'english',
-    text: 'Which word is a gerund in the sentence: "Swimming is good exercise."?',
-    options: ['Swimming', 'is', 'good', 'exercise'],
-    correctAnswer: 'Swimming',
-    explanation: '"Swimming" is a gerund, a verb form ending in "-ing" that functions as a noun.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e35',
-    subject: 'english',
-    text: 'Which of these punctuation marks is used to indicate a pause stronger than a comma but weaker than a period?',
-    options: ['colon', 'semicolon', 'hyphen', 'dash'],
-    correctAnswer: 'semicolon',
-    explanation: 'A semicolon (;) indicates a pause stronger than a comma but weaker than a period, often connecting related independent clauses.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e40',
-    subject: 'english',
-    text: 'Which of these is NOT a type of pronoun?',
-    options: ['possessive', 'personal', 'relative', 'conjugative'],
-    correctAnswer: 'conjugative',
-    explanation: '"Conjugative" is not a type of pronoun. The common types are personal, possessive, demonstrative, indefinite, relative, interrogative, and reflexive.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e41',
-    subject: 'english',
-    text: 'What is the correct order of adjectives before a noun?',
-    options: ['size, color, material', 'color, size, material', 'material, size, color', 'material, color, size'],
-    correctAnswer: 'size, color, material',
-    explanation: 'The conventional order of adjectives in English is opinion, size, age, shape, color, origin, material, purpose.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e45',
-    subject: 'english',
-    text: 'Which word means "to officially end or cancel"?',
-    options: ['terminate', 'abdicate', 'rescind', 'relinquish'],
-    correctAnswer: 'rescind',
-    explanation: '"Rescind" means to revoke, cancel, or repeal (a law, order, or agreement).',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e47',
-    subject: 'english',
-    text: 'Which of these words contains a diphthong?',
-    options: ['cat', 'book', 'noise', 'hit'],
-    correctAnswer: 'noise',
-    explanation: 'A diphthong is a sound formed by combining two vowels in a single syllable. The "oi" in "noise" is a diphthong.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e48',
-    subject: 'english',
-    text: 'Which sentence uses the subjunctive mood correctly?',
-    options: ['I wish I was taller.', 'I wish I were taller.', 'I wish I am taller.', 'I wish I be taller.'],
+    text: 'Which sentence contains an example of a subjunctive mood?',
+    options: [
+      'He went to the store.',
+      'I wish I were taller.',
+      'They are playing soccer.',
+      'She has completed her homework.'
+    ],
     correctAnswer: 'I wish I were taller.',
-    explanation: 'The subjunctive mood is used for hypothetical or counterfactual statements. "I wish I were" is correct, not "I wish I was".',
+    explanation: 'The subjunctive mood is used to express wishes, hypothetical situations, or conditions contrary to fact. "I wish I were taller" uses "were" instead of "was" to indicate the subjunctive mood.',
     difficulty: 'hard'
   },
   {
-    id: 'e51',
+    id: 'eh2',
     subject: 'english',
-    text: 'What is a dangling modifier?',
-    options: ['A modifier that appears too far from what it modifies', 'A modifier with no word to modify', 'A modifier that creates ambiguity', 'A modifier that is unnecessary'],
-    correctAnswer: 'A modifier with no word to modify',
-    explanation: 'A dangling modifier is a word or phrase that modifies a word not clearly stated in the sentence.',
+    text: 'Identify the sentence that uses a gerund phrase as the subject.',
+    options: [
+      'She enjoys to swim in the ocean.',
+      'Swimming in the ocean is her favorite activity.',
+      'She swims in the ocean every day.',
+      'To swim in the ocean is what she likes.'
+    ],
+    correctAnswer: 'Swimming in the ocean is her favorite activity.',
+    explanation: 'A gerund phrase uses a verb form ending in "-ing" as a noun. In this sentence, "Swimming in the ocean" acts as the subject.',
     difficulty: 'hard'
   },
   {
-    id: 'e52',
+    id: 'eh3',
     subject: 'english',
-    text: 'Which sentence contains a split infinitive?',
-    options: ['She agreed to carefully read the terms.', 'She agreed to read the terms carefully.', 'She carefully agreed to read the terms.', 'She agreed carefully to read the terms.'],
-    correctAnswer: 'She agreed to carefully read the terms.',
-    explanation: 'A split infinitive occurs when a word or phrase comes between "to" and a verb. In "to carefully read," an adverb splits the infinitive.',
+    text: 'Which sentence demonstrates correct parallel structure?',
+    options: [
+      'She likes hiking, to bike, and swimming.',
+      'She likes hiking, biking, and to swim.',
+      'She likes to hike, biking, and swimming.',
+      'She likes hiking, biking, and swimming.'
+    ],
+    correctAnswer: 'She likes hiking, biking, and swimming.',
+    explanation: 'Parallel structure means using the same pattern of words to show that two or more ideas have the same level of importance. The correct sentence uses all gerunds.',
     difficulty: 'hard'
   },
   {
-    id: 'e54',
+    id: 'eh4',
     subject: 'english',
-    text: 'What is the correct term for a statement that contradicts itself?',
-    options: ['oxymoron', 'paradox', 'hyperbole', 'irony'],
-    correctAnswer: 'paradox',
-    explanation: 'A paradox is a statement that contradicts itself but might still be true, while an oxymoron is a phrase with contradictory words.',
+    text: 'Choose the sentence that correctly uses a semicolon.',
+    options: [
+      'I went to the store; I bought milk, eggs, and bread.',
+      'I went to the store, I bought milk; eggs; and bread.',
+      'I went to the store; and I bought milk, eggs, and bread.',
+      'I went to the store, I bought milk, eggs, and bread;'],
+    correctAnswer: 'I went to the store; I bought milk, eggs, and bread.',
+    explanation: 'A semicolon is used to connect two independent clauses that are related. The clauses "I went to the store" and "I bought milk, eggs, and bread" are both independent and closely related.',
     difficulty: 'hard'
   },
   {
-    id: 'e57',
+    id: 'eh5',
     subject: 'english',
-    text: 'Which sentence demonstrates parallel structure?',
-    options: ['She enjoys swimming, to hike, and reading.', 'She enjoys swimming, hiking, and reading.', 'She enjoys swimming, hikes, and to read.', 'She enjoys to swim, hiking, and reads.'],
-    correctAnswer: 'She enjoys swimming, hiking, and reading.',
-    explanation: 'Parallel structure uses the same pattern of words to show that ideas have the same level of importance. The gerund form (-ing) is used consistently.',
+    text: 'Which sentence uses the correct form of the word "lie"?',
+    options: [
+      'He laid down for a nap.',
+      'He lies down for a nap every day.',
+      'He layed down for a nap.',
+      'He has lain down for a nap.'
+    ],
+    correctAnswer: 'He lies down for a nap every day.',
+    explanation: '"Lies" is the present tense form of "to lie" (to recline). "Lay" is the past tense of "to lie," and "laid" is the past tense of "to lay" (to place something down).',
     difficulty: 'hard'
   },
   {
-    id: 'e58',
+    id: 'eh6',
     subject: 'english',
-    text: 'Which of these is NOT a function of a comma?',
-    options: ['To separate items in a list', 'To join two independent clauses without a conjunction', 'To separate a dependent clause at the beginning of a sentence', 'To separate a non-essential clause'],
-    correctAnswer: 'To join two independent clauses without a conjunction',
-    explanation: 'A comma alone cannot join two independent clauses; this creates a comma splice error. A semicolon or a conjunction with a comma should be used.',
+    text: 'Identify the sentence with the correct use of the word "affect" or "effect".',
+    options: [
+      'The affect of the storm was devastating.',
+      'The effect of the storm was devastating.',
+      'The storm affected the city greatly, it had a big effect.',
+      'The storm effected the city greatly.'
+    ],
+    correctAnswer: 'The effect of the storm was devastating.',
+    explanation: '"Effect" is usually a noun meaning a result or consequence. "Affect" is usually a verb meaning to influence. The correct sentence uses "effect" as a noun.',
     difficulty: 'hard'
   },
   {
-    id: 'e59',
+    id: 'eh7',
     subject: 'english',
-    text: 'Which sentence contains a restrictive clause?',
-    options: ['My sister, who lives in Paris, is visiting next week.', 'The book that I borrowed from you is excellent.', 'London, which is the capital of England, is a beautiful city.', 'My car, which I bought last year, needs repairs.'],
-    correctAnswer: 'The book that I borrowed from you is excellent.',
-    explanation: 'A restrictive clause is essential to the meaning of the sentence and does not use commas. "That I borrowed from you" identifies which book and is necessary information.',
+    text: 'Which sentence contains a dangling modifier?',
+    options: [
+      'Walking through the park, the birds chirped loudly.',
+      'Walking through the park, I saw many birds.',
+      'I enjoyed walking through the park, listening to the birds.',
+      'The birds were chirping as I was walking through the park.'
+    ],
+    correctAnswer: 'Walking through the park, the birds chirped loudly.',
+    explanation: 'A dangling modifier does not clearly refer to the word it is intended to modify. In this case, it sounds like the birds are walking through the park, not the person.',
     difficulty: 'hard'
   },
   {
-    id: 'e66',
+    id: 'eh8',
     subject: 'english',
-    text: 'What is a portmanteau word?',
-    options: ['A word that has multiple meanings', 'A word formed by blending parts of two other words', 'A word that sounds like what it describes', 'A word borrowed from another language'],
-    correctAnswer: 'A word formed by blending parts of two other words',
-    explanation: 'A portmanteau is a word made by combining parts of two existing words, like "brunch" (breakfast + lunch).',
+    text: 'Choose the sentence that correctly uses an ellipsis.',
+    options: [
+      'He said he would... think about it.',
+      'He said he would...think about it.',
+      'He said he would.... think about it.',
+      'He said he would . . . think about it.'
+    ],
+    correctAnswer: 'He said he would... think about it.',
+    explanation: 'An ellipsis (...) is used to indicate an omission of words or a pause. There should be a space before "think" but not before the ellipsis.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh9',
+    subject: 'english',
+    text: 'Which sentence uses the correct tense sequence?',
+    options: [
+      'I will be happy after I finished my work.',
+      'I will be happy after I finish my work.',
+      'I would be happy after I will finish my work.',
+      'I would be happy after I finished my work.'
+    ],
+    correctAnswer: 'I will be happy after I finish my work.',
+    explanation: 'The correct tense sequence pairs a future tense ("will be") with a present tense ("finish") to describe a future event that will happen after another future event.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh10',
+    subject: 'english',
+    text: 'Identify the sentence that uses a split infinitive correctly.',
+    options: [
+      'She decided to quickly run to the store.',
+      'She decided quickly to run to the store.',
+      'She decided to run quickly to the store.',
+      'She decided to run to quickly the store.'
+    ],
+    correctAnswer: 'She decided to run quickly to the store.',
+    explanation: 'A split infinitive is when an adverb is placed between "to" and the verb (e.g., "to quickly run"). While some consider it incorrect, it is acceptable when it sounds more natural and clear.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh11',
+    subject: 'english',
+    text: 'Which sentence uses the correct form of "who" or "whom"?',
+    options: [
+      'Who did you give the book to?',
+      'Whom did you give the book to?',
+      'Who did you gave the book to?',
+      'Whom did you gave the book to?'
+    ],
+    correctAnswer: 'Whom did you give the book to?',
+    explanation: '"Whom" is used as the object of a verb or preposition. In this case, "whom" is the object of the preposition "to."',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh12',
+    subject: 'english',
+    text: 'Identify the sentence that uses a mixed metaphor.',
+    options: [
+      'The early bird catches the worm.',
+      'He is a wolf in sheep\'s clothing.',
+      'That project is a tightrope walk in a minefield.',
+      'Time is a river flowing gently.'
+    ],
+    correctAnswer: 'That project is a tightrope walk in a minefield.',
+    explanation: 'A mixed metaphor combines two or more incompatible metaphors in a single expression. "Tightrope walk" and "minefield" are unrelated images that create a nonsensical comparison.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh13',
+    subject: 'english',
+    text: 'Which sentence contains an example of chiasmus?',
+    options: [
+      'Ask not what your country can do for you – ask what you can do for your country.',
+      'Easy come, easy go.',
+      'She is all that and a bag of chips.',
+      'He went to the store and bought milk.'
+    ],
+    correctAnswer: 'Ask not what your country can do for you – ask what you can do for your country.',
+    explanation: 'Chiasmus is a rhetorical device in which two or more clauses are balanced against each other by the reversal of their structures in order to produce an artistic effect.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh14',
+    subject: 'english',
+    text: 'Choose the sentence that correctly uses a hyphen.',
+    options: [
+      'He is a well known author.',
+      'He is a well-known author.',
+      'He is a well known-author.',
+      'He is a well knownauthor.'
+    ],
+    correctAnswer: 'He is a well-known author.',
+    explanation: 'A hyphen is used to join two or more words serving as a single adjective before a noun. "Well-known" acts as a single adjective describing "author."',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh15',
+    subject: 'english',
+    text: 'Identify the sentence that contains a zeugma.',
+    options: [
+      'She opened her heart and her purse to the needy.',
+      'He runs quickly.',
+      'They went to the park.',
+      'The cat sat on the mat.'
+    ],
+    correctAnswer: 'She opened her heart and her purse to the needy.',
+    explanation: 'Zeugma is a figure of speech in which a word applies to two others in different senses (e.g., "She opened her heart and her purse").',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh16',
+    subject: 'english',
+    text: 'Which sentence uses the correct form of "there," "their," or "they\'re"?',
+    options: [
+      'There going to the party.',
+      'Their going to the party.',
+      'They\'re going to the party.',
+      'Theyre going to the party.'
+    ],
+    correctAnswer: 'They\'re going to the party.',
+    explanation: '"They\'re" is a contraction of "they are." "There" indicates a place, and "their" shows possession.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh17',
+    subject: 'english',
+    text: 'Choose the sentence that correctly uses a colon.',
+    options: [
+      'I need: milk, eggs, and bread.',
+      'I need the following: milk, eggs, and bread.',
+      'I need the following, milk, eggs, and bread.',
+      'I need the following; milk, eggs, and bread.'
+    ],
+    correctAnswer: 'I need the following: milk, eggs, and bread.',
+    explanation: 'A colon is used to introduce a list or explanation after an independent clause. "I need the following" is an independent clause that introduces the list.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh18',
+    subject: 'english',
+    text: 'Identify the sentence that contains an anachronism.',
+    options: [
+      'He used a smartphone to call his friend.',
+      'The movie was set in the 1800s, but the character used a mobile phone.',
+      'She wrote a letter with a pen.',
+      'They drove a car to the beach.'
+    ],
+    correctAnswer: 'The movie was set in the 1800s, but the character used a mobile phone.',
+    explanation: 'An anachronism is something that is out of place in time. A mobile phone in the 1800s is an example of this.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh19',
+    subject: 'english',
+    text: 'Which sentence uses the correct form of "it\'s" or "its"?',
+    options: [
+      'Its a beautiful day.',
+      'It\'s a beautiful day.',
+      'The dog wagged it\'s tail.',
+      'The dog wagged its tail.'
+    ],
+    correctAnswer: 'It\'s a beautiful day.',
+    explanation: '"It\'s" is a contraction of "it is" or "it has." "Its" is a possessive pronoun.',
+    difficulty: 'hard'
+  },
+  {
+    id: 'eh20',
+    subject: 'english',
+    text: 'Choose the sentence that contains a litotes.',
+    options: [
+      'He is not the smartest person in the world.',
+      'She is very intelligent.',
+      'The weather is wonderful.',
+      'The book is interesting.'
+    ],
+    correctAnswer: 'He is not the smartest person in the world.',
+    explanation: 'Litotes is an understatement in which an affirmative is expressed by the negative of the contrary (e.g., "not the smartest" meaning "less intelligent").',
     difficulty: 'hard'
   }
 ];
-
-// Add more hard questions
-const additionalHardQuestions: Question[] = [
-  {
-    id: 'e74',
-    subject: 'english',
-    text: 'What is the rhetorical device in which contradictory terms appear together?',
-    options: ['paradox', 'hyperbole', 'oxymoron', 'euphemism'],
-    correctAnswer: 'oxymoron',
-    explanation: 'An oxymoron combines contradictory terms, like "jumbo shrimp," "act naturally," or "deafening silence".',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e75',
-    subject: 'english',
-    text: 'Which of these is NOT a type of sentence structure?',
-    options: ['simple', 'compound', 'complex', 'interrogatory'],
-    correctAnswer: 'interrogatory',
-    explanation: 'The basic sentence structures are simple, compound, complex, and compound-complex. "Interrogatory" refers to question form, not structure.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e79',
-    subject: 'english',
-    text: 'What is the purpose of a subordinating conjunction?',
-    options: ['To join words, phrases, or clauses of equal rank', 'To introduce direct questions', 'To connect a dependent clause to an independent clause', 'To connect two independent clauses'],
-    correctAnswer: 'To connect a dependent clause to an independent clause',
-    explanation: 'Subordinating conjunctions like "because," "although," and "while" connect dependent clauses to independent clauses.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e80',
-    subject: 'english',
-    text: 'Which sentence demonstrates correct use of the semicolon?',
-    options: ['He likes chocolate; and she likes vanilla.', 'He likes chocolate; she likes vanilla.', 'He likes chocolate, she likes vanilla.', 'He likes chocolate; because she likes vanilla.'],
-    correctAnswer: 'He likes chocolate; she likes vanilla.',
-    explanation: 'A semicolon correctly joins two closely related independent clauses without a coordinating conjunction.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e81',
-    subject: 'english',
-    text: 'What is the function of an appositive in a sentence?',
-    options: ['To show action', 'To rename or explain a nearby noun', 'To modify a verb', 'To connect clauses'],
-    correctAnswer: 'To rename or explain a nearby noun',
-    explanation: 'An appositive is a noun or noun phrase that renames or explains another noun right beside it, such as "My brother, a doctor, lives in Boston."',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e86',
-    subject: 'english',
-    text: 'Which sentence uses the present perfect continuous tense?',
-    options: ['I work at the hospital.', 'I have worked at the hospital.', 'I have been working at the hospital.', 'I worked at the hospital.'],
-    correctAnswer: 'I have been working at the hospital.',
-    explanation: 'The present perfect continuous tense is formed with "have/has been" + present participle. It shows an action that started in the past and continues to the present.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e93',
-    subject: 'english',
-    text: 'What type of verb is "seem" in the sentence "He seems happy"?',
-    options: ['action verb', 'linking verb', 'auxiliary verb', 'transitive verb'],
-    correctAnswer: 'linking verb',
-    explanation: 'Linking verbs connect the subject to more information about the subject. "Seems" links "he" to "happy".',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e94',
-    subject: 'english',
-    text: 'Which sentence has correct pronoun usage?',
-    options: ['Him and I went to the store.', 'Between you and I, this is a secret.', 'He is taller than me.', 'Her and they discussed the issue.'],
-    correctAnswer: 'He is taller than me.',
-    explanation: 'In "He is taller than me," "me" is correctly used as the object of the preposition "than".',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e95',
-    subject: 'english',
-    text: 'Which of these is a complex sentence?',
-    options: ['He ran.', 'He ran, and she walked.', 'Although he was tired, he kept running.', 'He ran; she walked.'],
-    correctAnswer: 'Although he was tired, he kept running.',
-    explanation: 'A complex sentence contains an independent clause and at least one dependent clause. "Although he was tired" is a dependent clause.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e96',
-    subject: 'english',
-    text: 'Which sentence uses the passive voice?',
-    options: ['The boy kicked the ball.', 'The ball was kicked by the boy.', 'The boy is kicking the ball.', 'The ball bounced high.'],
-    correctAnswer: 'The ball was kicked by the boy.',
-    explanation: 'In passive voice, the subject receives the action. "The ball was kicked" shows that the ball (subject) received the action of kicking.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e97',
-    subject: 'english',
-    text: 'What is the function of a relative pronoun?',
-    options: ['To replace a noun', 'To join clauses and refer back to a noun', 'To show possession', 'To indicate a question'],
-    correctAnswer: 'To join clauses and refer back to a noun',
-    explanation: 'Relative pronouns (who, whom, whose, which, that) join clauses and refer back to a noun or pronoun mentioned previously.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e98',
-    subject: 'english',
-    text: 'Which of these is an example of a possessive pronoun?',
-    options: ['she', 'her', 'hers', 'herself'],
-    correctAnswer: 'hers',
-    explanation: 'Possessive pronouns (mine, yours, his, hers, its, ours, theirs) show ownership and can stand alone without a noun following them.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e99',
-    subject: 'english',
-    text: 'What is the literary term for a sequence of events that builds toward a climax?',
-    options: ['foreshadowing', 'flashback', 'rising action', 'resolution'],
-    correctAnswer: 'rising action',
-    explanation: 'Rising action is the part of a story\'s plot that leads up to the climax, building tension and developing conflict.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'e100',
-    subject: 'english',
-    text: 'Which sentence demonstrates correct agreement between subject and pronoun?',
-    options: ['Everyone should bring their notebook.', 'The committee made its decision.', 'Each of the students has their own locker.', 'Neither of them have finished their work.'],
-    correctAnswer: 'The committee made its decision.',
-    explanation: 'Collective nouns like "committee" take singular pronouns. "Committee" and "its" show correct agreement.',
-    difficulty: 'hard'
-  }
-];
-
-// Combine all hard questions
-const hardQuestions = [...hardQuestions, ...additionalHardQuestions];
 
 export default hardQuestions;

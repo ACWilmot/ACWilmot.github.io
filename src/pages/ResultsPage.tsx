@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check, X, RotateCcw, Home, ArrowRight } from 'lucide-react';
@@ -21,7 +21,8 @@ const ResultsPage = () => {
     startQuiz
   } = useQuiz();
   
-  // Check authentication and redirect if needed
+  const [progressUpdated, setProgressUpdated] = useState(false);
+  
   useEffect(() => {
     if (!isAuthenticated) {
       toast.error("Please sign in to access your results");
@@ -29,7 +30,6 @@ const ResultsPage = () => {
       return;
     }
     
-    // If no subject is selected, redirect to home
     if (!selectedSubject) {
       navigate('/');
     }
@@ -37,16 +37,15 @@ const ResultsPage = () => {
   
   const { score, totalQuestions, percentage } = getResults();
   
-  // Save cumulative progress for authenticated users
   useEffect(() => {
-    if (isAuthenticated && selectedSubject && questions.length > 0) {
-      // Only update progress when the user has completed questions
+    if (isAuthenticated && selectedSubject && questions.length > 0 && !progressUpdated) {
       if (totalQuestions > 0) {
         console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);
         updateProgress(selectedSubject, totalQuestions, score);
+        setProgressUpdated(true);
       }
     }
-  }, [isAuthenticated, selectedSubject, score, totalQuestions, questions.length, updateProgress]);
+  }, [isAuthenticated, selectedSubject, questions.length, progressUpdated, updateProgress, score, totalQuestions]);
   
   const getGrade = () => {
     if (percentage >= 90) return { text: 'Excellent', color: 'text-green-500' };
@@ -71,7 +70,6 @@ const ResultsPage = () => {
 
   const grade = getGrade();
 
-  // Filter questions to only show those with answers
   const answeredQuestions = questions.filter(question => userAnswers[question.id]);
 
   return (

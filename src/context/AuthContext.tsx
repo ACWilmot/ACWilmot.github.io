@@ -25,10 +25,15 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
   // Check for auth state changes
   useEffect(() => {
+    console.log("AuthProvider useEffect running");
+    
     const fetchSession = async () => {
+      console.log("Fetching session...");
       try {
         // Check current user auth state
         const { data: { session } } = await supabase.auth.getSession();
+        
+        console.log("Session result:", session ? "Session found" : "No session");
         
         // Handle authenticated user
         if (session?.user) {
@@ -36,9 +41,9 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
           const profile = await fetchUserProfile(session.user.id);
           if (profile) {
             // Update state with user data
+            console.log("User profile loaded:", profile.name);
             setIsAuthenticated(true);
             setUser(profile);
-            console.log("User profile loaded:", profile);
           } else {
             console.error("No profile found for authenticated user");
             // Handle missing profile (e.g., logout)
@@ -48,6 +53,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
           }
         } else {
           // No authenticated user
+          console.log("No authenticated session");
           setIsAuthenticated(false);
           setUser(null);
         }
@@ -57,6 +63,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         setUser(null);
       } finally {
         setLoading(false);
+        console.log("Auth loading complete");
       }
     };
 
@@ -105,9 +112,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    console.log("Auth still loading, showing loading UI");
+    return <div className="min-h-screen flex items-center justify-center">Loading authentication...</div>;
   }
 
+  console.log("Auth Provider rendering with isAuthenticated:", isAuthenticated);
+  
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
@@ -118,6 +128,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
+    console.error("useAuth must be used within an AuthProvider");
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

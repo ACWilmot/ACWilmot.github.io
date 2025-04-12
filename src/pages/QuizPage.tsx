@@ -33,17 +33,30 @@ const QuizPage = () => {
   
   const [showExplanation, setShowExplanation] = useState(false);
   const [showWorksheetOption, setShowWorksheetOption] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  
+  console.log("QuizPage rendering - Auth status:", isAuthenticated);
+  console.log("Selected subject:", selectedSubject);
+  console.log("Is loading:", isLoading);
+  console.log("Questions count:", questions.length);
   
   // Check authentication and redirect if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
+    console.log("Auth check effect running, isAuthenticated:", isAuthenticated);
+    
+    // Mark that we've checked authentication 
+    setAuthChecked(true);
+    
+    if (isAuthenticated === false) {
+      console.log("User not authenticated, redirecting to login");
       toast.error("Please sign in to access practice quizzes");
       navigate('/login');
       return;
     }
     
     // If no subject is selected, redirect to home
-    if (!selectedSubject && !isLoading) {
+    if (!isLoading && !selectedSubject) {
+      console.log("No subject selected, redirecting to home");
       navigate('/');
     }
   }, [selectedSubject, isLoading, navigate, isAuthenticated]);
@@ -81,6 +94,23 @@ const QuizPage = () => {
     }
   };
 
+  if (!authChecked) {
+    console.log("Auth not checked yet, showing loading");
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">
+        <Header />
+        <div className="animate-pulse text-center">
+          <h2 className="text-xl font-display mb-6">Initializing...</h2>
+          <div className="loading-dots">
+            <span className="dot"></span>
+            <span className="dot"></span>
+            <span className="dot"></span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">
@@ -98,6 +128,7 @@ const QuizPage = () => {
   }
   
   if (!currentQuestion) {
+    console.log("No current question, returning null");
     return null;
   }
 

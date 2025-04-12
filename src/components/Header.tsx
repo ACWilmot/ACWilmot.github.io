@@ -10,9 +10,6 @@ import DonateButton from './DonateButton';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, userRole } = useAuth();
-  
-  // Treat teachers as having admin access as well
-  const hasAdminAccess = userRole === 'admin' || userRole === 'teacher';
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between glass fixed top-0 z-50 animate-slide-down">
@@ -30,7 +27,7 @@ const Header: React.FC = () => {
           <NavLink href="/quiz">Practice</NavLink>
           {isAuthenticated && userRole === 'student' && <NavLink href="/progress">My Progress</NavLink>}
           {isAuthenticated && userRole === 'teacher' && <NavLink href="/teacher-dashboard">Dashboard</NavLink>}
-          {isAuthenticated && hasAdminAccess && <NavLink href="/admin">Admin</NavLink>}
+          {isAuthenticated && userRole === 'admin' && <NavLink href="/admin">Admin</NavLink>}
           <NavLink href="/questions">Questions</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>

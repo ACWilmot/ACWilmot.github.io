@@ -7,10 +7,14 @@ import SubjectCard from '@/components/SubjectCard';
 import { useQuiz, Subject } from '@/context/QuizContext';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { LogIn, UserPlus } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
   const { startQuiz, questionCount, setQuestionCount } = useQuiz();
+  const { isAuthenticated } = useAuth();
 
   const subjectInfo = [
     {
@@ -36,6 +40,11 @@ const Index = () => {
   ];
 
   const handleStartSubject = (subject: Subject) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
     console.log("Starting quiz for subject:", subject);
     startQuiz(subject);
     navigate('/quiz');
@@ -85,49 +94,75 @@ const Index = () => {
           </p>
         </motion.div>
 
-        <motion.div 
-          {...containerAnimation}
-          transition={{ delay: 0.2 }}
-          className="max-w-md mx-auto mb-10 p-6 bg-card rounded-xl shadow-sm"
-        >
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <Label htmlFor="question-count">Number of Questions</Label>
-              <span className="text-sm font-medium">{questionCount}</span>
-            </div>
-            <Slider 
-              id="question-count"
-              defaultValue={[questionCount]} 
-              max={100} 
-              min={10} 
-              step={5}
-              onValueChange={handleSliderChange}
-              className="w-full"
-            />
-            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-              <span>10</span>
-              <span>100</span>
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {subjectInfo.map((subject, index) => (
-            <motion.div
-              key={subject.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * (index + 1), duration: 0.4 }}
+        {isAuthenticated ? (
+          <>
+            <motion.div 
+              {...containerAnimation}
+              transition={{ delay: 0.2 }}
+              className="max-w-md mx-auto mb-10 p-6 bg-card rounded-xl shadow-sm"
             >
-              <SubjectCard
-                subject={subject.id}
-                name={subject.name}
-                description={subject.description}
-                onClick={() => handleStartSubject(subject.id)}
-              />
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <Label htmlFor="question-count">Number of Questions</Label>
+                  <span className="text-sm font-medium">{questionCount}</span>
+                </div>
+                <Slider 
+                  id="question-count"
+                  defaultValue={[questionCount]} 
+                  max={100} 
+                  min={10} 
+                  step={5}
+                  onValueChange={handleSliderChange}
+                  className="w-full"
+                />
+                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                  <span>10</span>
+                  <span>100</span>
+                </div>
+              </div>
             </motion.div>
-          ))}
-        </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {subjectInfo.map((subject, index) => (
+                <motion.div
+                  key={subject.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * (index + 1), duration: 0.4 }}
+                >
+                  <SubjectCard
+                    subject={subject.id}
+                    name={subject.name}
+                    description={subject.description}
+                    onClick={() => handleStartSubject(subject.id)}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="max-w-md mx-auto mb-10 p-8 bg-card rounded-xl shadow-sm text-center"
+          >
+            <h2 className="text-xl font-display font-semibold mb-4">Sign in to Start Practicing</h2>
+            <p className="text-muted-foreground mb-6">
+              Create an account or sign in to access practice quizzes for all subjects.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button onClick={() => navigate('/login')} className="flex items-center gap-2">
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/register')} className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                Register
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}

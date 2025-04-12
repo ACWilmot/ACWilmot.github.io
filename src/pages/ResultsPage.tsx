@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,9 +7,11 @@ import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { toast } from "sonner";
 
 const ResultsPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const {
     questions,
     userAnswers,
@@ -20,14 +21,19 @@ const ResultsPage = () => {
     startQuiz
   } = useQuiz();
   
-  const { isAuthenticated, updateProgress } = useAuth();
-  
-  // If no subject is selected, redirect to home
+  // Check authentication and redirect if needed
   useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to access your results");
+      navigate('/login');
+      return;
+    }
+    
+    // If no subject is selected, redirect to home
     if (!selectedSubject) {
       navigate('/');
     }
-  }, [selectedSubject, navigate]);
+  }, [selectedSubject, navigate, isAuthenticated]);
   
   const { score, totalQuestions, percentage } = getResults();
   

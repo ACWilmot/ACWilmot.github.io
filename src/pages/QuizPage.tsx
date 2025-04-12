@@ -8,9 +8,12 @@ import QuestionCard from '@/components/QuestionCard';
 import ProgressBar from '@/components/ProgressBar';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from "sonner";
 
 const QuizPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const {
     questions,
     currentQuestionIndex,
@@ -26,12 +29,19 @@ const QuizPage = () => {
   
   const [showExplanation, setShowExplanation] = useState(false);
   
-  // If no subject is selected, redirect to home
+  // Check authentication and redirect if not authenticated
   useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to access practice quizzes");
+      navigate('/login');
+      return;
+    }
+    
+    // If no subject is selected, redirect to home
     if (!selectedSubject && !isLoading) {
       navigate('/');
     }
-  }, [selectedSubject, isLoading, navigate]);
+  }, [selectedSubject, isLoading, navigate, isAuthenticated]);
   
   const currentQuestion = questions[currentQuestionIndex];
   const userAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;

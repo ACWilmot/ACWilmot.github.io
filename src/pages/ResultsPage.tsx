@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 const ResultsPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, updateProgress } = useAuth();
   const {
     questions,
     userAnswers,

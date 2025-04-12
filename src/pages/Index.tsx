@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -15,7 +14,6 @@ import { useProfile } from '@/context/ProfileContext';
 import { Layout } from '@/components/Layout';
 import SubjectCard from '@/components/SubjectCard';
 import { Button } from '@/components/ui/button';
-import ShapeIcon from '@/components/ShapeIcon';
 import DifficultySelector from '@/components/DifficultySelector';
 import { Difficulty } from '@/types/questionTypes';
 import { useQuiz } from '@/context/QuizContext';
@@ -79,7 +77,7 @@ const IndexPage = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
           >
-            Practice tests covering Maths, English, Verbal Reasoning and Non-Verbal Reasoning
+            Practice tests covering Maths, English, and Verbal Reasoning
           </motion.p>
           {!isAuthenticated && (
             <motion.div
@@ -109,7 +107,7 @@ const IndexPage = () => {
           >
             <div className="mb-8">
               <h2 className="text-2xl font-display font-semibold mb-6">Choose a subject</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <SubjectCard
                   subject="maths"
                   description="Numbers, shapes, and problem solving"
@@ -130,13 +128,6 @@ const IndexPage = () => {
                   icon={<BookText className="h-5 w-5" />}
                   isSelected={selectedSubject === 'verbal'}
                   onClick={() => handleSubjectSelect('verbal')}
-                />
-                <SubjectCard
-                  subject="non-verbal"
-                  description="Pattern and sequence problems"
-                  icon={<ShapeIcon className="h-5 w-5" />}
-                  isSelected={selectedSubject === 'non-verbal'}
-                  onClick={() => handleSubjectSelect('non-verbal')}
                 />
               </div>
             </div>

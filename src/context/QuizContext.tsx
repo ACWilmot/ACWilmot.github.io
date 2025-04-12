@@ -1,9 +1,8 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
 
-export type Subject = 'maths' | 'english' | 'verbal' | 'non-verbal';
+export type Subject = 'maths' | 'english' | 'verbal';
 
 interface QuizContextType {
   questions: Question[];

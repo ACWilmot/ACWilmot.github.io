@@ -14,11 +14,6 @@ export const resetSubjects = {
     completed: 0,
     correct: 0,
     lastAttempted: null
-  },
-  nonVerbal: {
-    completed: 0,
-    correct: 0,
-    lastAttempted: null
   }
 };
 

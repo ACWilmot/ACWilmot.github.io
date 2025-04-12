@@ -31,30 +31,29 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [authReady, setAuthReady] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   
-  // Use a try-catch to safely access auth context
-  // This helps prevent the error when auth context isn't yet available
+  // Safely access auth context
   let auth;
   try {
     auth = useAuth();
-    // If we get here, auth context is available
     if (!authReady) setAuthReady(true);
   } catch (error) {
-    // Auth context isn't ready yet, render nothing until it is
     console.log("Auth context not ready yet in ProfileProvider");
     return <>{children}</>;
   }
 
+  // Only run this effect when auth is ready and user changes
   useEffect(() => {
-    if (!authReady) return;
+    if (!authReady || !auth) return;
     
-    if (auth?.user) {
-      // Ensure we have a valid user before attempting to load profile
+    if (auth.user) {
       setIsLoading(true);
-      setTimeout(() => {
+      
+      // Use a shorter timeout for profile loading
+      const timer = setTimeout(() => {
         try {
           setProfile({
             id: auth.user!.id,
@@ -68,13 +67,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             },
             createdAt: new Date().toISOString()
           });
+          console.log("Profile loaded successfully");
         } catch (error) {
           console.error("Error setting profile:", error);
           toast.error("Could not load profile data");
         } finally {
           setIsLoading(false);
         }
-      }, 500);
+      }, 300); // Reduced timeout
+      
+      return () => clearTimeout(timer);
     } else {
       setProfile(null);
     }

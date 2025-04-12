@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,9 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Key, LogIn } from 'lucide-react';
+import { Mail, Key, LogIn, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import { useAuth } from '@/context/AuthContext';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -33,7 +34,9 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authAttempted, setAuthAttempted] = useState(false);
   
   // Safely access auth context and handle potential errors
   let auth;
@@ -52,11 +55,20 @@ const LoginPage = () => {
   }
 
   // Redirect if already authenticated
-  React.useEffect(() => {
+  useEffect(() => {
     if (auth?.isAuthenticated) {
+      console.log("User is authenticated, redirecting to home");
       navigate('/');
     }
   }, [auth?.isAuthenticated, navigate]);
+
+  // Check for auth changes after login attempt
+  useEffect(() => {
+    if (authAttempted && auth?.isAuthenticated) {
+      toast.success("Logged in successfully!");
+      navigate('/');
+    }
+  }, [authAttempted, auth?.isAuthenticated, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,21 +82,24 @@ const LoginPage = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
+      setAuthError(null);
       console.log("Attempting login with:", values.email);
-      const success = await auth.login(values.email, values.password);
       
-      if (success) {
-        toast.success("Logged in successfully!");
-        // Redirect to home page after login
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
-      } else {
-        console.log("Login failed");
+      // Check if auth context is available
+      if (!auth || !auth.login) {
+        setAuthError("Authentication system is not available. Please try again later.");
+        return;
+      }
+
+      const success = await auth.login(values.email, values.password);
+      setAuthAttempted(true);
+      
+      if (!success) {
+        setAuthError("Invalid email or password. Please check your credentials and try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      setAuthError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -103,6 +118,13 @@ const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -180,6 +202,10 @@ const LoginPage = () => {
               <Link to="/register" className="underline text-primary hover:text-primary/90">
                 Sign up
               </Link>
+            </div>
+            
+            <div className="text-xs text-center text-muted-foreground">
+              Having trouble logging in? Try using a non-incognito window or clearing your cookies.
             </div>
           </CardFooter>
         </Card>

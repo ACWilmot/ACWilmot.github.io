@@ -26,12 +26,37 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   // Check for auth state changes
   useEffect(() => {
     console.log("AuthProvider useEffect running");
+    let isSessionFetchTimeout = false;
+    let sessionFetchTimer: number;
     
     const fetchSession = async () => {
       console.log("Fetching session...");
       try {
+        // Add timeout to prevent hanging in incognito mode
+        sessionFetchTimer = window.setTimeout(() => {
+          console.log("Session fetch timeout - possibly in incognito mode");
+          isSessionFetchTimeout = true;
+          setIsAuthenticated(false);
+          setUser(null);
+          setLoading(false);
+        }, 5000); // 5 second timeout
+        
         // Check current user auth state
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // Clear timeout as we got a response
+        clearTimeout(sessionFetchTimer);
+        
+        // If timeout already occurred, don't continue processing
+        if (isSessionFetchTimeout) return;
+        
+        if (error) {
+          console.error("Error fetching session:", error);
+          setIsAuthenticated(false);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
         
         console.log("Session result:", session ? "Session found" : "No session");
         
@@ -62,8 +87,11 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         setIsAuthenticated(false);
         setUser(null);
       } finally {
-        setLoading(false);
-        console.log("Auth loading complete");
+        if (!isSessionFetchTimeout) {
+          clearTimeout(sessionFetchTimer);
+          setLoading(false);
+          console.log("Auth loading complete");
+        }
       }
     };
 
@@ -95,6 +123,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
     // Cleanup subscription on unmount
     return () => {
+      clearTimeout(sessionFetchTimer);
       subscription.unsubscribe();
     };
   }, [navigate]);

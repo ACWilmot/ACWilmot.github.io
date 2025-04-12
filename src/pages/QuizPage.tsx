@@ -47,6 +47,8 @@ const QuizPage = () => {
     // Mark that we've checked authentication 
     setAuthChecked(true);
     
+    // Only redirect if we've explicitly determined the user is not authenticated
+    // This prevents redirect loops in loading/indeterminate states
     if (isAuthenticated === false) {
       console.log("User not authenticated, redirecting to login");
       toast.error("Please sign in to access practice quizzes");
@@ -55,7 +57,7 @@ const QuizPage = () => {
     }
     
     // If no subject is selected, redirect to home
-    if (!isLoading && !selectedSubject) {
+    if (!isLoading && !selectedSubject && isAuthenticated) {
       console.log("No subject selected, redirecting to home");
       navigate('/');
     }
@@ -94,6 +96,7 @@ const QuizPage = () => {
     }
   };
 
+  // Show loading while we're determining auth state
   if (!authChecked) {
     console.log("Auth not checked yet, showing loading");
     return (
@@ -111,6 +114,7 @@ const QuizPage = () => {
     );
   }
 
+  // Regular loading for quiz questions
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">

@@ -9,6 +9,7 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
     if (!user) return;
 
     try {
+      console.log("Starting progress update:", { subject, completed, correct });
       const lastAttempted = new Date().toISOString().split('T')[0];
       
       // Get current progress values to accumulate them
@@ -24,6 +25,8 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
         }
       };
 
+      console.log("New progress to save:", newProgress);
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -37,6 +40,9 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
         return;
       }
 
+      console.log("Progress successfully updated in database");
+      
+      // Update local state
       setUser({
         ...user,
         progress: newProgress

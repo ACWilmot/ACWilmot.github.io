@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, UserProgress } from '@/types/userTypes';
+import { resetSubjects } from './progressUtils';
 
 export async function fetchUserProfile(userId: string): Promise<Profile | null> {
   try {
@@ -17,25 +18,46 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
 
     console.log("Fetched profile:", data);
     
-    // Convert the JSON data to our Profile type with proper type safety
-    if (data) {
-      const profile: Profile = {
-        id: data.id,
-        name: data.name,
-        role: data.role as 'student' | 'teacher',
-        progress: data.progress as { [subject: string]: UserProgress },
-        students: data.students || []
-      };
-      
-      // Only add email if it exists in the data
-      if (data.email) {
-        profile.email = data.email;
-      }
-      
-      return profile;
+    if (!data) {
+      return null;
     }
     
-    return null;
+    // Ensure progress has the correct structure
+    let progressData: { [subject: string]: UserProgress } = { ...resetSubjects };
+    
+    if (data.progress && typeof data.progress === 'object' && !Array.isArray(data.progress)) {
+      // Convert the progress data to ensure it conforms to our UserProgress type
+      Object.keys(data.progress).forEach(subject => {
+        const subjectData = data.progress[subject];
+        if (subjectData && typeof subjectData === 'object') {
+          if (progressData[subject]) {
+            progressData[subject] = {
+              completed: typeof subjectData.completed === 'number' ? subjectData.completed : 0,
+              correct: typeof subjectData.correct === 'number' ? subjectData.correct : 0,
+              lastAttempted: subjectData.lastAttempted || null
+            };
+          }
+        }
+      });
+    }
+    
+    // Convert the data to our Profile type
+    const profile: Profile = {
+      id: data.id,
+      name: data.name || '',
+      role: (data.role as 'student' | 'teacher') || 'student',
+      progress: progressData,
+      students: data.students || []
+    };
+    
+    // Only add email if it exists in the data
+    if (data.email) {
+      profile.email = data.email;
+    } else if (data.Email) {
+      profile.email = data.Email;
+    }
+    
+    return profile;
   } catch (error) {
     console.error('Error fetching profile:', error);
     return null;

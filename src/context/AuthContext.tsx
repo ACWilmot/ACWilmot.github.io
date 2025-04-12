@@ -54,6 +54,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
             // Update state with user data
             setIsAuthenticated(true);
             setUser(profile);
+            console.log("User profile loaded:", profile);
           } else {
             console.error("No profile found for authenticated user");
             // Handle missing profile (e.g., logout)

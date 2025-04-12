@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -38,13 +39,15 @@ const ResultsPage = () => {
   const { score, totalQuestions, percentage } = getResults();
   
   useEffect(() => {
-    if (isAuthenticated && selectedSubject && questions.length > 0 && !progressUpdated) {
-      if (totalQuestions > 0) {
+    const updateUserProgress = async () => {
+      if (isAuthenticated && selectedSubject && questions.length > 0 && !progressUpdated && totalQuestions > 0) {
         console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);
-        updateProgress(selectedSubject, totalQuestions, score);
+        await updateProgress(selectedSubject, totalQuestions, score);
         setProgressUpdated(true);
       }
-    }
+    };
+    
+    updateUserProgress();
   }, [isAuthenticated, selectedSubject, questions.length, progressUpdated, updateProgress, score, totalQuestions]);
   
   const getGrade = () => {

@@ -1,24 +1,51 @@
 
-import { fetchUserProfile } from './profileUtils';
-import { resetSubjects } from './progressUtils';
-import { registerUser } from './registrationUtils';
-import { setupTestStudentTeacherRelationship } from './testSetupUtils';
+import { supabase } from '@/integrations/supabase/client';
+import { Profile } from '@/types/userTypes';
+import { resetSubjects } from '@/utils/progressUtils';
 
-// Export all the utilities from this central file to maintain the same API
-export { 
-  fetchUserProfile,
-  resetSubjects,
-  registerUser,
-  setupTestStudentTeacherRelationship
-};
-
-// This function would need to be updated if we add the email column
-export async function updateProfilesWithEmail(): Promise<void> {
+export async function fetchUserProfile(userId: string): Promise<Profile | null> {
   try {
-    // This function is currently not applicable because the email field
-    // doesn't exist in the profiles table schema.
-    console.log("Cannot update profiles with email as the column doesn't exist in the schema.");
+    const { data, error } = await supabase
+      .from('profiles')
+      .select()
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+    
+    if (!data) {
+      return null;
+    }
+
+    // Ensure progress has the correct structure
+    const progress = data.progress && typeof data.progress === 'object' 
+      ? data.progress
+      : resetSubjects;
+    
+    // Convert the data to our Profile type
+    const profile: Profile = {
+      id: data.id,
+      name: data.name || '',
+      role: (data.role as 'student' | 'teacher') || 'student',
+      progress: progress,
+      students: data.students || []
+    };
+    
+    // Add email if it exists
+    if (data.email) {
+      profile.email = data.email;
+    } else if (data.Email) {
+      profile.email = data.Email;
+    }
+    
+    return profile;
   } catch (error) {
-    console.error('Error updating profiles with email:', error);
+    console.error('Error fetching profile:', error);
+    return null;
   }
 }
+
+export { resetSubjects };

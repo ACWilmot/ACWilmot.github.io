@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile } from '@/types/userTypes';
-import { resetSubjects } from '@/utils/authUtils';
+import { resetSubjects } from '@/utils/progressUtils';
 
 export const useProgressActions = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   const updateProgress = async (subject: string, completed: number, correct: number): Promise<void> => {

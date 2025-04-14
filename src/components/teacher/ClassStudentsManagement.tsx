@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Student } from '@/types/userTypes';
 import TeacherDashboardStats from './TeacherDashboardStats';
 import StudentsList from './StudentsList';
@@ -9,6 +9,7 @@ import AddStudentForm from './AddStudentForm';
 import { toast } from 'sonner';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ClassStudentsManagementProps {
   classId: string;
@@ -27,6 +28,7 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
 }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -36,18 +38,22 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
     } else {
       console.error("No classId provided to ClassStudentsManagement");
       setLoading(false);
+      setError("Class ID is missing. Please go back and try again.");
     }
   }, [classId]);
 
   const fetchStudents = async () => {
     console.log("Fetching students for class:", classId);
     setLoading(true);
+    setError(null);
+    
     try {
       const studentsList = await getClassStudents(classId);
       console.log("Students fetched:", studentsList);
       setStudents(studentsList || []);
     } catch (error) {
       console.error("Error fetching students:", error);
+      setError("Failed to load students. Please try refreshing the page.");
       toast.error("Failed to load students");
     } finally {
       setLoading(false);
@@ -94,12 +100,26 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
     }
   };
 
+  const handleRefreshStudents = () => {
+    fetchStudents();
+  };
+
   return (
     <div className="space-y-8">
       <Button variant="outline" onClick={onBack} className="mb-4">
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Classes
       </Button>
+
+      {error ? (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4 mr-2" />
+          <AlertDescription>{error}</AlertDescription>
+          <Button variant="outline" size="sm" className="ml-auto" onClick={handleRefreshStudents}>
+            Retry
+          </Button>
+        </Alert>
+      ) : null}
 
       <TeacherDashboardStats students={students} loading={loading} />
 

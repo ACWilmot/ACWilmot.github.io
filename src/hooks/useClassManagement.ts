@@ -107,58 +107,64 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
-      // Check if the student is already enrolled in any class
-      const { data: existingEnrollment, error: checkError } = await supabase
-        .from('class_enrollments')
-        .select('id, class_id')
-        .eq('student_id', studentId)
-        .maybeSingle();
-        
-      if (checkError) {
-        console.error('Error checking existing enrollment:', checkError);
-        toast.error("Failed to check student's enrollment status");
-        return false;
-      }
-      
-      // If student is already enrolled in this class, just return true
-      if (existingEnrollment && existingEnrollment.class_id === classId) {
-        toast.info("Student is already enrolled in this class");
-        return true;
-      }
-      
-      // If student is enrolled in another class, we need to delete that enrollment first
-      if (existingEnrollment) {
-        console.log("Student is currently enrolled in class:", existingEnrollment.class_id);
-        console.log("Moving student to new class:", classId);
-        
-        const { error: deleteError } = await supabase
+      try {
+        // Check if the student is already enrolled in any class
+        const { data: existingEnrollment, error: checkError } = await supabase
           .from('class_enrollments')
-          .delete()
-          .eq('id', existingEnrollment.id);
+          .select('id, class_id')
+          .eq('student_id', studentId)
+          .maybeSingle();
           
-        if (deleteError) {
-          console.error('Error removing student from previous class:', deleteError);
-          toast.error("Failed to move student to new class");
+        if (checkError) {
+          console.error('Error checking existing enrollment:', checkError);
+          toast.error("Failed to check student's enrollment status: " + checkError.message);
           return false;
         }
-      }
-      
-      // Add the student to the new class
-      const { error: enrollError } = await supabase
-        .from('class_enrollments')
-        .insert([
-          { class_id: classId, student_id: studentId }
-        ]);
+        
+        // If student is already enrolled in this class, just return true
+        if (existingEnrollment && existingEnrollment.class_id === classId) {
+          toast.info("Student is already enrolled in this class");
+          return true;
+        }
+        
+        // If student is enrolled in another class, we need to delete that enrollment first
+        if (existingEnrollment) {
+          console.log("Student is currently enrolled in class:", existingEnrollment.class_id);
+          console.log("Moving student to new class:", classId);
+          
+          const { error: deleteError } = await supabase
+            .from('class_enrollments')
+            .delete()
+            .eq('id', existingEnrollment.id);
+            
+          if (deleteError) {
+            console.error('Error removing student from previous class:', deleteError);
+            toast.error("Failed to move student to new class: " + deleteError.message);
+            return false;
+          }
+        }
+        
+        // Add the student to the new class
+        const { error: enrollError } = await supabase
+          .from('class_enrollments')
+          .insert([
+            { class_id: classId, student_id: studentId }
+          ]);
 
-      if (enrollError) {
-        console.error('Error adding student to class:', enrollError);
-        toast.error("Failed to add student to class: " + enrollError.message);
+        if (enrollError) {
+          console.error('Error adding student to class:', enrollError);
+          toast.error("Failed to add student to class: " + enrollError.message);
+          return false;
+        }
+
+        console.log("Student added to class successfully");
+        toast.success("Student added to class successfully");
+        return true;
+      } catch (enrollmentError) {
+        console.error('Error in enrollment process:', enrollmentError);
+        toast.error("Failed to enroll student due to a system error");
         return false;
       }
-
-      console.log("Student added to class successfully");
-      toast.success("Student added to class successfully");
-      return true;
     } catch (error) {
       console.error('Error adding student to class:', error);
       toast.error("Failed to add student to class");
@@ -174,6 +180,8 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
 
     try {
+      console.log(`Removing student ${studentId} from class ${classId}`);
+      
       // Delete the enrollment
       const { error } = await supabase
         .from('class_enrollments')
@@ -263,37 +271,15 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
             const progressObj = profile.progress as Record<string, any>;
             
             // Process each subject with safe access patterns
-            if (progressObj.maths) {
-              progressData.maths = {
-                completed: typeof progressObj.maths.completed === 'number' ? progressObj.maths.completed : 0,
-                correct: typeof progressObj.maths.correct === 'number' ? progressObj.maths.correct : 0,
-                lastAttempted: progressObj.maths.lastAttempted || null
-              };
-            }
-            
-            if (progressObj.english) {
-              progressData.english = {
-                completed: typeof progressObj.english.completed === 'number' ? progressObj.english.completed : 0,
-                correct: typeof progressObj.english.correct === 'number' ? progressObj.english.correct : 0,
-                lastAttempted: progressObj.english.lastAttempted || null
-              };
-            }
-            
-            if (progressObj.verbal) {
-              progressData.verbal = {
-                completed: typeof progressObj.verbal.completed === 'number' ? progressObj.verbal.completed : 0,
-                correct: typeof progressObj.verbal.correct === 'number' ? progressObj.verbal.correct : 0,
-                lastAttempted: progressObj.verbal.lastAttempted || null
-              };
-            }
-            
-            if (progressObj.nonVerbal) {
-              progressData.nonVerbal = {
-                completed: typeof progressObj.nonVerbal.completed === 'number' ? progressObj.nonVerbal.completed : 0,
-                correct: typeof progressObj.nonVerbal.correct === 'number' ? progressObj.nonVerbal.correct : 0,
-                lastAttempted: progressObj.nonVerbal.lastAttempted || null
-              };
-            }
+            Object.keys(progressData).forEach(subject => {
+              if (progressObj[subject]) {
+                progressData[subject] = {
+                  completed: typeof progressObj[subject].completed === 'number' ? progressObj[subject].completed : 0,
+                  correct: typeof progressObj[subject].correct === 'number' ? progressObj[subject].correct : 0,
+                  lastAttempted: progressObj[subject].lastAttempted || null
+                };
+              }
+            });
           }
         } catch (error) {
           console.error('Error processing student progress data:', error);

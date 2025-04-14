@@ -97,6 +97,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_enrollments: {
+        Args: { class_id_param: string; student_id_param: string }
+        Returns: boolean
+      }
       get_teacher_classes: {
         Args: { teacher_id_param: string }
         Returns: {

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { UserPlus, AlertCircle } from 'lucide-react';
+import { UserPlus, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AddStudentFormProps {
@@ -16,7 +16,9 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAddStudent = async () => {
+  const handleAddStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (!studentEmailInput.trim()) {
       setError("Please enter a student email address");
       return;
@@ -26,13 +28,15 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
     setError(null);
     
     try {
+      console.log(`Attempting to add student ${studentEmailInput} to class ${classId}`);
       const success = await onAddStudent(studentEmailInput.trim());
+      
       if (success) {
         setStudentEmailInput('');
       }
     } catch (err) {
-      setError("Failed to add student. Please try again.");
       console.error("Error adding student:", err);
+      setError("Failed to add student. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -54,7 +58,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <div className="flex gap-2">
+        <form onSubmit={handleAddStudent} className="flex gap-2">
           <Input 
             placeholder="Student Email" 
             value={studentEmailInput} 
@@ -62,12 +66,12 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
             disabled={isSubmitting}
           />
           <Button 
-            onClick={handleAddStudent} 
+            type="submit"
             disabled={isSubmitting || !studentEmailInput.trim()}
           >
             {isSubmitting ? (
               <>
-                <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Adding...
               </>
             ) : (
@@ -77,7 +81,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
               </>
             )}
           </Button>
-        </div>
+        </form>
       </CardContent>
     </Card>
   );

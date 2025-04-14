@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowLeft } from 'lucide-react';
 import { Student } from '@/types/userTypes';
@@ -9,6 +7,8 @@ import TeacherDashboardStats from './TeacherDashboardStats';
 import StudentsList from './StudentsList';
 import AddStudentForm from './AddStudentForm';
 import { toast } from 'sonner';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 interface ClassStudentsManagementProps {
   classId: string;
@@ -103,7 +103,7 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
 
       <TeacherDashboardStats students={students} loading={loading} />
 
-      <AddStudentForm onAddStudent={handleAddStudent} />
+      <AddStudentForm onAddStudent={handleAddStudent} classId={classId} />
 
       <Card>
         <CardHeader>

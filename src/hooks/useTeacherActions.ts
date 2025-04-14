@@ -7,11 +7,19 @@ export const useTeacherActions = (user: Profile | null, setUser: (user: Profile 
   // Use the class management hook
   const classManagement = useClassManagement(user, setUser);
   
-  // Use the student management hook for any additional student-related actions not tied to classes
+  // Use the student management hook for general student operations
   const studentManagement = useStudentManagement(user, setUser);
 
   return {
-    ...classManagement,
-    ...studentManagement
+    // Class management actions
+    getClasses: classManagement.getClasses,
+    createClass: classManagement.createClass,
+    addStudentToClass: classManagement.addStudentToClass,
+    removeStudentFromClass: classManagement.removeStudentFromClass,
+    getClassStudents: classManagement.getClassStudents,
+    
+    // Student management actions
+    getStudents: studentManagement.getStudents,
+    getStudentClass: studentManagement.getStudentClass
   };
 };

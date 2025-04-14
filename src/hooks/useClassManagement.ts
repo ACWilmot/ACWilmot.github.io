@@ -1,8 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { Profile, Student, Class, ClassWithStudentCount, ClassEnrollment } from '@/types/userTypes';
-import { Json } from '@/integrations/supabase/types';
+import { Profile, Student, Class, ClassWithStudentCount } from '@/types/userTypes';
 import { getResetSubjects } from '@/utils/progressUtils';
 
 export const useClassManagement = (user: Profile | null, setUser: (user: Profile | null) => void) => {
@@ -28,7 +27,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         return [];
       }
       
-      console.log("RPC fetched classes:", data);
+      console.log("Fetched classes:", data);
       
       if (!data || data.length === 0) {
         console.log("No classes found for teacher:", user.id);
@@ -53,7 +52,6 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Creating class:", { name, description, teacherId: user.id });
       
-      // With RLS policies in place, this insert should work correctly
       const { data, error } = await supabase
         .from('classes')
         .insert([
@@ -78,7 +76,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
   };
 
-  // Add a student to a class
+  // Add a student to a class - with our new model, this will replace any existing class enrollment
   const addStudentToClass = async (classId: string, studentEmail: string): Promise<boolean> => {
     if (!user || user.role !== 'teacher') {
       toast.error("You must be logged in as a teacher to add students");
@@ -109,19 +107,43 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
-      // Check if the student is already enrolled in this class
+      // Check if the student is already enrolled in any class
       const { data: existingEnrollment, error: checkError } = await supabase
         .from('class_enrollments')
-        .select('id')
-        .eq('class_id', classId)
-        .eq('student_id', studentId);
+        .select('id, class_id')
+        .eq('student_id', studentId)
+        .maybeSingle();
         
-      if (!checkError && existingEnrollment && existingEnrollment.length > 0) {
+      if (checkError) {
+        console.error('Error checking existing enrollment:', checkError);
+        toast.error("Failed to check student's enrollment status");
+        return false;
+      }
+      
+      // If student is already enrolled in this class, just return true
+      if (existingEnrollment && existingEnrollment.class_id === classId) {
         toast.info("Student is already enrolled in this class");
         return true;
       }
       
-      // Add the student to the class - RLS will automatically check permissions using our security definer function
+      // If student is enrolled in another class, we need to delete that enrollment first
+      if (existingEnrollment) {
+        console.log("Student is currently enrolled in class:", existingEnrollment.class_id);
+        console.log("Moving student to new class:", classId);
+        
+        const { error: deleteError } = await supabase
+          .from('class_enrollments')
+          .delete()
+          .eq('id', existingEnrollment.id);
+          
+        if (deleteError) {
+          console.error('Error removing student from previous class:', deleteError);
+          toast.error("Failed to move student to new class");
+          return false;
+        }
+      }
+      
+      // Add the student to the new class
       const { error: enrollError } = await supabase
         .from('class_enrollments')
         .insert([
@@ -152,7 +174,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
 
     try {
-      // Delete the enrollment - RLS will check permissions using our security definer function
+      // Delete the enrollment
       const { error } = await supabase
         .from('class_enrollments')
         .delete()
@@ -185,7 +207,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching students for class:", classId);
       
-      // First get the student IDs from enrollments - RLS will filter using our security definer function
+      // Get the student IDs from enrollments
       const { data: enrollments, error: enrollmentsError } = await supabase
         .from('class_enrollments')
         .select('student_id')

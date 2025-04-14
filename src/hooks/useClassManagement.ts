@@ -24,28 +24,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       if (error) {
         console.error('Error fetching classes with RPC:', error);
-        
-        // Fall back to direct query if RPC fails
-        const { data: directClasses, error: directError } = await supabase
-          .from('classes')
-          .select('id, name, description, created_at, teacher_id')
-          .eq('teacher_id', user.id);
-          
-        if (directError) {
-          console.error('Error in direct classes query:', directError);
-          toast.error("Failed to fetch classes");
-          return [];
-        }
-        
-        if (directClasses && directClasses.length > 0) {
-          console.log("Falling back to direct query results");
-          const fallbackClasses = directClasses.map(cls => ({
-            ...cls,
-            student_count: 0
-          }));
-          return fallbackClasses as ClassWithStudentCount[];
-        }
-        
+        toast.error("Failed to fetch classes: " + error.message);
         return [];
       }
       
@@ -74,7 +53,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Creating class:", { name, description, teacherId: user.id });
       
-      // Since we fixed the RLS policies, this insert should now work correctly
+      // With RLS policies in place, this insert should work correctly
       const { data, error } = await supabase
         .from('classes')
         .insert([
@@ -130,22 +109,6 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
-      // First verify the user owns this class - simplified direct query
-      const { data: classData, error: classError } = await supabase
-        .from('classes')
-        .select('id')
-        .eq('id', classId)
-        .eq('teacher_id', user.id)
-        .single();
-      
-      if (classError || !classData) {
-        console.error('Error verifying class ownership:', classError || 'No class data returned');
-        toast.error("You don't have permission to modify this class");
-        return false;
-      }
-      
-      console.log("Class ownership verified for teacher:", user.id, "class:", classId);
-      
       // Check if the student is already enrolled in this class
       const { data: existingEnrollment, error: checkError } = await supabase
         .from('class_enrollments')
@@ -158,7 +121,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         return true;
       }
       
-      // Add the student to the class
+      // Add the student to the class - RLS will automatically check permissions
       const { error: enrollError } = await supabase
         .from('class_enrollments')
         .insert([
@@ -172,6 +135,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       }
 
       console.log("Student added to class successfully");
+      toast.success("Student added to class successfully");
       return true;
     } catch (error) {
       console.error('Error adding student to class:', error);
@@ -188,21 +152,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
 
     try {
-      // Simplified class ownership verification
-      const { data: classData, error: classError } = await supabase
-        .from('classes')
-        .select('id')
-        .eq('id', classId)
-        .eq('teacher_id', user.id)
-        .single();
-      
-      if (classError || !classData) {
-        console.error('Error verifying class ownership:', classError || 'No class data returned');
-        toast.error("You don't have permission to modify this class");
-        return false;
-      }
-      
-      // Now delete the enrollment
+      // Delete the enrollment - RLS will automatically check permissions
       const { error } = await supabase
         .from('class_enrollments')
         .delete()
@@ -216,6 +166,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       }
       
       console.log("Student removed from class successfully");
+      toast.success("Student removed from class");
       return true;
     } catch (error) {
       console.error('Error removing student from class:', error);
@@ -234,21 +185,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching students for class:", classId);
       
-      // Simplified class ownership verification that won't trigger infinite recursion
-      const { data: classData, error: classError } = await supabase
-        .from('classes')
-        .select('id')
-        .eq('id', classId)
-        .eq('teacher_id', user.id)
-        .single();
-      
-      if (classError) {
-        console.error('Error verifying class ownership:', classError);
-        toast.error("You don't have permission to view this class");
-        return [];
-      }
-      
-      // First get the student IDs from enrollments
+      // First get the student IDs from enrollments - RLS will filter automatically
       const { data: enrollments, error: enrollmentsError } = await supabase
         .from('class_enrollments')
         .select('student_id')

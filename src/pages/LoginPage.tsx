@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
@@ -19,7 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Key, LogIn, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
@@ -34,25 +33,17 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   
   // Check for existing session on component mount
   React.useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          console.log("User has an active session, redirecting to home");
-          navigate('/');
-        }
-      } catch (error) {
-        console.error("Error checking session:", error);
-      }
-    };
-    
-    checkSession();
-  }, [navigate]);
+    if (isAuthenticated) {
+      console.log("User already authenticated, redirecting");
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,23 +60,13 @@ const LoginPage = () => {
       setAuthError(null);
       console.log("Attempting login with:", values.email);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password
-      });
+      const success = await login(values.email, values.password);
       
-      if (error) {
-        console.error("Login error:", error);
-        setAuthError(error.message || "Invalid email or password. Please check your credentials and try again.");
-        setLoading(false);
-        return;
-      }
-      
-      if (data.session) {
+      if (success) {
         toast.success("Logged in successfully!");
         navigate('/');
       } else {
-        setAuthError("Login failed. Please try again.");
+        setAuthError("Login failed. Please check your credentials and try again.");
         setLoading(false);
       }
     } catch (error) {

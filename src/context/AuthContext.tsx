@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -131,6 +132,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
             }
           } catch (error) {
             console.error("Error fetching user profile:", error);
+            // Don't automatically sign out - let the user retry or manually log out
+            // This prevents login-logout loops
             setIsAuthenticated(false);
             setUser(null);
           }

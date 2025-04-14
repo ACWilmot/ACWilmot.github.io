@@ -116,6 +116,10 @@ export type Database = {
         Args: { enrollment_class_id: string }
         Returns: boolean
       }
+      is_teacher_of_class: {
+        Args: { class_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

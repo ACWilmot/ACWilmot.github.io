@@ -121,7 +121,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         return true;
       }
       
-      // Add the student to the class - RLS will automatically check permissions
+      // Add the student to the class - RLS will automatically check permissions using our security definer function
       const { error: enrollError } = await supabase
         .from('class_enrollments')
         .insert([
@@ -152,7 +152,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
 
     try {
-      // Delete the enrollment - RLS will automatically check permissions
+      // Delete the enrollment - RLS will check permissions using our security definer function
       const { error } = await supabase
         .from('class_enrollments')
         .delete()
@@ -185,7 +185,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching students for class:", classId);
       
-      // First get the student IDs from enrollments - RLS will filter automatically
+      // First get the student IDs from enrollments - RLS will filter using our security definer function
       const { data: enrollments, error: enrollmentsError } = await supabase
         .from('class_enrollments')
         .select('student_id')

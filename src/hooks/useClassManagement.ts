@@ -193,7 +193,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       if (enrollmentsError) {
         console.error('Error fetching enrollments:', enrollmentsError);
-        toast.error("Failed to fetch students");
+        toast.error("Failed to fetch students: " + enrollmentsError.message);
         return [];
       }
       
@@ -216,7 +216,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       if (profilesError) {
         console.error('Error fetching student profiles:', profilesError);
-        toast.error("Failed to fetch student information");
+        toast.error("Failed to fetch student information: " + profilesError.message);
         return [];
       }
       

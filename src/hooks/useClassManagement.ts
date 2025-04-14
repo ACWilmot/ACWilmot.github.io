@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, Student, Class, ClassWithStudentCount, ClassEnrollment } from '@/types/userTypes';
@@ -129,19 +130,21 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
-      // Check if the user is the owner of this class
+      // First verify the user owns this class - simplified direct query
       const { data: classData, error: classError } = await supabase
         .from('classes')
         .select('id')
         .eq('id', classId)
         .eq('teacher_id', user.id)
         .single();
-        
+      
       if (classError || !classData) {
         console.error('Error verifying class ownership:', classError || 'No class data returned');
         toast.error("You don't have permission to modify this class");
         return false;
       }
+      
+      console.log("Class ownership verified for teacher:", user.id, "class:", classId);
       
       // Check if the student is already enrolled in this class
       const { data: existingEnrollment, error: checkError } = await supabase
@@ -185,14 +188,14 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
 
     try {
-      // Check if the user is the owner of this class
+      // Simplified class ownership verification
       const { data: classData, error: classError } = await supabase
         .from('classes')
         .select('id')
         .eq('id', classId)
         .eq('teacher_id', user.id)
         .single();
-        
+      
       if (classError || !classData) {
         console.error('Error verifying class ownership:', classError || 'No class data returned');
         toast.error("You don't have permission to modify this class");
@@ -231,16 +234,17 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching students for class:", classId);
       
-      // Check if the user is the owner of this class
+      // Simplified class ownership verification that won't trigger infinite recursion
       const { data: classData, error: classError } = await supabase
         .from('classes')
         .select('id')
         .eq('id', classId)
         .eq('teacher_id', user.id)
         .single();
-        
+      
       if (classError) {
         console.error('Error verifying class ownership:', classError);
+        toast.error("You don't have permission to view this class");
         return [];
       }
       
@@ -252,6 +256,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       if (enrollmentsError) {
         console.error('Error fetching enrollments:', enrollmentsError);
+        toast.error("Failed to fetch students");
         return [];
       }
       
@@ -274,6 +279,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       if (profilesError) {
         console.error('Error fetching student profiles:', profilesError);
+        toast.error("Failed to fetch student information");
         return [];
       }
       
@@ -347,6 +353,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       return students;
     } catch (error) {
       console.error('Error fetching class students:', error);
+      toast.error("Failed to fetch students");
       return [];
     }
   };

@@ -151,7 +151,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
 
       if (enrollError) {
         console.error('Error adding student to class:', enrollError);
-        toast.error("Failed to add student to class");
+        toast.error("Failed to add student to class: " + enrollError.message);
         return false;
       }
 
@@ -209,8 +209,16 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         .select('student_id')
         .eq('class_id', classId);
       
-      if (enrollmentsError || !enrollments || enrollments.length === 0) {
-        console.error('Error fetching enrollments or no students enrolled:', enrollmentsError || 'No enrollments found');
+      if (enrollmentsError || !enrollments) {
+        console.error('Error fetching enrollments:', enrollmentsError || 'No enrollments data returned');
+        toast.error("Failed to fetch class enrollments");
+        return [];
+      }
+      
+      console.log("Class enrollments:", enrollments);
+      
+      if (enrollments.length === 0) {
+        console.log("No students enrolled in this class");
         return [];
       }
       
@@ -224,8 +232,14 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         .select('id, name, Email, email, progress')
         .in('id', studentIds);
       
-      if (profilesError || !profiles) {
-        console.error('Error fetching student profiles:', profilesError || 'No profiles found');
+      if (profilesError) {
+        console.error('Error fetching student profiles:', profilesError);
+        toast.error("Failed to fetch student profiles");
+        return [];
+      }
+      
+      if (!profiles || profiles.length === 0) {
+        console.log("No student profiles found for enrolled students");
         return [];
       }
       

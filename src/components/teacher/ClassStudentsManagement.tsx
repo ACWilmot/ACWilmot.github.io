@@ -1,20 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Search, ArrowLeft, UserPlus, UserMinus } from 'lucide-react';
+import { Search, ArrowLeft, UserPlus } from 'lucide-react';
 import { Student } from '@/types/userTypes';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import TeacherDashboardStats from './TeacherDashboardStats';
+import StudentsList from './StudentsList';
+import AddStudentForm from './AddStudentForm';
 
 interface ClassStudentsManagementProps {
   classId: string;
@@ -34,16 +27,18 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [studentEmail, setStudentEmail] = useState('');
 
   useEffect(() => {
+    console.log("ClassStudentsManagement mounted with classId:", classId);
     fetchStudents();
   }, [classId]);
 
   const fetchStudents = async () => {
+    console.log("Fetching students for class:", classId);
     setLoading(true);
     try {
       const studentsList = await getClassStudents(classId);
+      console.log("Students fetched:", studentsList);
       setStudents(studentsList || []);
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -52,68 +47,26 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
     }
   };
 
-  const handleAddStudent = async () => {
-    if (!studentEmail.trim()) return;
-
-    const success = await addStudentToClass(classId, studentEmail.trim());
+  const handleAddStudent = async (email: string) => {
+    console.log("Adding student with email:", email);
+    const success = await addStudentToClass(classId, email);
     if (success) {
-      setStudentEmail('');
+      console.log("Student added successfully, refreshing student list");
       await fetchStudents();
     }
+    return success;
   };
 
   const handleRemoveStudent = async (studentId: string) => {
+    console.log("Removing student with ID:", studentId);
     const confirmed = window.confirm("Are you sure you want to remove this student from the class?");
     if (confirmed) {
       const success = await removeStudentFromClass(classId, studentId);
       if (success) {
+        console.log("Student removed successfully, refreshing student list");
         await fetchStudents();
       }
     }
-  };
-
-  const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Calculate progress for a student
-  const calculateProgress = (student: Student) => {
-    let totalCompleted = 0;
-    let totalCorrect = 0;
-
-    if (student.progress) {
-      for (const subject in student.progress) {
-        const subjectProgress = student.progress[subject];
-        if (subjectProgress) {
-          totalCompleted += subjectProgress.completed || 0;
-          totalCorrect += subjectProgress.correct || 0;
-        }
-      }
-    }
-
-    const overallAccuracy = totalCompleted > 0 
-      ? Math.round((totalCorrect / totalCompleted) * 100) 
-      : 0;
-
-    return {
-      totalCompleted,
-      totalCorrect,
-      overallAccuracy
-    };
-  };
-
-  // Find the most recent activity date for a student
-  const getLastActivity = (student: Student) => {
-    let lastActivity = null;
-    if (student.progress) {
-      for (const subject in student.progress) {
-        const date = student.progress[subject]?.lastAttempted;
-        if (date && (!lastActivity || date > lastActivity)) {
-          lastActivity = date;
-        }
-      }
-    }
-    return lastActivity ? new Date(lastActivity).toLocaleDateString() : 'Never';
   };
 
   return (
@@ -125,25 +78,7 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
 
       <TeacherDashboardStats students={students} loading={loading} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Add Student to Class</CardTitle>
-          <CardDescription>Enter a student's email to add them to this class</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Student Email" 
-              value={studentEmail} 
-              onChange={(e) => setStudentEmail(e.target.value)}
-            />
-            <Button onClick={handleAddStudent}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <AddStudentForm onAddStudent={handleAddStudent} />
 
       <Card>
         <CardHeader>
@@ -159,58 +94,12 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-8">Loading students data...</div>
-          ) : !students || students.length === 0 ? (
-            <div className="text-center py-8">
-              <p>No students added to this class yet.</p>
-              <p className="text-muted-foreground text-sm mt-2">Add students using their email address to track their progress</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Accuracy</TableHead>
-                  <TableHead className="hidden md:table-cell">Completed</TableHead>
-                  <TableHead className="hidden md:table-cell">Correct</TableHead>
-                  <TableHead>Last Activity</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.map((student) => {
-                  const { totalCompleted, totalCorrect, overallAccuracy } = calculateProgress(student);
-                  const lastActivity = getLastActivity(student);
-                  
-                  return (
-                    <TableRow key={student.id}>
-                      <TableCell className="font-medium">{student.name}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Progress value={overallAccuracy} className="h-2 w-16" />
-                          <span>{overallAccuracy}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">{totalCompleted}</TableCell>
-                      <TableCell className="hidden md:table-cell">{totalCorrect}</TableCell>
-                      <TableCell>{lastActivity}</TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleRemoveStudent(student.id)}
-                        >
-                          <UserMinus className="h-4 w-4 mr-2" />
-                          Remove
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
+          <StudentsList 
+            students={students} 
+            loading={loading} 
+            searchTerm={searchTerm}
+            onRemoveStudent={handleRemoveStudent}
+          />
         </CardContent>
       </Card>
     </div>

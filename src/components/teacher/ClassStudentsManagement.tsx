@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, ArrowLeft, UserPlus } from 'lucide-react';
+import { Search, ArrowLeft } from 'lucide-react';
 import { Student } from '@/types/userTypes';
 import TeacherDashboardStats from './TeacherDashboardStats';
 import StudentsList from './StudentsList';
 import AddStudentForm from './AddStudentForm';
+import { toast } from 'sonner';
 
 interface ClassStudentsManagementProps {
   classId: string;
@@ -30,7 +31,12 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
 
   useEffect(() => {
     console.log("ClassStudentsManagement mounted with classId:", classId);
-    fetchStudents();
+    if (classId) {
+      fetchStudents();
+    } else {
+      console.error("No classId provided to ClassStudentsManagement");
+      setLoading(false);
+    }
   }, [classId]);
 
   const fetchStudents = async () => {
@@ -42,29 +48,48 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
       setStudents(studentsList || []);
     } catch (error) {
       console.error("Error fetching students:", error);
+      toast.error("Failed to load students");
     } finally {
       setLoading(false);
     }
   };
 
   const handleAddStudent = async (email: string) => {
-    console.log("Adding student with email:", email);
-    const success = await addStudentToClass(classId, email);
-    if (success) {
-      console.log("Student added successfully, refreshing student list");
-      await fetchStudents();
+    if (!email || !email.trim()) {
+      toast.error("Please enter a valid email address");
+      return false;
     }
-    return success;
+    
+    console.log("Adding student with email:", email, "to class:", classId);
+    try {
+      const success = await addStudentToClass(classId, email.trim());
+      if (success) {
+        console.log("Student added successfully, refreshing student list");
+        toast.success("Student added to class successfully");
+        await fetchStudents();
+      }
+      return success;
+    } catch (error) {
+      console.error("Error adding student:", error);
+      toast.error("Failed to add student to class");
+      return false;
+    }
   };
 
   const handleRemoveStudent = async (studentId: string) => {
-    console.log("Removing student with ID:", studentId);
+    console.log("Removing student with ID:", studentId, "from class:", classId);
     const confirmed = window.confirm("Are you sure you want to remove this student from the class?");
     if (confirmed) {
-      const success = await removeStudentFromClass(classId, studentId);
-      if (success) {
-        console.log("Student removed successfully, refreshing student list");
-        await fetchStudents();
+      try {
+        const success = await removeStudentFromClass(classId, studentId);
+        if (success) {
+          console.log("Student removed successfully, refreshing student list");
+          toast.success("Student removed from class");
+          await fetchStudents();
+        }
+      } catch (error) {
+        console.error("Error removing student:", error);
+        toast.error("Failed to remove student from class");
       }
     }
   };

@@ -129,15 +129,28 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       console.log("Found student ID:", studentId, "for email:", studentEmail);
       
+      // Check if the user is the owner of this class
+      const { data: classData, error: classError } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('id', classId)
+        .eq('teacher_id', user.id)
+        .single();
+        
+      if (classError || !classData) {
+        console.error('Error verifying class ownership:', classError || 'No class data returned');
+        toast.error("You don't have permission to modify this class");
+        return false;
+      }
+      
       // Check if the student is already enrolled in this class
       const { data: existingEnrollment, error: checkError } = await supabase
         .from('class_enrollments')
         .select('id')
         .eq('class_id', classId)
-        .eq('student_id', studentId)
-        .single();
+        .eq('student_id', studentId);
         
-      if (!checkError && existingEnrollment) {
+      if (!checkError && existingEnrollment && existingEnrollment.length > 0) {
         toast.info("Student is already enrolled in this class");
         return true;
       }
@@ -155,7 +168,7 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
         return false;
       }
 
-      toast.success("Student added to class successfully");
+      console.log("Student added to class successfully");
       return true;
     } catch (error) {
       console.error('Error adding student to class:', error);
@@ -172,6 +185,21 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     }
 
     try {
+      // Check if the user is the owner of this class
+      const { data: classData, error: classError } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('id', classId)
+        .eq('teacher_id', user.id)
+        .single();
+        
+      if (classError || !classData) {
+        console.error('Error verifying class ownership:', classError || 'No class data returned');
+        toast.error("You don't have permission to modify this class");
+        return false;
+      }
+      
+      // Now delete the enrollment
       const { error } = await supabase
         .from('class_enrollments')
         .delete()
@@ -180,11 +208,11 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
 
       if (error) {
         console.error('Error removing student from class:', error);
-        toast.error("Failed to remove student from class");
+        toast.error("Failed to remove student from class: " + error.message);
         return false;
       }
       
-      toast.success("Student removed from class successfully");
+      console.log("Student removed from class successfully");
       return true;
     } catch (error) {
       console.error('Error removing student from class:', error);
@@ -203,21 +231,33 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
     try {
       console.log("Fetching students for class:", classId);
       
+      // Check if the user is the owner of this class
+      const { data: classData, error: classError } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('id', classId)
+        .eq('teacher_id', user.id)
+        .single();
+        
+      if (classError) {
+        console.error('Error verifying class ownership:', classError);
+        return [];
+      }
+      
       // First get the student IDs from enrollments
       const { data: enrollments, error: enrollmentsError } = await supabase
         .from('class_enrollments')
         .select('student_id')
         .eq('class_id', classId);
       
-      if (enrollmentsError || !enrollments) {
-        console.error('Error fetching enrollments:', enrollmentsError || 'No enrollments data returned');
-        toast.error("Failed to fetch class enrollments");
+      if (enrollmentsError) {
+        console.error('Error fetching enrollments:', enrollmentsError);
         return [];
       }
       
       console.log("Class enrollments:", enrollments);
       
-      if (enrollments.length === 0) {
+      if (!enrollments || enrollments.length === 0) {
         console.log("No students enrolled in this class");
         return [];
       }
@@ -234,7 +274,6 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       
       if (profilesError) {
         console.error('Error fetching student profiles:', profilesError);
-        toast.error("Failed to fetch student profiles");
         return [];
       }
       
@@ -308,7 +347,6 @@ export const useClassManagement = (user: Profile | null, setUser: (user: Profile
       return students;
     } catch (error) {
       console.error('Error fetching class students:', error);
-      toast.error("Failed to fetch class students");
       return [];
     }
   };

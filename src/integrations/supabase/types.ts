@@ -112,6 +112,10 @@ export type Database = {
         Args: { class_row: Database["public"]["Tables"]["classes"]["Row"] }
         Returns: boolean
       }
+      is_enrollment_owner: {
+        Args: { enrollment_class_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

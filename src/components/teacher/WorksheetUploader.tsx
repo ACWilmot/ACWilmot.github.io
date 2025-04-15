@@ -47,7 +47,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
       if (uploadError) throw uploadError;
 
       // Create database record
-      const dbRecord = {
+      const dbRecord: any = {
         user_id: userData.user.id,
         name: file.name,
         file_path: filePath,
@@ -55,7 +55,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
       };
       
       if (classId) {
-        dbRecord['class_id'] = classId;
+        dbRecord.class_id = classId;
       }
 
       const { error: dbError } = await supabase

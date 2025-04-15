@@ -48,7 +48,7 @@ const Header: React.FC = () => {
               <span>Register</span>
             </Button>
             
-            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher-login')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher/login')}>
               <GraduationCap className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Teacher</span>
             </Button>

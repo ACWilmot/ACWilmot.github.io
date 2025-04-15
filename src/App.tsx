@@ -31,13 +31,14 @@ function App() {
               <Route path="/questions" element={<QuestionsPage />} />
               <Route path="/quiz" element={<QuizPage />} />
               <Route path="/results" element={<ResultsPage />} />
-              {/* Login and register routes don't use the auth context directly */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/teacher-login" element={<TeacherLoginPage />} />
+              <Route path="/teacher/login" element={<TeacherLoginPage />} />
               <Route path="/teacher-register" element={<TeacherRegisterPage />} />
+              <Route path="/teacher/register" element={<TeacherRegisterPage />} />
               <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
-              <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} /> {/* Keep the old route for backward compatibility */}
+              {/* Remove the old redundant route that might be causing confusion */}
               <Route path="/progress" element={<ProgressPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="*" element={<NotFound />} />

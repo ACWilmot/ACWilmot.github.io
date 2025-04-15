@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, X, RotateCcw, Home, ArrowRight } from 'lucide-react';
+import { Check, X, RotateCcw, Home, ArrowRight, FileText } from 'lucide-react';
 import Header from '@/components/Header';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from "sonner";
+import WorksheetList from '@/components/WorksheetList';
 
 const ResultsPage = () => {
   const navigate = useNavigate();
@@ -165,6 +166,14 @@ const ResultsPage = () => {
                 <p className="text-sm text-muted-foreground">Total</p>
               </div>
             </div>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <WorksheetList subject={selectedSubject} limit={3} />
           </motion.div>
           
           <motion.div

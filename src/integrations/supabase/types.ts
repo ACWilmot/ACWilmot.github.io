@@ -92,6 +92,53 @@ export type Database = {
         }
         Relationships: []
       }
+      worksheet_uploads: {
+        Row: {
+          class_id: string | null
+          correct_answers: number
+          file_path: string
+          id: string
+          marked_at: string | null
+          name: string
+          status: string
+          total_questions: number
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          class_id?: string | null
+          correct_answers?: number
+          file_path: string
+          id?: string
+          marked_at?: string | null
+          name: string
+          status?: string
+          total_questions?: number
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          class_id?: string | null
+          correct_answers?: number
+          file_path?: string
+          id?: string
+          marked_at?: string | null
+          name?: string
+          status?: string
+          total_questions?: number
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worksheet_uploads_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

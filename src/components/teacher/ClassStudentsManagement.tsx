@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowLeft, AlertTriangle } from 'lucide-react';
@@ -6,10 +5,13 @@ import { Student } from '@/types/userTypes';
 import TeacherDashboardStats from './TeacherDashboardStats';
 import StudentsList from './StudentsList';
 import AddStudentForm from './AddStudentForm';
+import WorksheetUploader from './WorksheetUploader';
+import WorksheetList from './WorksheetList';
 import { toast } from 'sonner';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ClassStudentsManagementProps {
   classId: string;
@@ -30,6 +32,8 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [worksheets, setWorksheets] = useState<any[]>([]);
+  const [loadingWorksheets, setLoadingWorksheets] = useState(true);
 
   useEffect(() => {
     console.log("ClassStudentsManagement mounted with classId:", classId);
@@ -59,6 +63,30 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
       setLoading(false);
     }
   };
+
+  const fetchWorksheets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('worksheet_uploads')
+        .select('*')
+        .eq('class_id', classId)
+        .order('uploaded_at', { ascending: false });
+
+      if (error) throw error;
+      setWorksheets(data || []);
+    } catch (error) {
+      console.error('Error fetching worksheets:', error);
+      toast.error('Failed to load worksheets');
+    } finally {
+      setLoadingWorksheets(false);
+    }
+  };
+
+  useEffect(() => {
+    if (classId) {
+      fetchWorksheets();
+    }
+  }, [classId]);
 
   const handleAddStudent = async (email: string) => {
     if (!email || !email.trim()) {
@@ -123,7 +151,12 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
 
       <TeacherDashboardStats students={students} loading={loading} />
 
-      <AddStudentForm onAddStudent={handleAddStudent} classId={classId} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <AddStudentForm onAddStudent={handleAddStudent} classId={classId} />
+        <WorksheetUploader classId={classId} onUploadComplete={fetchWorksheets} />
+      </div>
+
+      <WorksheetList worksheets={worksheets} loading={loadingWorksheets} />
 
       <Card>
         <CardHeader>

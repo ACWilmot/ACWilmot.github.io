@@ -1,8 +1,8 @@
 
 import { SubjectQuestions } from '@/types/questionTypes';
-import mathsQuestions from './questions/mathsQuestions';
-import englishQuestions from './questions/englishQuestions';
-import verbalQuestions from './questions/verbalQuestions';
+import mathsQuestions from './questions/maths';
+import englishQuestions from './questions/english';
+import verbalQuestions from './questions/verbal';
 
 const sampleQuestions: SubjectQuestions = {
   'maths': mathsQuestions,

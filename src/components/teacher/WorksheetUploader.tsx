@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
       if (uploadError) throw uploadError;
 
       // Create database record
-      const dbRecord = {
+      const dbRecord: any = {
         user_id: userData.user.id,
         name: file.name,
         file_path: filePath,
@@ -132,7 +133,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
         const subject = selectedSubject;
         const lastAttempted = new Date().toISOString().split('T')[0];
         
-        // Create new progress by adding the marked worksheet results
+        // Create new progress object
         const newProgress = {
           ...progress,
           [subject]: {

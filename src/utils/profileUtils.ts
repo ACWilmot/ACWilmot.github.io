@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, UserProgress } from '@/types/userTypes';
 import { resetSubjects } from './progressUtils';
+import { toast } from 'sonner';
 
 export async function fetchUserProfile(userId: string): Promise<Profile | null> {
   try {
@@ -12,6 +13,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
     
     if (userError || !userData?.user) {
       console.error('Error fetching user:', userError);
+      toast.error('Could not load profile data. Please try logging in again.');
       return null;
     }
     
@@ -39,6 +41,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
         };
         
         console.log('Created backup profile from auth data:', backupProfile);
+        toast.warning('Profile data partially loaded. Some information may be incomplete.');
         return backupProfile;
       }
 
@@ -54,6 +57,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
           email: userData.user.email
         };
         
+        toast.warning('Profile not found. Created a new profile with basic information.');
         return newProfile;
       }
       
@@ -109,10 +113,12 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       };
       
       console.log('Created fallback profile from auth data:', fallbackProfile);
+      toast.warning('Could not load full profile. Using minimal profile data.');
       return fallbackProfile;
     }
   } catch (error) {
     console.error('Unexpected error in fetchUserProfile:', error);
+    toast.error('Unexpected error loading profile. Please try again.');
     return null;
   }
 }

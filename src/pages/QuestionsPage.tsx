@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Subject } from '@/context/QuizContext';
-import { Question } from '@/types/questionTypes';
+import { Question, Difficulty } from '@/types/questionTypes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Table,
@@ -22,17 +22,19 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, ChevronRight, Info } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import DifficultySelector from '@/components/DifficultySelector';
 
 const QuestionsPage = () => {
   const [activeSubject, setActiveSubject] = useState<Subject>('maths');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 10;
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeSubject]);
+  }, [activeSubject, selectedDifficulty]);
 
   const toggleQuestion = (questionId: string) => {
     setExpandedQuestions(prev => ({
@@ -42,19 +44,26 @@ const QuestionsPage = () => {
   };
 
   const subjects = Object.keys(sampleQuestions) as Subject[];
-  const currentQuestions = sampleQuestions[activeSubject];
+  
+  const filteredQuestions = useMemo(() => {
+    const questions = sampleQuestions[activeSubject];
+    if (selectedDifficulty === 'all') {
+      return questions;
+    }
+    return questions.filter(q => q.difficulty === selectedDifficulty);
+  }, [activeSubject, selectedDifficulty]);
   
   const indexOfLastQuestion = currentPage * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-  const currentQuestionsPage = currentQuestions.slice(
+  const currentQuestionsPage = filteredQuestions.slice(
     indexOfFirstQuestion,
     indexOfLastQuestion
   );
-  const totalPages = Math.ceil(currentQuestions.length / questionsPerPage);
+  const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
 
   const questionStats = useMemo(() => {
     const stats = {
-      total: currentQuestions.length,
+      total: filteredQuestions.length,
       byDifficulty: {
         easy: 0,
         medium: 0,
@@ -62,14 +71,14 @@ const QuestionsPage = () => {
       }
     };
 
-    currentQuestions.forEach(question => {
+    filteredQuestions.forEach(question => {
       if (question.difficulty) {
         stats.byDifficulty[question.difficulty]++;
       }
     });
 
     return stats;
-  }, [currentQuestions]);
+  }, [filteredQuestions]);
 
   const renderPaginationLinks = () => {
     if (totalPages <= 7) {
@@ -177,15 +186,20 @@ const QuestionsPage = () => {
           {subjects.map(subject => (
             <TabsContent key={subject} value={subject} className="mt-6">
               <div className="space-y-4 mb-6">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <div className="text-sm text-muted-foreground">
-                    Showing {indexOfFirstQuestion + 1}-{Math.min(indexOfLastQuestion, currentQuestions.length)} of {currentQuestions.length} questions
+                    Showing {indexOfFirstQuestion + 1}-{Math.min(indexOfLastQuestion, filteredQuestions.length)} of {filteredQuestions.length} questions
                   </div>
-                  <div className="flex gap-4 text-sm">
-                    <span className="text-green-600">Easy: {questionStats.byDifficulty.easy}</span>
-                    <span className="text-yellow-600">Medium: {questionStats.byDifficulty.medium}</span>
-                    <span className="text-red-600">Hard: {questionStats.byDifficulty.hard}</span>
-                  </div>
+                  <DifficultySelector
+                    selectedDifficulty={selectedDifficulty}
+                    onChange={setSelectedDifficulty}
+                    className="md:justify-end"
+                  />
+                </div>
+                <div className="flex gap-4 text-sm">
+                  <span className="text-green-600">Easy: {questionStats.byDifficulty.easy}</span>
+                  <span className="text-yellow-600">Medium: {questionStats.byDifficulty.medium}</span>
+                  <span className="text-red-600">Hard: {questionStats.byDifficulty.hard}</span>
                 </div>
               </div>
               

@@ -47,7 +47,13 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
       if (uploadError) throw uploadError;
 
       // Create database record
-      const dbRecord = {
+      const dbRecord: {
+        user_id: string;
+        name: string;
+        file_path: string;
+        status: string;
+        class_id?: string;
+      } = {
         user_id: userData.user.id,
         name: file.name,
         file_path: filePath,
@@ -129,7 +135,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
 
         if (progressError) throw progressError;
 
-        const progress = progressData.progress;
+        const progress = progressData?.progress || {};
         const subject = selectedSubject;
         const lastAttempted = new Date().toISOString().split('T')[0];
         
@@ -137,8 +143,8 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
         const newProgress = {
           ...progress,
           [subject]: {
-            completed: (progress[subject]?.completed || 0) + totalQuestions,
-            correct: (progress[subject]?.correct || 0) + correctAnswers,
+            completed: ((progress[subject] && progress[subject].completed) || 0) + totalQuestions,
+            correct: ((progress[subject] && progress[subject].correct) || 0) + correctAnswers,
             lastAttempted
           }
         };

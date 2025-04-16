@@ -47,7 +47,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
       if (uploadError) throw uploadError;
 
       // Create database record
-      const dbRecord: any = {
+      const dbRecord = {
         user_id: userData.user.id,
         name: file.name,
         file_path: filePath,

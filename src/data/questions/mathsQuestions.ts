@@ -1,3 +1,4 @@
+
 import { Question } from '@/types/questionTypes';
 
 const mathsQuestions: Question[] = [
@@ -641,5 +642,12 @@ const mathsQuestions: Question[] = [
     difficulty: 'medium'
   },
 ];
+
+// Make sure all questions have a difficulty value
+mathsQuestions.forEach(question => {
+  if (!question.difficulty) {
+    question.difficulty = 'medium';  // Set default difficulty if missing
+  }
+});
 
 export default mathsQuestions;

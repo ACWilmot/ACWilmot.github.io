@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Subject } from '@/context/QuizContext';
@@ -31,7 +30,6 @@ const QuestionsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 10;
 
-  // Reset current page when subject changes
   useEffect(() => {
     setCurrentPage(1);
   }, [activeSubject]);
@@ -46,7 +44,6 @@ const QuestionsPage = () => {
   const subjects = Object.keys(sampleQuestions) as Subject[];
   const currentQuestions = sampleQuestions[activeSubject];
   
-  // Pagination logic
   const indexOfLastQuestion = currentPage * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
   const currentQuestionsPage = currentQuestions.slice(
@@ -55,8 +52,26 @@ const QuestionsPage = () => {
   );
   const totalPages = Math.ceil(currentQuestions.length / questionsPerPage);
 
+  const questionStats = useMemo(() => {
+    const stats = {
+      total: currentQuestions.length,
+      byDifficulty: {
+        easy: 0,
+        medium: 0,
+        hard: 0,
+      }
+    };
+
+    currentQuestions.forEach(question => {
+      if (question.difficulty) {
+        stats.byDifficulty[question.difficulty]++;
+      }
+    });
+
+    return stats;
+  }, [currentQuestions]);
+
   const renderPaginationLinks = () => {
-    // For smaller number of pages, show all page links
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
         <PaginationItem key={pageNum}>
@@ -70,10 +85,8 @@ const QuestionsPage = () => {
       ));
     }
     
-    // For larger number of pages, use ellipsis
     const pages = [];
     
-    // Always show first page
     pages.push(
       <PaginationItem key={1}>
         <PaginationLink
@@ -85,11 +98,9 @@ const QuestionsPage = () => {
       </PaginationItem>
     );
     
-    // Calculate range of pages to show around current page
     let startPage = Math.max(2, currentPage - 2);
     let endPage = Math.min(totalPages - 1, currentPage + 2);
     
-    // Show ellipsis if needed before startPage
     if (startPage > 2) {
       pages.push(
         <PaginationItem key="ellipsis-start">
@@ -98,7 +109,6 @@ const QuestionsPage = () => {
       );
     }
     
-    // Add page numbers around current page
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <PaginationItem key={i}>
@@ -112,7 +122,6 @@ const QuestionsPage = () => {
       );
     }
     
-    // Show ellipsis if needed after endPage
     if (endPage < totalPages - 1) {
       pages.push(
         <PaginationItem key="ellipsis-end">
@@ -121,7 +130,6 @@ const QuestionsPage = () => {
       );
     }
     
-    // Always show last page
     if (totalPages > 1) {
       pages.push(
         <PaginationItem key={totalPages}>
@@ -168,9 +176,16 @@ const QuestionsPage = () => {
           
           {subjects.map(subject => (
             <TabsContent key={subject} value={subject} className="mt-6">
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-sm text-muted-foreground">
-                  Showing {indexOfFirstQuestion + 1}-{Math.min(indexOfLastQuestion, currentQuestions.length)} of {currentQuestions.length} questions
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {indexOfFirstQuestion + 1}-{Math.min(indexOfLastQuestion, currentQuestions.length)} of {currentQuestions.length} questions
+                  </div>
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-green-600">Easy: {questionStats.byDifficulty.easy}</span>
+                    <span className="text-yellow-600">Medium: {questionStats.byDifficulty.medium}</span>
+                    <span className="text-red-600">Hard: {questionStats.byDifficulty.hard}</span>
+                  </div>
                 </div>
               </div>
               
@@ -182,8 +197,17 @@ const QuestionsPage = () => {
                         className="flex justify-between cursor-pointer"
                         onClick={() => toggleQuestion(question.id)}
                       >
-                        <div className="pr-4">
-                          <h3 className="font-medium">{question.text}</h3>
+                        <div className="pr-4 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">{question.text}</h3>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              question.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
+                              question.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {question.difficulty || 'N/A'}
+                            </span>
+                          </div>
                         </div>
                         <div>
                           {expandedQuestions[question.id] ? (

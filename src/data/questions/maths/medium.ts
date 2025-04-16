@@ -1,3 +1,4 @@
+
 import { Question } from '@/types/questionTypes';
 
 const mediumMathQuestions: Question[] = [
@@ -624,4 +625,13 @@ const mediumMathQuestions: Question[] = [
   },
   {
     id: 'mm65',
-    subject
+    subject: 'maths',
+    text: 'What is the value of 1/4 + 2/5?',
+    options: ['3/9', '3/20', '13/20', '11/10'],
+    correctAnswer: '13/20',
+    explanation: '1/4 + 2/5 = 5/20 + 8/20 = 13/20',
+    difficulty: 'medium'
+  }
+];
+
+export default mediumMathQuestions;

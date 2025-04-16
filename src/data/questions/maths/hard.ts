@@ -1,3 +1,4 @@
+
 import { Question } from '@/types/questionTypes';
 
 const hardMathQuestions: Question[] = [
@@ -539,4 +540,8 @@ const hardMathQuestions: Question[] = [
     options: ['0', '1/2', '1', '∞'],
     correctAnswer: '1/2',
     explanation: 'Using L\'Hôpital\'s rule, lim (x→0) (1 - cos(x)) / x² = 1/2.',
-    difficulty:
+    difficulty: 'hard'
+  }
+];
+
+export default hardMathQuestions;

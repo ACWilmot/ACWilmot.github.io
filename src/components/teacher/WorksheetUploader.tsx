@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,13 +46,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
       if (uploadError) throw uploadError;
 
       // Create database record
-      const dbRecord: {
-        user_id: string;
-        name: string;
-        file_path: string;
-        status: string;
-        class_id?: string;
-      } = {
+      const dbRecord = {
         user_id: userData.user.id,
         name: file.name,
         file_path: filePath,

@@ -1,8 +1,8 @@
 
 import { Question } from '@/types/questionTypes';
-import easyQuestions from './english/easyQuestions';
-import mediumQuestions from './english/mediumQuestions';
-import hardQuestions from './english/hardQuestions';
+import easyQuestions from './english/easy';
+import mediumQuestions from './english/medium';
+import hardQuestions from './english/hard';
 
 // Combine all questions from different difficulty levels
 const englishQuestions: Question[] = [

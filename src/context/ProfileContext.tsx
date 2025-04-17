@@ -66,7 +66,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           if (!data) {
             console.log("No profile found, creating one");
             // Create a profile if none exists
-            const newProfile: Profile = {
+            const newProfileData = {
               id: auth.user.id,
               name: auth.user.name || auth.user.email?.split('@')[0] || 'user',
               role: 'student',
@@ -74,16 +74,21 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
               email: auth.user.email
             };
             
-            setProfile(newProfile);
-            
             // Save the new profile to Supabase
             const { error: insertError } = await supabase
               .from('profiles')
-              .insert(newProfile);
+              .insert(newProfileData);
               
             if (insertError) {
               console.error("Error creating profile:", insertError);
               toast.error("Could not create profile");
+            } else {
+              // Create the Profile object
+              const newProfile: Profile = {
+                ...newProfileData,
+                role: 'student'
+              };
+              setProfile(newProfile);
             }
           } else {
             // Ensure progress has the correct structure with only valid subjects
@@ -110,6 +115,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
               progress: progressData,
               students: data.students || []
             };
+            
+            // Add timesTablesProgress if it exists
+            if (data.timesTablesProgress) {
+              userProfile.timesTablesProgress = data.timesTablesProgress as any;
+            }
             
             // Add email if it exists
             if (data.email) {
@@ -143,9 +153,20 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsLoading(true);
     
     try {
+      // Convert the Profile data to a Supabase-compatible format
+      const supabaseData: Record<string, any> = {};
+      
+      // Only copy the properties that are present in data
+      if (data.name !== undefined) supabaseData.name = data.name;
+      if (data.role !== undefined) supabaseData.role = data.role;
+      if (data.email !== undefined) supabaseData.email = data.email;
+      if (data.progress !== undefined) supabaseData.progress = data.progress;
+      if (data.students !== undefined) supabaseData.students = data.students;
+      if (data.timesTablesProgress !== undefined) supabaseData.timesTablesProgress = data.timesTablesProgress;
+      
       const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update(supabaseData)
         .eq('id', profile.id);
         
       if (error) {

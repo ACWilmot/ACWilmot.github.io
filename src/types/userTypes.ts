@@ -42,6 +42,7 @@ export type UserProgress = {
 export interface TimesTableAttempt {
   correct: boolean;
   timestamp: string;
+  [key: string]: any; // Add index signature to make compatible with Json
 }
 
 // Using record/index signature to make it compatible with Json type

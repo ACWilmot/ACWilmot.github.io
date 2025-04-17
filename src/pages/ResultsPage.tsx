@@ -10,10 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from "sonner";
 import WorksheetList from '@/components/WorksheetList';
+import { useProgressActions } from '@/hooks/useProgressActions';
+import { useProfile } from '@/context/ProfileContext';
 
 const ResultsPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, updateProgress, updateTimesTablesProgress } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const { profile } = useProfile();
   const {
     questions,
     userAnswers,
@@ -22,6 +25,8 @@ const ResultsPage = () => {
     getResults,
     startQuiz
   } = useQuiz();
+  
+  const { updateProgress, updateTimesTablesProgress } = useProgressActions(profile, null);
   
   const [progressUpdated, setProgressUpdated] = useState(false);
   
@@ -49,8 +54,21 @@ const ResultsPage = () => {
         // Handle times tables progress separately
         if (selectedSubject === 'timesTables') {
           console.log("Updating times tables progress with", questions.length, "questions");
-          await updateTimesTablesProgress(questions, userAnswers);
-          console.log("Times tables progress update completed");
+          
+          // Make sure we have the questions and answers
+          if (questions.length > 0 && Object.keys(userAnswers).length > 0) {
+            console.log("Times tables questions to update:", questions.map(q => ({
+              id: q.id,
+              timesTable: q.timesTable,
+              userAnswer: userAnswers[q.id],
+              correctAnswer: q.correctAnswer
+            })));
+            
+            await updateTimesTablesProgress(questions, userAnswers);
+            console.log("Times tables progress update completed");
+          } else {
+            console.error("Missing questions or answers for times tables progress update");
+          }
         } else {
           // Regular progress update for other subjects
           console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);

@@ -5,7 +5,7 @@ import { Profile, TimesTableProgress } from '@/types/userTypes';
 import { resetSubjects } from '@/utils/progressUtils';
 import { Question } from '@/types/questionTypes';
 
-export const useProgressActions = (user: Profile | null, setUser: (user: Profile | null) => void) => {
+export const useProgressActions = (user: Profile | null, setUser: ((user: Profile | null) => void) | null) => {
   const updateProgress = async (subject: string, completed: number, correct: number): Promise<void> => {
     if (!user) return;
 
@@ -43,11 +43,13 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
 
       console.log("Progress successfully updated in database");
       
-      // Update local state
-      setUser({
-        ...user,
-        progress: newProgress
-      });
+      // Update local state if setUser function is provided
+      if (setUser) {
+        setUser({
+          ...user,
+          progress: newProgress
+        });
+      }
       
       toast.success("Progress updated successfully");
     } catch (error) {
@@ -57,7 +59,10 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
   };
 
   const updateTimesTablesProgress = async (questions: Question[], answers: Record<string, string>): Promise<void> => {
-    if (!user) return;
+    if (!user) {
+      console.error("Cannot update times tables progress: No user available");
+      return;
+    }
 
     try {
       console.log("Starting times tables progress update with questions:", questions.length);
@@ -68,7 +73,9 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
           table: i + 1,
           attempts: 0,
           correct: 0,
-          recentAttempts: []
+          recentAttempts: [],
+          // Add index signature to make compatible with Json
+          [Symbol.toStringTag]: 'TimesTableProgress'
         }));
       
       console.log("Current times tables progress:", currentTimesTablesProgress);
@@ -76,14 +83,21 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
       // Process each question to update times tables progress
       questions.forEach(question => {
         if (!question.timesTable || question.subject !== 'timesTables') {
+          console.log("Skipping non-times table question:", question);
           return; // Skip if not a times table question
         }
         
         const tableIndex = currentTimesTablesProgress.findIndex(t => t.table === question.timesTable);
-        if (tableIndex === -1) return; // Skip if table not found
+        if (tableIndex === -1) {
+          console.log(`Table ${question.timesTable} not found in progress data`);
+          return; // Skip if table not found
+        }
         
         const tableProgress = currentTimesTablesProgress[tableIndex];
-        const wasCorrect = answers[question.id] === question.correctAnswer;
+        const userAnswer = answers[question.id];
+        const wasCorrect = userAnswer === question.correctAnswer;
+        
+        console.log(`Processing question for table ${question.timesTable}: Answer=${userAnswer}, Correct=${question.correctAnswer}, Result=${wasCorrect ? 'Correct' : 'Incorrect'}`);
         
         // Update overall statistics
         tableProgress.attempts += 1;
@@ -112,7 +126,9 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
         recentAttempts: item.recentAttempts.map(attempt => ({
           correct: attempt.correct,
           timestamp: attempt.timestamp
-        }))
+        })),
+        // Add any additional properties needed for JSON compatibility
+        _type: "TimesTableProgress"
       }));
       
       console.log("Updated times tables progress to save:", jsonCompatibleData);
@@ -133,11 +149,13 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
       
       console.log("Times tables progress saved successfully to database");
       
-      // Update local state
-      setUser({
-        ...user,
-        timesTablesProgress: currentTimesTablesProgress
-      });
+      // Update local state if setUser function is provided
+      if (setUser) {
+        setUser({
+          ...user,
+          timesTablesProgress: currentTimesTablesProgress
+        });
+      }
       
       toast.success("Times tables progress updated");
     } catch (error) {

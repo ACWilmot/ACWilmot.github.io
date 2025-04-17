@@ -1,27 +1,59 @@
 
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronRight, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import { TimesTableProgress } from '@/types/userTypes';
-import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/context/ProfileContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import TimesTablesChart from './TimesTablesChart';
 import { getDefaultTimesTablesProgress } from '@/utils/progressUtils';
 
+// Helper function to generate demo data (for testing purposes only)
+const generateDemoData = (): TimesTableProgress[] => {
+  return Array.from({ length: 12 }, (_, i) => {
+    const table = i + 1;
+    const attempts = Math.floor(Math.random() * 50) + 10; // Between 10-60 attempts
+    const correct = Math.floor(Math.random() * attempts); // Random number of correct answers
+    
+    // Generate recent attempts (last 10)
+    const recentAttempts = Array.from({ length: 10 }, () => ({
+      correct: Math.random() > 0.3, // 70% chance of being correct
+      timestamp: new Date(Date.now() - Math.random() * 604800000).toISOString() // Within last week
+    }));
+    
+    return {
+      table,
+      attempts,
+      correct,
+      recentAttempts
+    };
+  });
+};
+
 const TimesTablesProgress: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { profile, updateProfile } = useProfile();
+  const [demoMode, setDemoMode] = useState(false);
   
-  console.log("TimesTablesProgress rendering with user data:", user);
+  console.log("TimesTablesProgress rendering with profile data:", profile);
   
   // If no times tables progress data exists yet, create a default structure
-  const timesTablesProgress = user?.timesTablesProgress || getDefaultTimesTablesProgress();
+  const timesTablesProgress = profile?.timesTablesProgress || getDefaultTimesTablesProgress();
   
   console.log("Using times tables progress:", timesTablesProgress);
+
+  // Function to load demo data
+  const loadDemoData = () => {
+    if (!profile) return;
+    
+    const demoData = generateDemoData();
+    updateProfile({ timesTablesProgress: demoData });
+    setDemoMode(true);
+  };
 
   // Calculate progress percentages and recent accuracy
   const progressData = timesTablesProgress.map(table => {
@@ -49,16 +81,29 @@ const TimesTablesProgress: React.FC = () => {
 
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-2">
         <h2 className="text-2xl font-display font-bold">Times Tables Progress</h2>
-        <Button 
-          onClick={() => navigate('/quiz', { state: { subject: 'timesTables' } })}
-          variant="default"
-          className="flex items-center gap-1.5"
-        >
-          Practice Now
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          {!hasAnyAttempts && (
+            <Button 
+              onClick={loadDemoData}
+              variant="outline"
+              className="flex items-center gap-1.5"
+            >
+              <BarChart2 className="h-4 w-4" />
+              Load Demo Data
+            </Button>
+          )}
+          
+          <Button 
+            onClick={() => navigate('/quiz', { state: { subject: 'timesTables' } })}
+            variant="default"
+            className="flex items-center gap-1.5"
+          >
+            <ChevronRight className="h-4 w-4" />
+            Practice Now
+          </Button>
+        </div>
       </div>
 
       {hasAnyAttempts && <TimesTablesChart progressData={timesTablesProgress} />}
@@ -107,7 +152,7 @@ const TimesTablesProgress: React.FC = () => {
       ) : (
         <Alert className="bg-muted/50">
           <AlertDescription>
-            You haven't practiced any times tables yet. Start a practice session to track your progress!
+            {demoMode ? "Loading demo data..." : "You haven't practiced any times tables yet. Start a practice session to track your progress!"}
           </AlertDescription>
         </Alert>
       )}

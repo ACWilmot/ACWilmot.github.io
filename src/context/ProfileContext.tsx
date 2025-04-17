@@ -1,17 +1,19 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Profile, UserProgress } from '@/types/userTypes';
-import { resetSubjects } from '@/utils/progressUtils';
+import { Profile, UserProgress, TimesTableProgress } from '@/types/userTypes';
+import { resetSubjects, getDefaultTimesTablesProgress } from '@/utils/progressUtils';
 
 interface ProfileContextType {
   profile: Profile | null;
   isLoading: boolean;
   updateProfile: (data: Partial<Profile>) => Promise<void>;
   updateProgress: (subject: string, correct: boolean) => Promise<void>;
+  updateTimesTablesProgress: (table: number, correct: boolean) => Promise<void>;
 }
+
+const LOCAL_STORAGE_KEY = 'demo_times_tables_progress';
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
@@ -116,9 +118,21 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
               students: data.students || []
             };
             
-            // Add timesTablesProgress if it exists
+            // Add timesTablesProgress if it exists in Supabase
             if (data.timesTablesProgress) {
               userProfile.timesTablesProgress = data.timesTablesProgress as any;
+            } else {
+              // For demo purposes, check if we have stored progress in localStorage
+              const localProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
+              if (localProgress) {
+                userProfile.timesTablesProgress = JSON.parse(localProgress);
+                console.log("Loaded times tables progress from localStorage:", userProfile.timesTablesProgress);
+              } else {
+                // Initialize with default progress
+                userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userProfile.timesTablesProgress));
+                console.log("Initialized default times tables progress in localStorage");
+              }
             }
             
             // Add email if it exists
@@ -162,7 +176,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.email !== undefined) supabaseData.email = data.email;
       if (data.progress !== undefined) supabaseData.progress = data.progress;
       if (data.students !== undefined) supabaseData.students = data.students;
-      if (data.timesTablesProgress !== undefined) supabaseData.timesTablesProgress = data.timesTablesProgress;
+      
+      // For timesTablesProgress, we'll store it locally for the demo
+      if (data.timesTablesProgress !== undefined) {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.timesTablesProgress));
+        console.log("Saved times tables progress to localStorage:", data.timesTablesProgress);
+      }
       
       const { error } = await supabase
         .from('profiles')
@@ -233,13 +252,68 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  // New method to update times tables progress locally
+  const updateTimesTablesProgress = async (table: number, correct: boolean): Promise<void> => {
+    if (!profile || !profile.timesTablesProgress) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Clone the current progress
+      const updatedProgress = [...profile.timesTablesProgress];
+      
+      // Find the table entry
+      const tableIndex = updatedProgress.findIndex(t => t.table === table);
+      if (tableIndex === -1) return;
+      
+      // Update the table progress
+      const tableProgress = updatedProgress[tableIndex];
+      tableProgress.attempts += 1;
+      if (correct) {
+        tableProgress.correct += 1;
+      }
+      
+      // Add to recent attempts (keep only most recent 10)
+      tableProgress.recentAttempts = [
+        {
+          correct,
+          timestamp: new Date().toISOString()
+        },
+        ...(tableProgress.recentAttempts || []).slice(0, 9)
+      ];
+      
+      // Update the progress in the array
+      updatedProgress[tableIndex] = tableProgress;
+      
+      // Save to localStorage for demo purposes
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProgress));
+      console.log("Saved updated times tables progress to localStorage:", updatedProgress);
+      
+      // Update local state
+      setProfile(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          timesTablesProgress: updatedProgress
+        };
+      });
+      
+      toast.success(`Times table ${table} progress updated`);
+    } catch (error) {
+      console.error("Error updating times tables progress:", error);
+      toast.error("Failed to update times tables progress");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Only provide context when auth is ready
   if (!authReady) {
     return <>{children}</>;
   }
 
   return (
-    <ProfileContext.Provider value={{ profile, isLoading, updateProfile, updateProgress }}>
+    <ProfileContext.Provider value={{ profile, isLoading, updateProfile, updateProgress, updateTimesTablesProgress }}>
       {children}
     </ProfileContext.Provider>
   );

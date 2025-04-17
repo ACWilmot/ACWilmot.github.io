@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, TimesTableProgress } from '@/types/userTypes';
@@ -6,10 +7,14 @@ import { Question } from '@/types/questionTypes';
 
 export const useProgressActions = (user: Profile | null, setUser: ((user: Profile | null) => void) | null) => {
   const updateProgress = async (subject: string, completed: number, correct: number): Promise<void> => {
-    if (!user) return;
+    if (!user) {
+      console.error("Cannot update progress: No user available");
+      toast.error("Failed to update progress - please log in again");
+      return;
+    }
 
     try {
-      console.log("Starting progress update:", { subject, completed, correct });
+      console.log("Starting progress update:", { subject, completed, correct, userId: user.id });
       const lastAttempted = new Date().toISOString().split('T')[0];
       
       // Get current progress values to accumulate them
@@ -40,7 +45,7 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
         return;
       }
 
-      console.log("Progress successfully updated in database");
+      console.log("Progress successfully updated in database for user:", user.id);
       
       // Update local state if setUser function is provided
       if (setUser) {
@@ -60,11 +65,13 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
   const updateTimesTablesProgress = async (questions: Question[], answers: Record<string, string>): Promise<void> => {
     if (!user) {
       console.error("Cannot update times tables progress: No user available");
+      toast.error("Failed to update times tables progress - please log in again");
       return;
     }
 
     try {
-      console.log("Starting times tables progress update with questions:", questions.length);
+      console.log("Starting times tables progress update for user:", user.id);
+      console.log("Questions to process:", questions.length);
       
       // Get existing times tables progress or create a new array
       const currentTimesTablesProgress = user.timesTablesProgress || 
@@ -131,6 +138,7 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       }));
       
       console.log("Updated times tables progress to save:", jsonCompatibleData);
+      console.log("Saving to user ID:", user.id);
       
       // Update database with the JSON data properly formatted
       const { error } = await supabase

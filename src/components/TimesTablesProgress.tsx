@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,15 +10,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import TimesTablesChart from './TimesTablesChart';
 import { getDefaultTimesTablesProgress } from '@/utils/progressUtils';
+import { useProgressActions } from '@/hooks/useProgressActions';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-// Helper function to generate demo data (for testing purposes only)
 const generateDemoData = (): TimesTableProgress[] => {
   return Array.from({ length: 12 }, (_, i) => {
     const table = i + 1;
     const attempts = Math.floor(Math.random() * 50) + 10; // Between 10-60 attempts
     const correct = Math.floor(Math.random() * attempts); // Random number of correct answers
     
-    // Generate recent attempts (last 10)
     const recentAttempts = Array.from({ length: 10 }, () => ({
       correct: Math.random() > 0.3, // 70% chance of being correct
       timestamp: new Date(Date.now() - Math.random() * 604800000).toISOString() // Within last week
@@ -37,29 +37,68 @@ const generateDemoData = (): TimesTableProgress[] => {
 const TimesTablesProgress: React.FC = () => {
   const navigate = useNavigate();
   const { profile, updateProfile } = useProfile();
+  const { updateTimesTablesProgress } = useProgressActions(profile, updateProfile);
   const [demoMode, setDemoMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   console.log("TimesTablesProgress rendering with profile data:", profile);
   
-  // If no times tables progress data exists yet, create a default structure
   const timesTablesProgress = profile?.timesTablesProgress || getDefaultTimesTablesProgress();
   
   console.log("Using times tables progress:", timesTablesProgress);
 
-  // Function to load demo data
-  const loadDemoData = () => {
-    if (!profile) return;
+  const loadDemoData = async () => {
+    if (!profile) {
+      toast.error("Please log in to load demo data");
+      return;
+    }
     
-    const demoData = generateDemoData();
-    updateProfile({ timesTablesProgress: demoData });
-    setDemoMode(true);
+    setIsLoading(true);
+    try {
+      const demoData = generateDemoData();
+      
+      console.log("Loading demo data:", demoData);
+      
+      const jsonCompatibleData = demoData.map(item => ({
+        table: item.table,
+        attempts: item.attempts,
+        correct: item.correct,
+        recentAttempts: item.recentAttempts.map(attempt => ({
+          correct: attempt.correct,
+          timestamp: attempt.timestamp
+        })),
+        _type: "TimesTableProgress"
+      }));
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          timesTablesProgress: jsonCompatibleData
+        })
+        .eq('id', profile.id);
+        
+      if (error) {
+        console.error("Error saving demo data:", error);
+        toast.error("Failed to load demo data");
+        setIsLoading(false);
+        return;
+      }
+      
+      await updateProfile({ timesTablesProgress: demoData });
+      
+      setDemoMode(true);
+      toast.success("Demo data loaded successfully");
+    } catch (error) {
+      console.error("Error loading demo data:", error);
+      toast.error("Failed to load demo data");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Calculate progress percentages and recent accuracy
   const progressData = timesTablesProgress.map(table => {
     const totalAccuracy = table.attempts > 0 ? Math.round((table.correct / table.attempts) * 100) : 0;
     
-    // Calculate recent accuracy (last 10 attempts)
     const recentAttempts = table.recentAttempts || [];
     const recentTotal = recentAttempts.length;
     const recentCorrect = recentAttempts.filter(attempt => attempt.correct).length;
@@ -89,9 +128,10 @@ const TimesTablesProgress: React.FC = () => {
               onClick={loadDemoData}
               variant="outline"
               className="flex items-center gap-1.5"
+              disabled={isLoading}
             >
               <BarChart2 className="h-4 w-4" />
-              Load Demo Data
+              {isLoading ? "Loading..." : "Load Demo Data"}
             </Button>
           )}
           

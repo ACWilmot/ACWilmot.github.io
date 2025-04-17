@@ -1,6 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/context/ProfileContext';
+import { useProgressActions } from '@/hooks/useProgressActions';
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -14,11 +16,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TimesTablesProgress from '@/components/TimesTablesProgress';
 
 const ProgressPage = () => {
-  const { user, isAuthenticated, resetSubjectProgress } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const { profile, updateProfile } = useProfile();
+  const { resetSubjectProgress } = useProgressActions(profile, updateProfile);
+  
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("subjects");
+
+  console.log("ProgressPage rendering with profile:", profile);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -27,16 +34,16 @@ const ProgressPage = () => {
       return;
     }
 
-    if (user) {
-      console.log("User data loaded:", user);
-      console.log("Progress data:", user.progress);
+    if (profile) {
+      console.log("User profile data loaded:", profile);
+      console.log("Progress data:", profile.progress);
       setLoading(false);
     } else {
-      console.error("User data not available");
-      setError("Failed to load user data");
+      console.error("User profile data not available");
+      setError("Failed to load user profile data");
       setLoading(false);
     }
-  }, [isAuthenticated, navigate, user]);
+  }, [isAuthenticated, navigate, profile]);
 
   if (loading) {
     return (
@@ -49,7 +56,7 @@ const ProgressPage = () => {
     );
   }
 
-  if (error || !user) {
+  if (error || !profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
@@ -57,7 +64,7 @@ const ProgressPage = () => {
           <Alert variant="destructive" className="mb-4">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
-              {error || "Failed to load data. Please try logging in again."}
+              {error || "Failed to load profile data. Please try logging in again."}
             </AlertDescription>
           </Alert>
           <Button onClick={() => navigate('/login')}>Return to Login</Button>
@@ -66,7 +73,7 @@ const ProgressPage = () => {
     );
   }
 
-  const subjects = Object.keys(user.progress).filter(subject => subject !== 'timesTables');
+  const subjects = Object.keys(profile.progress).filter(subject => subject !== 'timesTables');
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -103,7 +110,7 @@ const ProgressPage = () => {
           <TabsContent value="subjects" className="mt-6">
             <div className="grid md:grid-cols-2 gap-6">
               {subjects.map(subject => {
-                const subjectData = user.progress[subject];
+                const subjectData = profile.progress[subject];
                 if (!subjectData) {
                   console.error(`Missing data for subject: ${subject}`);
                   return null;

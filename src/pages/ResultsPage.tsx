@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,6 +11,7 @@ import { toast } from "sonner";
 import WorksheetList from '@/components/WorksheetList';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useProfile } from '@/context/ProfileContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const ResultsPage = () => {
   const navigate = useNavigate();
@@ -64,7 +64,87 @@ const ResultsPage = () => {
               correctAnswer: q.correctAnswer
             })));
             
-            await updateTimesTablesProgress(questions, userAnswers);
+            // Direct update to Supabase for times tables progress
+            if (profile && profile.id) {
+              try {
+                // Get current times tables progress
+                const currentProgress = profile.timesTablesProgress || 
+                  Array.from({ length: 12 }, (_, i) => ({
+                    table: i + 1,
+                    attempts: 0,
+                    correct: 0,
+                    recentAttempts: []
+                  }));
+                
+                // Process each question
+                questions.forEach(question => {
+                  if (!question.timesTable || question.subject !== 'timesTables') {
+                    return;
+                  }
+                  
+                  const tableIndex = currentProgress.findIndex(t => t.table === question.timesTable);
+                  if (tableIndex === -1) {
+                    return;
+                  }
+                  
+                  const tableProgress = currentProgress[tableIndex];
+                  const userAnswer = userAnswers[question.id];
+                  const wasCorrect = userAnswer === question.correctAnswer;
+                  
+                  // Update statistics
+                  tableProgress.attempts += 1;
+                  if (wasCorrect) {
+                    tableProgress.correct += 1;
+                  }
+                  
+                  // Add to recent attempts
+                  tableProgress.recentAttempts = [
+                    {
+                      correct: wasCorrect,
+                      timestamp: new Date().toISOString()
+                    },
+                    ...(tableProgress.recentAttempts || []).slice(0, 9)
+                  ];
+                  
+                  // Update in array
+                  currentProgress[tableIndex] = tableProgress;
+                });
+                
+                // Convert to JSON-compatible format
+                const jsonCompatibleData = currentProgress.map(item => ({
+                  table: item.table,
+                  attempts: item.attempts,
+                  correct: item.correct,
+                  recentAttempts: item.recentAttempts.map(attempt => ({
+                    correct: attempt.correct,
+                    timestamp: attempt.timestamp
+                  }))
+                }));
+                
+                console.log("Saving times tables progress directly to Supabase:", jsonCompatibleData);
+                
+                // Save to Supabase
+                const { error } = await supabase
+                  .from('profiles')
+                  .update({ timesTablesProgress: jsonCompatibleData })
+                  .eq('id', profile.id);
+                  
+                if (error) {
+                  console.error("Error saving times tables progress to Supabase:", error);
+                  toast.error("Failed to save your progress");
+                } else {
+                  console.log("Times tables progress saved successfully to Supabase");
+                  toast.success("Your progress has been saved");
+                }
+              } catch (error) {
+                console.error("Error processing times tables progress:", error);
+                toast.error("Failed to save your progress");
+              }
+            } else {
+              // Fallback to the hook method if direct update fails
+              await updateTimesTablesProgress(questions, userAnswers);
+            }
+            
             console.log("Times tables progress update completed");
           } else {
             console.error("Missing questions or answers for times tables progress update");
@@ -81,7 +161,7 @@ const ResultsPage = () => {
     };
     
     updateUserProgress();
-  }, [isAuthenticated, selectedSubject, questions, progressUpdated, updateProgress, updateTimesTablesProgress, score, totalQuestions, userAnswers]);
+  }, [isAuthenticated, selectedSubject, questions, progressUpdated, updateProgress, updateTimesTablesProgress, score, totalQuestions, userAnswers, profile]);
   
   const getGrade = () => {
     if (percentage >= 90) return { text: 'Excellent', color: 'text-green-500' };

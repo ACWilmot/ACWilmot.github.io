@@ -8,7 +8,6 @@ import { TimesTableProgress } from '@/types/userTypes';
 import { useProfile } from '@/context/ProfileContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import TimesTablesChart from './TimesTablesChart';
 import { getDefaultTimesTablesProgress } from '@/utils/progressUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { toast } from 'sonner';
@@ -55,7 +54,6 @@ const TimesTablesProgress: React.FC = () => {
   console.log("TimesTablesProgress rendering with profile data:", profile);
   console.log("Profile loading state:", isLoading);
   
-  // Get times tables progress with a fallback to default data
   const timesTablesProgress = profile?.timesTablesProgress || getDefaultTimesTablesProgress();
   
   console.log("Using times tables progress:", timesTablesProgress);
@@ -83,7 +81,6 @@ const TimesTablesProgress: React.FC = () => {
         _type: "TimesTableProgress"
       }));
       
-      // Use the user ID from the profile to update the correct record
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -207,8 +204,6 @@ const TimesTablesProgress: React.FC = () => {
           </Button>
         </div>
       </div>
-
-      {hasAnyAttempts && <TimesTablesChart progressData={timesTablesProgress} />}
 
       {hasAnyAttempts ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">

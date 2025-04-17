@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
@@ -18,7 +17,12 @@ import TimesTablesProgress from '@/components/TimesTablesProgress';
 const ProgressPage = () => {
   const { isAuthenticated, user } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
-  const { resetSubjectProgress } = useProgressActions(profile, null);
+  const { resetSubjectProgress } = useProgressActions(profile, updateProfile => {
+    if (profile && updateProfile) {
+      return updateProfile;
+    }
+    return null;
+  });
   
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -38,22 +42,14 @@ const ProgressPage = () => {
       return;
     }
 
-    // Give profile a chance to load if it's still loading
-    if (profileLoading) {
-      console.log("Profile is still loading...");
-      return;
-    }
-    
-    // Once profile loading is done, update our local loading state
-    if (profile) {
-      console.log("User profile data loaded:", profile);
-      console.log("Progress data:", profile.progress);
+    // Ensure profile loading is complete
+    if (!profileLoading) {
       setLoading(false);
-      setError(null);
-    } else {
-      console.error("User profile data not available after loading completed");
-      setError("Failed to load user profile data. Please try logging in again.");
-      setLoading(false);
+      if (!profile) {
+        setError("Failed to load user profile data. Please try logging in again.");
+      } else {
+        setError(null);
+      }
     }
   }, [isAuthenticated, navigate, profile, profileLoading]);
 

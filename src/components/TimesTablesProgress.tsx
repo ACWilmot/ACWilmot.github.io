@@ -73,6 +73,7 @@ const TimesTablesProgress: React.FC = () => {
         _type: "TimesTableProgress"
       }));
       
+      // Use the user ID from the profile to update the correct record
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -82,7 +83,7 @@ const TimesTablesProgress: React.FC = () => {
         
       if (error) {
         console.error("Error saving demo data:", error);
-        toast.error("Failed to load demo data");
+        toast.error(`Failed to load demo data: ${error.message}`);
         setIsLoadingDemo(false);
         return;
       }
@@ -127,7 +128,7 @@ const TimesTablesProgress: React.FC = () => {
   console.log("Progress data processed:", progressData);
 
   if (isLoading) {
-    return <div className="mt-6">Loading times tables progress...</div>;
+    return <div className="mt-6 p-4 text-center">Loading times tables progress...</div>;
   }
 
   return (

@@ -1,10 +1,10 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, UserProgress, TimesTableProgress } from '@/types/userTypes';
 import { resetSubjects, getDefaultTimesTablesProgress } from '@/utils/progressUtils';
+import { fetchUserProfile } from '@/utils/profileUtils';
 
 interface ProfileContextType {
   profile: Profile | null;
@@ -13,8 +13,6 @@ interface ProfileContextType {
   updateProgress: (subject: string, correct: boolean) => Promise<void>;
   updateTimesTablesProgress: (table: number, correct: boolean) => Promise<void>;
 }
-
-const LOCAL_STORAGE_KEY = 'demo_times_tables_progress';
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
@@ -50,131 +48,24 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (auth.user) {
       setIsLoading(true);
       
-      // Fetch real user profile data from Supabase
-      const fetchProfile = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', auth.user.id)
-            .single();
-            
-          if (error) {
-            console.error("Error fetching profile:", error);
-            toast.error("Could not load profile data");
-            setIsLoading(false);
-            return;
-          }
-          
-          if (!data) {
-            console.log("No profile found, creating one");
-            // Create a profile if none exists
-            const newProfileData = {
-              id: auth.user.id,
-              name: auth.user.name || auth.user.email?.split('@')[0] || 'user',
-              role: 'student',
-              progress: { ...resetSubjects },
-              email: auth.user.email
-            };
-            
-            // Save the new profile to Supabase
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert(newProfileData);
-              
-            if (insertError) {
-              console.error("Error creating profile:", insertError);
-              toast.error("Could not create profile");
-            } else {
-              // Create the Profile object
-              const newProfile: Profile = {
-                ...newProfileData,
-                role: 'student'
-              };
-              setProfile(newProfile);
-            }
+      // Use the fetchUserProfile utility instead of direct database access
+      fetchUserProfile(auth.user.id)
+        .then(profile => {
+          if (profile) {
+            console.log("Fetched profile successfully:", profile);
+            setProfile(profile);
           } else {
-            // Ensure progress has the correct structure with only valid subjects
-            const progressData = { ...resetSubjects };
-            
-            if (data.progress && typeof data.progress === 'object') {
-              // Only copy over the valid subjects and ignore 'non-verbal'
-              Object.keys(resetSubjects).forEach(subject => {
-                if (data.progress[subject]) {
-                  progressData[subject] = {
-                    completed: data.progress[subject].completed || 0,
-                    correct: data.progress[subject].correct || 0,
-                    lastAttempted: data.progress[subject].lastAttempted || null
-                  };
-                }
-              });
-            }
-            
-            // Create the profile object with the structured progress data
-            const userProfile: Profile = {
-              id: data.id,
-              name: data.name || '',
-              role: (data.role as 'student' | 'teacher') || 'student',
-              progress: progressData,
-              students: data.students || []
-            };
-            
-            // Add timesTablesProgress if it exists in Supabase
-            if (data.timesTablesProgress) {
-              try {
-                // Parse and validate the timesTablesProgress data
-                const timesTablesProgressData = data.timesTablesProgress as any[];
-                
-                if (Array.isArray(timesTablesProgressData)) {
-                  // Ensure each entry has the required properties
-                  userProfile.timesTablesProgress = timesTablesProgressData.map(item => ({
-                    table: item.table || 0,
-                    attempts: item.attempts || 0,
-                    correct: item.correct || 0,
-                    recentAttempts: Array.isArray(item.recentAttempts) 
-                      ? item.recentAttempts.map((attempt: any) => ({
-                          correct: !!attempt.correct,
-                          timestamp: attempt.timestamp || new Date().toISOString()
-                        }))
-                      : []
-                  }));
-                  console.log("Loaded times tables progress from Supabase:", userProfile.timesTablesProgress);
-                } else {
-                  // Initialize with default progress if data is invalid
-                  userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
-                  console.log("Invalid times tables progress format, using default");
-                }
-              } catch (error) {
-                console.error("Error parsing times tables progress:", error);
-                userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
-              }
-            } else {
-              // Initialize with default progress
-              userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
-              console.log("Initialized default times tables progress");
-            }
-            
-            // Add email if it exists
-            if (data.email) {
-              userProfile.email = data.email;
-            } else if (data.Email) {
-              userProfile.email = data.Email;
-            } else if (auth.user.email) {
-              userProfile.email = auth.user.email;
-            }
-            
-            setProfile(userProfile);
-            console.log("Profile loaded successfully", userProfile);
+            console.error("Failed to fetch user profile");
+            toast.error("Could not load profile data");
           }
-        } catch (error) {
-          console.error("Error in profile fetch:", error);
+        })
+        .catch(error => {
+          console.error("Error fetching profile:", error);
           toast.error("Could not load profile data");
-        } finally {
+        })
+        .finally(() => {
           setIsLoading(false);
-        }
-      };
-      
-      fetchProfile();
+        });
     } else {
       setProfile(null);
     }

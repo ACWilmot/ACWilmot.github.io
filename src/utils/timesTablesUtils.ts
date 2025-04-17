@@ -1,6 +1,6 @@
 
 import { v4 as uuidv4 } from 'uuid';
-import { Question } from '@/types/questionTypes';
+import { Question, Difficulty } from '@/types/questionTypes';
 
 export const generateTimesTablesQuestions = (tables: number[], count: number): Question[] => {
   const questions: Question[] = [];
@@ -57,7 +57,7 @@ export const generateTimesTablesQuestions = (tables: number[], count: number): Q
       options,
       correctAnswer,
       explanation: `${multiplicand} × ${multiplier} = ${correctAnswer}`,
-      difficulty: 'all',
+      difficulty: 'easy' as Difficulty, // Changed from 'all' to a valid Difficulty type
     });
   });
   

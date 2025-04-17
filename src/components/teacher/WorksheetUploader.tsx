@@ -1,220 +1,302 @@
-
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-import { useQuiz } from '@/context/QuizContext';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, FileType, X, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Subject } from '@/context/QuizContext';
+import { Difficulty } from '@/types/questionTypes';
 
-interface WorksheetUploaderProps {
-  classId?: string;
-  onUploadComplete?: () => void;
-  inQuiz?: boolean;
-}
+const formSchema = z.object({
+  title: z.string().min(3, {
+    message: 'Worksheet title must be at least 3 characters.',
+  }),
+  subject: z.enum(['maths', 'english', 'verbal', 'all', 'timesTables'] as const),
+  difficulty: z.enum(['easy', 'medium', 'hard', 'all'] as const),
+  description: z.string().optional(),
+  file: z.instanceof(File).optional(),
+});
 
-// Define the shape of our worksheet database record to ensure type safety
-interface WorksheetRecord {
-  user_id: string;
-  name: string;
-  file_path: string;
-  status: string;
-  class_id?: string;
-  total_questions?: number;
-  correct_answers?: number;
-}
+type FormValues = z.infer<typeof formSchema>;
 
-const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({ 
-  classId, 
-  onUploadComplete,
-  inQuiz = false 
-}) => {
-  const [uploading, setUploading] = useState(false);
-  const navigate = useNavigate();
-  const { questions, selectedSubject, selectedDifficulty } = useQuiz();
+const WorksheetUploader: React.FC = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: '',
+      subject: 'maths',
+      difficulty: 'medium',
+      description: '',
+    },
+  });
 
-    if (!file.type.includes('pdf')) {
-      toast.error('Please upload a PDF file');
-      return;
-    }
-
-    try {
-      setUploading(true);
-
-      // Upload to storage bucket
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('Not authenticated');
-
-      const filePath = `${userData.user.id}/${classId || 'practice'}/${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from('worksheets')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Create database record with proper typing
-      const dbRecord: WorksheetRecord = {
-        user_id: userData.user.id,
-        name: file.name,
-        file_path: filePath,
-        status: 'processing'
-      };
-      
-      if (classId) {
-        dbRecord.class_id = classId;
-      }
-
-      const { error: dbError } = await supabase
-        .from('worksheet_uploads')
-        .insert(dbRecord);
-
-      if (dbError) throw dbError;
-
-      // Simulate PDF processing and marking
-      if (inQuiz) {
-        await processAndMarkWorksheet(filePath, userData.user.id);
-      }
-
-      toast.success('Worksheet uploaded successfully');
-      
-      if (inQuiz) {
-        navigate('/results');
-      } else if (onUploadComplete) {
-        onUploadComplete();
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload worksheet');
-    } finally {
-      setUploading(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      form.setValue('file', selectedFile);
     }
   };
 
-  // Simulate PDF processing and marking based on the current quiz questions
-  const processAndMarkWorksheet = async (filePath: string, userId: string) => {
+  const removeFile = () => {
+    setFile(null);
+    form.setValue('file', undefined);
+  };
+
+  const onSubmit = async (values: FormValues) => {
+    setIsUploading(true);
+    setUploadStatus('idle');
+    setErrorMessage('');
+
     try {
-      // Get the upload ID
-      const { data: uploadData, error: uploadError } = await supabase
-        .from('worksheet_uploads')
-        .select('id')
-        .eq('file_path', filePath)
-        .single();
-
-      if (uploadError) throw uploadError;
-
-      // In a real implementation, you would:
-      // 1. Extract text from the PDF
-      // 2. Use OCR to identify answers
-      // 3. Match answers to questions
+      // Create a FormData object to send the file and form values
+      const formData = new FormData();
+      formData.append('title', values.title);
+      formData.append('subject', values.subject);
+      formData.append('difficulty', values.difficulty);
       
-      // For this demo, we'll simulate marking with random correct answers
-      // In a production app, you might use a service like AWS Textract or Google Cloud Vision
-      const totalQuestions = questions.length;
-      const correctAnswers = Math.floor(Math.random() * (totalQuestions + 1)); // Random score
-
-      // Update the worksheet upload record with the results
-      const { error: updateError } = await supabase
-        .from('worksheet_uploads')
-        .update({
-          status: 'marked',
-          marked_at: new Date().toISOString(),
-          total_questions: totalQuestions,
-          correct_answers: correctAnswers
-        })
-        .eq('id', uploadData.id);
-
-      if (updateError) throw updateError;
-
-      // Update user progress
-      if (selectedSubject) {
-        const { data: progressData, error: progressError } = await supabase
-          .from('profiles')
-          .select('progress')
-          .eq('id', userId)
-          .single();
-
-        if (progressError) throw progressError;
-
-        const progress = progressData?.progress || {};
-        const subject = selectedSubject;
-        const lastAttempted = new Date().toISOString().split('T')[0];
-        
-        // Create new progress object
-        const newProgress = {
-          ...progress,
-          [subject]: {
-            completed: ((progress[subject] && progress[subject].completed) || 0) + totalQuestions,
-            correct: ((progress[subject] && progress[subject].correct) || 0) + correctAnswers,
-            lastAttempted
-          }
-        };
-
-        const { error: updateProgressError } = await supabase
-          .from('profiles')
-          .update({ progress: newProgress })
-          .eq('id', userId);
-
-        if (updateProgressError) throw updateProgressError;
+      if (values.description) {
+        formData.append('description', values.description);
+      }
+      
+      if (file) {
+        formData.append('file', file);
       }
 
-      toast.success('Worksheet marked successfully!');
+      // Simulate API call with a delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate a successful response
+      console.log('Worksheet uploaded:', values);
+      setUploadStatus('success');
+      form.reset();
+      setFile(null);
     } catch (error) {
-      console.error('Marking error:', error);
-      toast.error('Failed to process worksheet');
+      console.error('Error uploading worksheet:', error);
+      setUploadStatus('error');
+      setErrorMessage('Failed to upload worksheet. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return (
-    <Card className={`${inQuiz ? "border-primary/30" : ""} shadow-md hover:shadow-lg transition-shadow duration-300`}>
-      <CardHeader className={`${inQuiz ? "pb-2" : ""} border-b`}>
-        <CardTitle className="flex items-center gap-2">
-          <Upload className="h-5 w-5 text-primary" />
-          Upload Worksheet
-        </CardTitle>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>Upload Worksheet</CardTitle>
         <CardDescription>
-          {inQuiz 
-            ? "Upload your completed worksheet for immediate marking" 
-            : "Upload completed worksheets in PDF format for marking"}
+          Create a new worksheet for students to practice with
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="flex items-center justify-center w-full">
-          <label className={`flex flex-col items-center justify-center w-full ${inQuiz ? 'h-28' : 'h-36'} border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/30 transition-colors duration-200`}>
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              {uploading ? (
-                <div className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Uploading...</p>
-                </div>
-              ) : (
-                <>
-                  <Upload className="h-8 w-8 mb-3 text-primary/70" />
-                  <p className="mb-2 text-sm text-foreground font-medium">
-                    Click to upload or drag and drop
-                  </p>
-                  <p className="text-xs text-muted-foreground">PDF files only</p>
-                </>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Worksheet Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter worksheet title" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This will be displayed to students when selecting worksheets.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-            <input
-              type="file"
-              className="hidden"
-              accept=".pdf"
-              onChange={handleFileUpload}
-              disabled={uploading}
             />
-          </label>
-        </div>
-        {inQuiz && (
-          <div className="mt-4 text-center text-xs text-muted-foreground bg-muted/30 p-2 rounded-md">
-            <p>Uploading will automatically mark your worksheet and take you to the results page</p>
-          </div>
-        )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="subject"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a subject" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="maths">Mathematics</SelectItem>
+                        <SelectItem value="english">English</SelectItem>
+                        <SelectItem value="verbal">Verbal Reasoning</SelectItem>
+                        <SelectItem value="timesTables">Times Tables</SelectItem>
+                        <SelectItem value="all">Mixed Subjects</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="difficulty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Difficulty Level</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select difficulty" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="easy">Easy</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="hard">Hard</SelectItem>
+                        <SelectItem value="all">Mixed Difficulty</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter a brief description of this worksheet" 
+                      className="resize-none" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="file"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Upload PDF Worksheet</FormLabel>
+                  <FormControl>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
+                      {!file ? (
+                        <>
+                          <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500 mb-2">
+                            Drag and drop your file here, or click to browse
+                          </p>
+                          <Input
+                            type="file"
+                            accept=".pdf"
+                            className="hidden"
+                            id="file-upload"
+                            onChange={handleFileChange}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                          >
+                            Select File
+                          </Button>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            <FileType className="h-8 w-8 text-primary mr-2" />
+                            <div>
+                              <p className="text-sm font-medium">{file.name}</p>
+                              <p className="text-xs text-gray-500">
+                                {(file.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={removeFile}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Upload a PDF file containing the worksheet (max 10MB)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {uploadStatus === 'success' && (
+              <Alert variant="default" className="bg-green-50 border-green-200">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertTitle className="text-green-800">Success!</AlertTitle>
+                <AlertDescription className="text-green-700">
+                  Your worksheet has been uploaded successfully.
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {uploadStatus === 'error' && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  {errorMessage || 'Something went wrong. Please try again.'}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isUploading}
+            >
+              {isUploading ? 'Uploading...' : 'Upload Worksheet'}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

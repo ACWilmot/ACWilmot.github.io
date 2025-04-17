@@ -14,6 +14,17 @@ interface WorksheetUploaderProps {
   inQuiz?: boolean;
 }
 
+// Define the shape of our worksheet database record to ensure type safety
+interface WorksheetRecord {
+  user_id: string;
+  name: string;
+  file_path: string;
+  status: string;
+  class_id?: string;
+  total_questions?: number;
+  correct_answers?: number;
+}
+
 const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({ 
   classId, 
   onUploadComplete,
@@ -46,8 +57,8 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
 
       if (uploadError) throw uploadError;
 
-      // Create database record
-      const dbRecord: Record<string, any> = {
+      // Create database record with proper typing
+      const dbRecord: WorksheetRecord = {
         user_id: userData.user.id,
         name: file.name,
         file_path: filePath,

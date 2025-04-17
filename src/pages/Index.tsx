@@ -9,6 +9,7 @@ import {
   ArrowRight,
   LineChart,
   Layers,
+  Table2,
 } from 'lucide-react';
 import { Slider } from "@/components/ui/slider"
 import { useAuth } from '@/context/AuthContext';
@@ -20,6 +21,7 @@ import DifficultySelector from '@/components/DifficultySelector';
 import { Difficulty } from '@/types/questionTypes';
 import { useQuiz } from '@/context/QuizContext';
 import { Subject } from '@/context/QuizContext';
+import TimesTablesSelector from '@/components/TimesTablesSelector';
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -45,7 +47,9 @@ const IndexPage = () => {
     questionCount,
     setQuestionCount,
     selectedDifficulty,
-    setSelectedDifficulty
+    setSelectedDifficulty,
+    selectedTimesTables,
+    setSelectedTimesTables,
   } = useQuiz();
 
   const handleSubjectSelect = (subject: Subject) => {
@@ -54,6 +58,12 @@ const IndexPage = () => {
 
   const handleStartQuiz = () => {
     if (selectedSubject) {
+      // Validate times tables selection
+      if (selectedSubject === 'timesTables' && selectedTimesTables.length === 0) {
+        // Don't start quiz if no times tables selected
+        return;
+      }
+      
       startQuiz(selectedSubject);
       navigate('/quiz');
     }
@@ -78,6 +88,12 @@ const IndexPage = () => {
     
     // Convert index to a percentage value (0-100)
     return Math.round((index / (questionCounts.length - 1)) * 100);
+  };
+
+  const isReadyToStart = () => {
+    if (!selectedSubject) return false;
+    if (selectedSubject === 'timesTables' && selectedTimesTables.length === 0) return false;
+    return true;
   };
 
   return (
@@ -127,7 +143,7 @@ const IndexPage = () => {
           >
             <div className="mb-8">
               <h2 className="text-2xl font-display font-semibold mb-6">Choose a subject</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <SubjectCard
                   subject="maths"
                   description="Numbers, shapes, and problem solving"
@@ -156,6 +172,13 @@ const IndexPage = () => {
                   isSelected={selectedSubject === 'all'}
                   onClick={() => handleSubjectSelect('all')}
                 />
+                <SubjectCard
+                  subject="timesTables"
+                  description="Practice multiplication tables"
+                  icon={<Table2 className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'timesTables'}
+                  onClick={() => handleSubjectSelect('timesTables')}
+                />
               </div>
             </div>
 
@@ -167,13 +190,28 @@ const IndexPage = () => {
                 transition={{ duration: 0.3 }}
                 className="mb-8"
               >
-                <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
-                <div className="flex justify-center mb-8">
-                  <DifficultySelector 
-                    selectedDifficulty={selectedDifficulty}
-                    onChange={setSelectedDifficulty}
-                  />
-                </div>
+                {selectedSubject !== 'timesTables' && (
+                  <>
+                    <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
+                    <div className="flex justify-center mb-8">
+                      <DifficultySelector 
+                        selectedDifficulty={selectedDifficulty}
+                        onChange={setSelectedDifficulty}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {selectedSubject === 'timesTables' && (
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select times tables</h2>
+                    <TimesTablesSelector
+                      selectedTables={selectedTimesTables}
+                      onChange={setSelectedTimesTables}
+                      className="mb-6"
+                    />
+                  </div>
+                )}
                 
                 <div className="glass p-6 rounded-xl mb-6 flex flex-col items-center">
                   <h3 className="text-lg font-medium mb-4">Number of questions</h3>
@@ -204,6 +242,7 @@ const IndexPage = () => {
                     onClick={handleStartQuiz}
                     className="rounded-lg"
                     size="lg"
+                    disabled={!isReadyToStart()}
                   >
                     Start Practice Test
                     <ArrowRight className="ml-2 h-4 w-4" />

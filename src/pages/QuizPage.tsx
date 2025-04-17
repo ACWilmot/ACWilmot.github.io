@@ -7,6 +7,7 @@ import QuestionCard from '@/components/QuestionCard';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from "sonner";
+import QuizTimer from '@/components/QuizTimer';
 
 // Newly extracted components
 import QuizHeader from '@/components/quiz/QuizHeader';
@@ -25,10 +26,12 @@ const QuizPage = () => {
     selectedDifficulty,
     isLoading,
     questionCount,
+    startTime,
     answerQuestion,
     goToNextQuestion,
     goToPreviousQuestion,
     resetQuiz,
+    endQuiz,
   } = useQuiz();
   
   const [showExplanation, setShowExplanation] = useState(false);
@@ -77,6 +80,7 @@ const QuizPage = () => {
   const handleNext = () => {
     setShowExplanation(false);
     if (isLastQuestion) {
+      endQuiz(); // Record the end time
       navigate('/results');
     } else {
       goToNextQuestion();
@@ -142,13 +146,20 @@ const QuizPage = () => {
       
       <main className="pt-32 pb-16 px-6 max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <QuizHeader 
-            subject={selectedSubject}
-            difficulty={selectedDifficulty}
-            questionCount={questionCount}
-            totalQuestions={questions.length}
-            onExit={handleExit}
-          />
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <QuizHeader 
+              subject={selectedSubject}
+              difficulty={selectedDifficulty}
+              questionCount={questionCount}
+              totalQuestions={questions.length}
+              onExit={handleExit}
+            />
+            
+            <QuizTimer 
+              startTime={startTime} 
+              className="md:ml-4"
+            />
+          </div>
           
           <WorksheetOptions 
             currentQuestion={currentQuestionIndex + 1}

@@ -2,8 +2,9 @@
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
+import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
 
-export type Subject = 'maths' | 'english' | 'verbal' | 'all';
+export type Subject = 'maths' | 'english' | 'verbal' | 'all' | 'timesTables';
 
 interface QuizContextType {
   questions: Question[];
@@ -14,19 +15,25 @@ interface QuizContextType {
   selectedDifficulty: Difficulty | 'all';
   isLoading: boolean;
   questionCount: number;
+  selectedTimesTables: number[];
+  startTime: number | null;
+  endTime: number | null;
   setQuestionCount: (count: number) => void;
   setSelectedSubject: (subject: Subject | null) => void;
   setSelectedDifficulty: (difficulty: Difficulty | 'all') => void;
+  setSelectedTimesTables: (tables: number[]) => void;
   startQuiz: (subject: Subject) => void;
   answerQuestion: (questionId: string, answer: string) => void;
   goToNextQuestion: () => void;
   goToPreviousQuestion: () => void;
   resetQuiz: () => void;
+  endQuiz: () => void;
   getResults: () => {
     score: number;
     totalQuestions: number;
     percentage: number;
     answeredQuestions: number;
+    timeTaken: number | null;
   };
 }
 
@@ -41,38 +48,62 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(10);
+  const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [endTime, setEndTime] = useState<number | null>(null);
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
     
+    // Set the start time when the quiz begins
+    setStartTime(Date.now());
+    setEndTime(null);
+    
     // Simulate API call with a slight delay
     setTimeout(() => {
-      // Handle 'all' subjects by combining questions from all subjects
-      let subjectQuestions: Question[] = [];
+      let selectedQuestions: Question[] = [];
       
-      if (subject === 'all') {
+      if (subject === 'timesTables') {
+        // Generate times tables questions based on selected tables
+        selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
+      } else if (subject === 'all') {
         // Combine questions from all subjects
+        let subjectQuestions: Question[] = [];
         Object.values(sampleQuestions).forEach(questions => {
           subjectQuestions = [...subjectQuestions, ...questions];
         });
+        
+        // Filter by difficulty if a specific difficulty is selected
+        const filteredQuestions = selectedDifficulty === 'all' 
+          ? subjectQuestions 
+          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
+        
+        // Randomize the filtered questions
+        for (let i = filteredQuestions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
+        }
+        
+        // Take only the requested number of questions (or all if less available)
+        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       } else {
         // Get questions for a specific subject
-        subjectQuestions = [...sampleQuestions[subject]];
+        const subjectQuestions = [...sampleQuestions[subject]];
+        
+        // Filter by difficulty if a specific difficulty is selected
+        const filteredQuestions = selectedDifficulty === 'all' 
+          ? subjectQuestions 
+          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
+        
+        // Randomize the filtered questions
+        for (let i = filteredQuestions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
+        }
+        
+        // Take only the requested number of questions (or all if less available)
+        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       }
-      
-      // Filter by difficulty if a specific difficulty is selected
-      const filteredQuestions = selectedDifficulty === 'all' 
-        ? subjectQuestions 
-        : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
-      
-      // Randomize the filtered questions
-      for (let i = filteredQuestions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
-      }
-      
-      // Take only the requested number of questions (or all if less available)
-      const selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       
       setQuestions(selectedQuestions);
       setSelectedSubject(subject);
@@ -116,17 +147,30 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setScore(0);
     setUserAnswers({});
     setSelectedSubject(null);
+    setStartTime(null);
+    setEndTime(null);
+  };
+  
+  const endQuiz = () => {
+    setEndTime(Date.now());
   };
 
   const getResults = () => {
     const answeredQuestions = Object.keys(userAnswers).length;
     const percentage = questions.length ? (score / questions.length) * 100 : 0;
+    
+    let timeTaken = null;
+    if (startTime) {
+      const end = endTime || Date.now();
+      timeTaken = end - startTime;
+    }
 
     return {
       score,
       totalQuestions: questions.length,
       percentage,
       answeredQuestions,
+      timeTaken,
     };
   };
 
@@ -141,14 +185,19 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectedDifficulty,
         isLoading,
         questionCount,
+        selectedTimesTables,
+        startTime,
+        endTime,
         setQuestionCount,
         setSelectedSubject,
         setSelectedDifficulty,
+        setSelectedTimesTables,
         startQuiz,
         answerQuestion,
         goToNextQuestion,
         goToPreviousQuestion,
         resetQuiz,
+        endQuiz,
         getResults,
       }}
     >

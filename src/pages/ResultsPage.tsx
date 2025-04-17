@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, X, RotateCcw, Home, ArrowRight, FileText } from 'lucide-react';
+import { Check, X, RotateCcw, Home } from 'lucide-react';
 import Header from '@/components/Header';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
@@ -13,7 +13,7 @@ import WorksheetList from '@/components/WorksheetList';
 
 const ResultsPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, updateProgress } = useAuth();
+  const { isAuthenticated, updateProgress, updateTimesTablesProgress } = useAuth();
   const {
     questions,
     userAnswers,
@@ -41,15 +41,27 @@ const ResultsPage = () => {
   
   useEffect(() => {
     const updateUserProgress = async () => {
-      if (isAuthenticated && selectedSubject && questions.length > 0 && !progressUpdated && totalQuestions > 0) {
-        console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);
-        await updateProgress(selectedSubject, totalQuestions, score);
+      if (!isAuthenticated || !selectedSubject || questions.length === 0 || progressUpdated || totalQuestions === 0) {
+        return;
+      }
+      
+      try {
+        // Handle times tables progress separately
+        if (selectedSubject === 'timesTables') {
+          await updateTimesTablesProgress(questions, userAnswers);
+        } else {
+          // Regular progress update for other subjects
+          console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);
+          await updateProgress(selectedSubject, totalQuestions, score);
+        }
         setProgressUpdated(true);
+      } catch (error) {
+        console.error('Error updating progress:', error);
       }
     };
     
     updateUserProgress();
-  }, [isAuthenticated, selectedSubject, questions.length, progressUpdated, updateProgress, score, totalQuestions]);
+  }, [isAuthenticated, selectedSubject, questions, progressUpdated, updateProgress, updateTimesTablesProgress, score, totalQuestions, userAnswers]);
   
   const getGrade = () => {
     if (percentage >= 90) return { text: 'Excellent', color: 'text-green-500' };

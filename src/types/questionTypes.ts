@@ -1,7 +1,7 @@
 
 import { Subject } from '@/context/QuizContext';
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
 
 export interface Question {
   id: string;
@@ -10,9 +10,10 @@ export interface Question {
   options: string[];
   correctAnswer: string;
   explanation: string;
-  difficulty: Difficulty | 'all';
+  difficulty: Difficulty;
   imageUrl?: string;
   optionImages?: string[];
+  timesTable?: number; // Add times table identifier
 }
 
 export type SubjectQuestions = Record<Subject, Question[]>;

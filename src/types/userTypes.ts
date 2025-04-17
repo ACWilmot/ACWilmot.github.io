@@ -39,6 +39,16 @@ export type UserProgress = {
   lastAttempted: string | null;
 };
 
+export interface TimesTableProgress {
+  table: number;
+  attempts: number;
+  correct: number;
+  recentAttempts: { 
+    correct: boolean;
+    timestamp: string;
+  }[];
+}
+
 export interface Profile {
   id: string;
   name: string;
@@ -47,6 +57,7 @@ export interface Profile {
   progress: {
     [subject: string]: UserProgress
   };
+  timesTablesProgress?: TimesTableProgress[];
   students?: string[];
 }
 

@@ -1,14 +1,14 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, UserProgress } from '@/types/userTypes';
-import { resetSubjects } from './progressUtils';
+import { resetSubjects, getDefaultTimesTablesProgress } from './progressUtils';
 import { toast } from 'sonner';
 
 export async function fetchUserProfile(userId: string): Promise<Profile | null> {
   try {
     console.log("Fetching profile for user ID:", userId);
     
-    // Use the auth.users() function instead of direct profile fetch to avoid policy issues
+    // Get user data directly from auth
     const { data: userData, error: userError } = await supabase.auth.getUser();
     
     if (userError || !userData?.user) {
@@ -20,7 +20,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
     // Get user metadata from auth data
     const userMetadata = userData.user.user_metadata || {};
     
-    // Now try to fetch the profile data
+    // Now try to fetch the profile data with error handling
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -31,17 +31,40 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       if (error) {
         console.error('Error fetching profile from database:', error);
         
-        // If we get the recursion error or any database error, create a backup profile from auth data
+        // Create a backup profile from auth data with proper types/structure
         const backupProfile: Profile = {
           id: userId,
           name: userMetadata.name || userData.user.email?.split('@')[0] || 'User',
-          role: userMetadata.role as 'student' | 'teacher' || 'student',
+          role: (userMetadata.role as 'student' | 'teacher') || 'student',
           progress: { ...resetSubjects },
+          timesTablesProgress: getDefaultTimesTablesProgress(),
           email: userData.user.email
         };
         
         console.log('Created backup profile from auth data:', backupProfile);
         toast.warning('Profile data partially loaded. Some information may be incomplete.');
+        
+        // Try to save this backup profile to the database
+        try {
+          const { error: saveError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: backupProfile.id,
+              name: backupProfile.name,
+              role: backupProfile.role,
+              progress: backupProfile.progress,
+              email: backupProfile.email
+            });
+            
+          if (saveError) {
+            console.error('Error saving backup profile:', saveError);
+          } else {
+            console.log('Backup profile saved to database');
+          }
+        } catch (saveError) {
+          console.error('Error saving backup profile:', saveError);
+        }
+        
         return backupProfile;
       }
 
@@ -52,10 +75,32 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
         const newProfile: Profile = {
           id: userId,
           name: userMetadata.name || userData.user.email?.split('@')[0] || 'User',
-          role: userMetadata.role as 'student' | 'teacher' || 'student',
+          role: (userMetadata.role as 'student' | 'teacher') || 'student',
           progress: { ...resetSubjects },
+          timesTablesProgress: getDefaultTimesTablesProgress(),
           email: userData.user.email
         };
+        
+        // Try to save this new profile to the database
+        try {
+          const { error: saveError } = await supabase
+            .from('profiles')
+            .insert({
+              id: newProfile.id,
+              name: newProfile.name,
+              role: newProfile.role,
+              progress: newProfile.progress,
+              email: newProfile.email
+            });
+            
+          if (saveError) {
+            console.error('Error saving new profile:', saveError);
+          } else {
+            console.log('New profile saved to database');
+          }
+        } catch (saveError) {
+          console.error('Error saving new profile:', saveError);
+        }
         
         toast.warning('Profile not found. Created a new profile with basic information.');
         return newProfile;
@@ -80,7 +125,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
         });
       }
       
-      // Convert the data to our Profile type
+      // Create the profile object with the structured progress data
       const profile: Profile = {
         id: data.id,
         name: data.name || '',
@@ -89,7 +134,24 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
         students: data.students || []
       };
       
-      // Only add email if it exists in the data
+      // Process times tables progress if it exists
+      if (data.timesTablesProgress && Array.isArray(data.timesTablesProgress)) {
+        profile.timesTablesProgress = data.timesTablesProgress.map(item => ({
+          table: item.table || 0,
+          attempts: item.attempts || 0,
+          correct: item.correct || 0,
+          recentAttempts: Array.isArray(item.recentAttempts) 
+            ? item.recentAttempts.map(attempt => ({
+                correct: !!attempt.correct,
+                timestamp: attempt.timestamp || new Date().toISOString()
+              }))
+            : []
+        }));
+      } else {
+        profile.timesTablesProgress = getDefaultTimesTablesProgress();
+      }
+      
+      // Add email if it exists in the data
       if (data.email) {
         profile.email = data.email;
       } else if (data.Email) {
@@ -107,8 +169,9 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       const fallbackProfile: Profile = {
         id: userId,
         name: userMetadata.name || userData.user.email?.split('@')[0] || 'User',
-        role: userMetadata.role as 'student' | 'teacher' || 'student',
+        role: (userMetadata.role as 'student' | 'teacher') || 'student',
         progress: { ...resetSubjects },
+        timesTablesProgress: getDefaultTimesTablesProgress(),
         email: userData.user.email
       };
       

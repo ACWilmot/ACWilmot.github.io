@@ -49,10 +49,13 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       
       // Update local state if setUser function is provided
       if (setUser) {
+        console.log("Updating local state with new progress");
         setUser({
           ...user,
           progress: newProgress
         });
+      } else {
+        console.log("No setUser function provided, skipping local state update");
       }
       
       toast.success("Progress updated successfully");
@@ -74,15 +77,12 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       console.log("Questions to process:", questions.length);
       
       // Get existing times tables progress or create a new array
-      const currentTimesTablesProgress = user.timesTablesProgress || 
-        Array.from({ length: 12 }, (_, i) => ({
-          table: i + 1,
-          attempts: 0,
-          correct: 0,
-          recentAttempts: [],
-          // Add index signature to make compatible with Json
-          [Symbol.toStringTag]: 'TimesTableProgress'
-        }));
+      const currentTimesTablesProgress = user.timesTablesProgress || Array.from({ length: 12 }, (_, i) => ({
+        table: i + 1,
+        attempts: 0,
+        correct: 0,
+        recentAttempts: []
+      }));
       
       console.log("Current times tables progress:", currentTimesTablesProgress);
       
@@ -133,7 +133,6 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
           correct: attempt.correct,
           timestamp: attempt.timestamp
         })),
-        // Add any additional properties needed for JSON compatibility
         _type: "TimesTableProgress"
       }));
       
@@ -158,10 +157,13 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       
       // Update local state if setUser function is provided
       if (setUser) {
+        console.log("Updating local profile state with new times tables progress");
         setUser({
           ...user,
           timesTablesProgress: currentTimesTablesProgress
         });
+      } else {
+        console.log("No setUser function provided, skipping local state update");
       }
       
       toast.success("Times tables progress updated");

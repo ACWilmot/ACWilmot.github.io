@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronRight, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,13 +37,15 @@ const generateDemoData = (): TimesTableProgress[] => {
 
 const TimesTablesProgress: React.FC = () => {
   const navigate = useNavigate();
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, isLoading } = useProfile();
   const { updateTimesTablesProgress } = useProgressActions(profile, updateProfile);
   const [demoMode, setDemoMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
   
   console.log("TimesTablesProgress rendering with profile data:", profile);
+  console.log("Profile loading state:", isLoading);
   
+  // Get times tables progress with a fallback to default data
   const timesTablesProgress = profile?.timesTablesProgress || getDefaultTimesTablesProgress();
   
   console.log("Using times tables progress:", timesTablesProgress);
@@ -53,7 +56,7 @@ const TimesTablesProgress: React.FC = () => {
       return;
     }
     
-    setIsLoading(true);
+    setIsLoadingDemo(true);
     try {
       const demoData = generateDemoData();
       
@@ -80,11 +83,16 @@ const TimesTablesProgress: React.FC = () => {
       if (error) {
         console.error("Error saving demo data:", error);
         toast.error("Failed to load demo data");
-        setIsLoading(false);
+        setIsLoadingDemo(false);
         return;
       }
       
-      await updateProfile({ timesTablesProgress: demoData });
+      if (updateProfile) {
+        await updateProfile({ timesTablesProgress: demoData });
+      } else {
+        console.error("updateProfile function is not available");
+        toast.error("Could not update local state with demo data");
+      }
       
       setDemoMode(true);
       toast.success("Demo data loaded successfully");
@@ -92,7 +100,7 @@ const TimesTablesProgress: React.FC = () => {
       console.error("Error loading demo data:", error);
       toast.error("Failed to load demo data");
     } finally {
-      setIsLoading(false);
+      setIsLoadingDemo(false);
     }
   };
 
@@ -117,6 +125,10 @@ const TimesTablesProgress: React.FC = () => {
   
   console.log("Has any attempts:", hasAnyAttempts);
   console.log("Progress data processed:", progressData);
+
+  if (isLoading) {
+    return <div className="mt-6">Loading times tables progress...</div>;
+  }
 
   return (
     <div className="mt-6">

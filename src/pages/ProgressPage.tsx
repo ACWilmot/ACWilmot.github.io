@@ -16,36 +16,48 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TimesTablesProgress from '@/components/TimesTablesProgress';
 
 const ProgressPage = () => {
-  const { isAuthenticated } = useAuth();
-  const { profile, updateProfile } = useProfile();
-  const { resetSubjectProgress } = useProgressActions(profile, updateProfile);
+  const { isAuthenticated, user } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
+  const { resetSubjectProgress } = useProgressActions(profile, null);
   
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("subjects");
 
+  console.log("ProgressPage rendering with auth status:", isAuthenticated);
+  console.log("ProgressPage rendering with user:", user);
   console.log("ProgressPage rendering with profile:", profile);
+  console.log("Profile loading state:", profileLoading);
 
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
+      console.log("User not authenticated, redirecting to login");
       navigate('/login');
       return;
     }
 
+    // Give profile a chance to load if it's still loading
+    if (profileLoading) {
+      console.log("Profile is still loading...");
+      return;
+    }
+    
+    // Once profile loading is done, update our local loading state
     if (profile) {
       console.log("User profile data loaded:", profile);
       console.log("Progress data:", profile.progress);
       setLoading(false);
+      setError(null);
     } else {
-      console.error("User profile data not available");
-      setError("Failed to load user profile data");
+      console.error("User profile data not available after loading completed");
+      setError("Failed to load user profile data. Please try logging in again.");
       setLoading(false);
     }
-  }, [isAuthenticated, navigate, profile]);
+  }, [isAuthenticated, navigate, profile, profileLoading]);
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />

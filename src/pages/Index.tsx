@@ -167,25 +167,26 @@ const IndexPage = () => {
                 transition={{ duration: 0.3 }}
                 className="mb-8"
               >
-                <h2 className="text-2xl font-display font-semibold mb-6">Select difficulty level</h2>
-                <DifficultySelector 
-                  selectedDifficulty={selectedDifficulty}
-                  onChange={setSelectedDifficulty}
-                  className="mb-6"
-                />
+                <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
+                <div className="flex justify-center mb-8">
+                  <DifficultySelector 
+                    selectedDifficulty={selectedDifficulty}
+                    onChange={setSelectedDifficulty}
+                  />
+                </div>
                 
-                <div className="glass p-6 rounded-xl mb-6">
+                <div className="glass p-6 rounded-xl mb-6 flex flex-col items-center">
                   <h3 className="text-lg font-medium mb-4">Number of questions</h3>
-                  <div className="mb-6">
+                  <div className="w-full max-w-md mb-6">
                     <Slider
                       defaultValue={[getSliderValue()]}
                       max={100}
                       step={20}
                       onValueChange={handleSliderChange}
-                      className="w-full max-w-xs"
+                      className="w-full"
                     />
                   </div>
-                  <div className="flex justify-between max-w-xs text-sm text-muted-foreground mb-2">
+                  <div className="flex justify-between w-full max-w-md text-sm text-muted-foreground mb-2">
                     <span>5</span>
                     <span>10</span>
                     <span>20</span>
@@ -193,19 +194,21 @@ const IndexPage = () => {
                     <span>50</span>
                     <span>100</span>
                   </div>
-                  <p className="mt-4 text-sm">
+                  <p className="mt-4 text-sm text-center">
                     You selected {questionCount} questions
                   </p>
                 </div>
 
-                <Button
-                  onClick={handleStartQuiz}
-                  className="w-full md:w-auto rounded-lg"
-                  size="lg"
-                >
-                  Start Practice Test
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <div className="flex justify-center">
+                  <Button
+                    onClick={handleStartQuiz}
+                    className="rounded-lg"
+                    size="lg"
+                  >
+                    Start Practice Test
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               </motion.div>
             )}
 

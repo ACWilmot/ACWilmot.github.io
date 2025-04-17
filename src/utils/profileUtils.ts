@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Profile, UserProgress, TimesTableProgress } from '@/types/userTypes';
+import { Profile, UserProgress, TimesTableProgress, TimesTableAttempt } from '@/types/userTypes';
 import { resetSubjects, getDefaultTimesTablesProgress } from './progressUtils';
 import { toast } from 'sonner';
 
@@ -136,21 +136,38 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       
       // Process times tables progress if it exists
       if (data.timesTablesProgress && Array.isArray(data.timesTablesProgress)) {
-        profile.timesTablesProgress = data.timesTablesProgress.map(item => {
-          // Cast the JSON item to an object with the properties we need
-          const jsonItem = item as Record<string, any>;
-          return {
-            table: typeof jsonItem.table === 'number' ? jsonItem.table : 0,
-            attempts: typeof jsonItem.attempts === 'number' ? jsonItem.attempts : 0,
-            correct: typeof jsonItem.correct === 'number' ? jsonItem.correct : 0,
-            recentAttempts: Array.isArray(jsonItem.recentAttempts) 
-              ? jsonItem.recentAttempts.map(attempt => ({
+        const processedTimesTablesProgress: TimesTableProgress[] = [];
+        
+        for (const item of data.timesTablesProgress) {
+          // Type-safe processing of JSON data
+          const typedItem = item as Record<string, any>;
+          
+          const table = typeof typedItem.table === 'number' ? typedItem.table : 0;
+          const attempts = typeof typedItem.attempts === 'number' ? typedItem.attempts : 0;
+          const correct = typeof typedItem.correct === 'number' ? typedItem.correct : 0;
+          
+          // Process recent attempts safely
+          const recentAttempts: TimesTableAttempt[] = [];
+          if (Array.isArray(typedItem.recentAttempts)) {
+            for (const attempt of typedItem.recentAttempts) {
+              if (attempt && typeof attempt === 'object') {
+                recentAttempts.push({
                   correct: !!attempt.correct,
-                  timestamp: attempt.timestamp || new Date().toISOString()
-                }))
-              : []
-          };
-        });
+                  timestamp: typeof attempt.timestamp === 'string' ? attempt.timestamp : new Date().toISOString()
+                });
+              }
+            }
+          }
+          
+          processedTimesTablesProgress.push({
+            table,
+            attempts,
+            correct,
+            recentAttempts
+          });
+        }
+        
+        profile.timesTablesProgress = processedTimesTablesProgress;
       } else {
         profile.timesTablesProgress = getDefaultTimesTablesProgress();
       }

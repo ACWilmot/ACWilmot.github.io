@@ -170,6 +170,10 @@ export type Database = {
         Args: { enrollment_class_id: string }
         Returns: boolean
       }
+      is_profile_owner: {
+        Args: { profile_id: string }
+        Returns: boolean
+      }
       is_teacher_of_class: {
         Args: { class_id: string }
         Returns: boolean

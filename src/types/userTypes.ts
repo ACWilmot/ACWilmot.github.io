@@ -1,3 +1,4 @@
+
 export type UserRole = 'student' | 'teacher';
 
 export interface Student {

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
@@ -66,6 +65,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (subject === 'timesTables') {
         // Generate times tables questions based on selected tables
         selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
+        console.log("Generated times tables questions:", selectedQuestions);
       } else if (subject === 'all') {
         // Combine questions from all subjects
         let subjectQuestions: Question[] = [];
@@ -115,6 +115,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const answerQuestion = (questionId: string, answer: string) => {
+    console.log(`Answering question ${questionId} with answer: ${answer}`);
+    
     setUserAnswers((prev) => ({
       ...prev,
       [questionId]: answer,
@@ -122,10 +124,17 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check if answer is correct and update score
     const question = questions.find((q) => q.id === questionId);
-    if (question && answer === question.correctAnswer && !userAnswers[questionId]) {
-      setScore((prev) => prev + 1);
-    } else if (question && userAnswers[questionId] === question.correctAnswer && answer !== question.correctAnswer) {
-      setScore((prev) => prev - 1);
+    if (question) {
+      console.log(`Question found: ${question.text}, correct answer: ${question.correctAnswer}`);
+      console.log(`Subject: ${question.subject}, Times Table: ${question.timesTable || 'N/A'}`);
+      
+      if (answer === question.correctAnswer && !userAnswers[questionId]) {
+        setScore((prev) => prev + 1);
+        console.log("Correct answer! Score increased.");
+      } else if (userAnswers[questionId] === question.correctAnswer && answer !== question.correctAnswer) {
+        setScore((prev) => prev - 1);
+        console.log("Changed from correct to incorrect. Score decreased.");
+      }
     }
   };
 
@@ -152,6 +161,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const endQuiz = () => {
+    console.log("Quiz ended. Storing final results...");
     setEndTime(Date.now());
   };
 

@@ -2,64 +2,84 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Question, Difficulty } from '@/types/questionTypes';
 
-export const generateTimesTablesQuestions = (tables: number[], count: number): Question[] => {
+export const generateTimesTablesQuestions = (selectedTables: number[], count: number): Question[] => {
   const questions: Question[] = [];
   
-  // Create a pool of possible multiplication pairs based on selected tables
-  const possibleQuestions: Array<{multiplicand: number, multiplier: number}> = [];
-  
-  tables.forEach(table => {
-    for (let i = 1; i <= 12; i++) {
-      possibleQuestions.push({ multiplicand: table, multiplier: i });
-    }
-  });
-  
-  // Shuffle the possible questions
-  for (let i = possibleQuestions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [possibleQuestions[i], possibleQuestions[j]] = [possibleQuestions[j], possibleQuestions[i]];
-  }
-  
-  // Take the requested number of questions (or all if less available)
-  const selectedPairs = possibleQuestions.slice(0, Math.min(count, possibleQuestions.length));
-  
-  // Create questions from the selected pairs
-  selectedPairs.forEach(({ multiplicand, multiplier }) => {
-    const correctAnswer = (multiplicand * multiplier).toString();
+  // Generate questions for each selected times table
+  while (questions.length < count) {
+    // Select a random times table from the selected ones
+    const tableIndex = Math.floor(Math.random() * selectedTables.length);
+    const table = selectedTables[tableIndex];
     
-    // Generate 3 incorrect options
-    const incorrectOptions: string[] = [];
-    while (incorrectOptions.length < 3) {
-      // Create a wrong answer by shifting the correct result by ±1-3
-      const shift = Math.floor(Math.random() * 6) - 3;
-      if (shift === 0) continue; // Skip if shift is 0
-      
-      const wrongAnswer = (multiplicand * multiplier + shift).toString();
-      
-      // Check if this wrong answer is already in the list of options
-      if (!incorrectOptions.includes(wrongAnswer) && wrongAnswer !== correctAnswer && parseInt(wrongAnswer) > 0) {
-        incorrectOptions.push(wrongAnswer);
-      }
-    }
-    
-    // Combine correct and incorrect options and shuffle them
-    const options = [correctAnswer, ...incorrectOptions];
-    for (let i = options.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [options[i], options[j]] = [options[j], options[i]];
-    }
+    // Generate a random number to multiply with (1-12)
+    const num = Math.floor(Math.random() * 12) + 1;
     
     // Create the question
-    questions.push({
+    const question: Question = {
       id: uuidv4(),
+      text: `${table} × ${num} = ?`,
+      options: generateOptions(table, num),
+      correctAnswer: String(table * num),
+      explanation: `${table} × ${num} = ${table * num}`,
+      difficulty: getDifficulty(table),
       subject: 'timesTables',
-      text: `What is ${multiplicand} × ${multiplier}?`,
-      options,
-      correctAnswer,
-      explanation: `${multiplicand} × ${multiplier} = ${correctAnswer}`,
-      difficulty: 'easy' as Difficulty, // Changed from 'all' to a valid Difficulty type
-    });
-  });
+      timesTable: table // Ensure this property is set correctly
+    };
+    
+    // Add the question to the array
+    questions.push(question);
+  }
+  
+  console.log("Generated times tables questions with timesTable property:", 
+    questions.map(q => ({ id: q.id, timesTable: q.timesTable, text: q.text })));
   
   return questions;
+};
+
+// Helper function to generate options for multiple choice
+const generateOptions = (table: number, num: number): string[] => {
+  const correctAnswer = table * num;
+  const options = [String(correctAnswer)];
+  
+  // Generate 3 wrong options
+  while (options.length < 4) {
+    // Generate a random wrong answer close to the correct one
+    let wrongAnswer;
+    
+    const randomOffset = Math.floor(Math.random() * 10) - 5; // Random number between -5 and 4
+    
+    if (randomOffset === 0) {
+      // If offset is 0, use a different approach
+      wrongAnswer = correctAnswer + (Math.random() > 0.5 ? 1 : -1);
+    } else {
+      wrongAnswer = correctAnswer + randomOffset;
+    }
+    
+    // Ensure the wrong answer is positive
+    wrongAnswer = Math.max(1, wrongAnswer);
+    
+    // Ensure the wrong answer is not already in the options
+    if (!options.includes(String(wrongAnswer))) {
+      options.push(String(wrongAnswer));
+    }
+  }
+  
+  // Shuffle the options
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+  
+  return options;
+};
+
+// Helper function to determine difficulty based on times table
+const getDifficulty = (table: number): Difficulty => {
+  if (table <= 5) {
+    return 'easy';
+  } else if (table <= 9) {
+    return 'medium';
+  } else {
+    return 'hard';
+  }
 };

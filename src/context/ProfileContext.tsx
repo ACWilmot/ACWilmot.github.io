@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
@@ -121,18 +122,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             // Add timesTablesProgress if it exists in Supabase
             if (data.timesTablesProgress) {
               userProfile.timesTablesProgress = data.timesTablesProgress as any;
+              console.log("Loaded times tables progress from Supabase:", userProfile.timesTablesProgress);
             } else {
-              // For demo purposes, check if we have stored progress in localStorage
-              const localProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
-              if (localProgress) {
-                userProfile.timesTablesProgress = JSON.parse(localProgress);
-                console.log("Loaded times tables progress from localStorage:", userProfile.timesTablesProgress);
-              } else {
-                // Initialize with default progress
-                userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userProfile.timesTablesProgress));
-                console.log("Initialized default times tables progress in localStorage");
-              }
+              // Initialize with default progress
+              userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
+              console.log("Initialized default times tables progress");
             }
             
             // Add email if it exists
@@ -177,10 +171,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.progress !== undefined) supabaseData.progress = data.progress;
       if (data.students !== undefined) supabaseData.students = data.students;
       
-      // For timesTablesProgress, we'll store it locally for the demo
+      // For timesTablesProgress, ensure it's properly formatted for Supabase
       if (data.timesTablesProgress !== undefined) {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.timesTablesProgress));
-        console.log("Saved times tables progress to localStorage:", data.timesTablesProgress);
+        supabaseData.timesTablesProgress = data.timesTablesProgress;
+        console.log("Saving times tables progress to Supabase:", data.timesTablesProgress);
       }
       
       const { error } = await supabase
@@ -252,7 +246,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // New method to update times tables progress locally
+  // Method to update times tables progress
   const updateTimesTablesProgress = async (table: number, correct: boolean): Promise<void> => {
     if (!profile || !profile.timesTablesProgress) return;
     
@@ -285,9 +279,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Update the progress in the array
       updatedProgress[tableIndex] = tableProgress;
       
-      // Save to localStorage for demo purposes
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProgress));
-      console.log("Saved updated times tables progress to localStorage:", updatedProgress);
+      // Update in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ timesTablesProgress: updatedProgress })
+        .eq('id', profile.id);
+        
+      if (error) {
+        console.error("Error updating times tables progress:", error);
+        toast.error("Failed to update times tables progress");
+        return;
+      }
+      
+      console.log("Times tables progress updated in Supabase:", updatedProgress);
       
       // Update local state
       setProfile(prev => {

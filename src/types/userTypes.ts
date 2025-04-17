@@ -1,4 +1,3 @@
-
 export type UserRole = 'student' | 'teacher';
 
 export interface Student {
@@ -45,10 +44,10 @@ export interface TimesTableAttempt {
 }
 
 export interface TimesTableProgress {
-  table: number;
-  attempts: number;
-  correct: number;
-  recentAttempts: TimesTableAttempt[];
+  table: number;         // The times table number (1-12)
+  attempts: number;      // Total attempts for this times table
+  correct: number;       // Total correct answers
+  recentAttempts: TimesTableAttempt[]; // Store the last 10 attempts
 }
 
 export interface Profile {

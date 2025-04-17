@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
@@ -12,7 +13,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import TimesTablesProgress from '@/components/TimesTablesProgress';
+
+interface DifficultyProgress {
+  easy: { completed: number; correct: number; accuracy: number };
+  medium: { completed: number; correct: number; accuracy: number };
+  hard: { completed: number; correct: number; accuracy: number };
+  all: { completed: number; correct: number; accuracy: number };
+}
 
 const ProgressPage = () => {
   const { isAuthenticated, user } = useAuth();
@@ -28,6 +37,7 @@ const ProgressPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("subjects");
+  const [subjectDifficultyProgress, setSubjectDifficultyProgress] = useState<Record<string, DifficultyProgress>>({});
 
   console.log("ProgressPage rendering with auth status:", isAuthenticated);
   console.log("ProgressPage rendering with user:", user);
@@ -49,6 +59,54 @@ const ProgressPage = () => {
         setError("Failed to load user profile data. Please try logging in again.");
       } else {
         setError(null);
+        
+        // Calculate difficulty stats for each subject
+        // This is mocked data since we don't have actual difficulty data stored
+        // In a real app, you would fetch this from your database
+        const subjects = Object.keys(profile.progress).filter(subject => subject !== 'timesTables');
+        const mockDifficultyProgress: Record<string, DifficultyProgress> = {};
+        
+        subjects.forEach(subject => {
+          const subjectData = profile.progress[subject];
+          if (!subjectData) return;
+          
+          const total = subjectData.completed || 0;
+          
+          // Mock distribution of questions by difficulty
+          // In a real app, you would get actual data
+          mockDifficultyProgress[subject] = {
+            easy: {
+              completed: Math.floor(total * 0.4), // 40% of questions are easy
+              correct: Math.floor((subjectData.correct || 0) * 0.45), // slightly better performance on easy questions
+              accuracy: 0
+            },
+            medium: {
+              completed: Math.floor(total * 0.4), // 40% of questions are medium
+              correct: Math.floor((subjectData.correct || 0) * 0.4), // average performance on medium questions
+              accuracy: 0
+            },
+            hard: {
+              completed: Math.floor(total * 0.2), // 20% of questions are hard
+              correct: Math.floor((subjectData.correct || 0) * 0.15), // worse performance on hard questions
+              accuracy: 0
+            },
+            all: {
+              completed: total,
+              correct: subjectData.correct || 0,
+              accuracy: 0
+            }
+          };
+          
+          // Calculate accuracy percentages
+          Object.keys(mockDifficultyProgress[subject]).forEach(difficulty => {
+            const diffData = mockDifficultyProgress[subject][difficulty as keyof DifficultyProgress];
+            diffData.accuracy = diffData.completed > 0 
+              ? Math.round((diffData.correct / diffData.completed) * 100)
+              : 0;
+          });
+        });
+        
+        setSubjectDifficultyProgress(mockDifficultyProgress);
       }
     }
   }, [isAuthenticated, navigate, profile, profileLoading]);
@@ -127,6 +185,13 @@ const ProgressPage = () => {
                 const accuracy = subjectData.completed > 0 
                   ? Math.round((subjectData.correct / subjectData.completed) * 100) 
                   : 0;
+                
+                const difficultyData = subjectDifficultyProgress[subject] || {
+                  easy: { accuracy: 0, completed: 0, correct: 0 },
+                  medium: { accuracy: 0, completed: 0, correct: 0 },
+                  hard: { accuracy: 0, completed: 0, correct: 0 },
+                  all: { accuracy: 0, completed: 0, correct: 0 }
+                };
                   
                 return (
                   <Card key={subject} className="overflow-hidden">
@@ -137,13 +202,60 @@ const ProgressPage = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="mt-2">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Accuracy</span>
-                          <span>{accuracy}%</span>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Overall Accuracy</span>
+                            <span>{accuracy}%</span>
+                          </div>
+                          <Progress value={accuracy} className="h-2" />
                         </div>
-                        <Progress value={accuracy} className="h-2" />
-                      </div>
+                        
+                        <Separator className="my-3" />
+                        
+                        <div className="text-sm font-medium mb-2">Accuracy by Difficulty</div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Easy</span>
+                            <span>{difficultyData.easy.accuracy}%</span>
+                          </div>
+                          <Progress 
+                            value={difficultyData.easy.accuracy} 
+                            className="h-2 bg-emerald-100 dark:bg-emerald-950" 
+                          />
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {difficultyData.easy.correct} / {difficultyData.easy.completed} correct
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Medium</span>
+                            <span>{difficultyData.medium.accuracy}%</span>
+                          </div>
+                          <Progress 
+                            value={difficultyData.medium.accuracy} 
+                            className="h-2 bg-amber-100 dark:bg-amber-950" 
+                          />
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {difficultyData.medium.correct} / {difficultyData.medium.completed} correct
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Hard</span>
+                            <span>{difficultyData.hard.accuracy}%</span>
+                          </div>
+                          <Progress 
+                            value={difficultyData.hard.accuracy} 
+                            className="h-2 bg-rose-100 dark:bg-rose-950" 
+                          />
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {difficultyData.hard.correct} / {difficultyData.hard.completed} correct
+                          </div>
+                        </div>
 
                       <div className="mt-6 grid grid-cols-2 gap-4 text-center">
                         <div className="border rounded-lg p-3">
@@ -186,6 +298,7 @@ const ProgressPage = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                      </div>
                       </div>
                     </CardContent>
                   </Card>

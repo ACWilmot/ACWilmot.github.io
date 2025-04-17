@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { ChevronRight, BarChart2 } from 'lucide-react';
+import { ChevronRight, BarChart2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +13,17 @@ import { getDefaultTimesTablesProgress } from '@/utils/progressUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
 
 const generateDemoData = (): TimesTableProgress[] => {
   return Array.from({ length: 12 }, (_, i) => {
@@ -38,7 +48,7 @@ const generateDemoData = (): TimesTableProgress[] => {
 const TimesTablesProgress: React.FC = () => {
   const navigate = useNavigate();
   const { profile, updateProfile, isLoading } = useProfile();
-  const { updateTimesTablesProgress } = useProgressActions(profile, updateProfile);
+  const { resetSubjectProgress } = useProgressActions(profile, updateProfile);
   const [demoMode, setDemoMode] = useState(false);
   const [isLoadingDemo, setIsLoadingDemo] = useState(false);
   
@@ -127,6 +137,15 @@ const TimesTablesProgress: React.FC = () => {
   console.log("Has any attempts:", hasAnyAttempts);
   console.log("Progress data processed:", progressData);
 
+  const clearTimesTablesProgress = () => {
+    if (!profile) {
+      toast.error("Please log in to reset progress");
+      return;
+    }
+    
+    resetSubjectProgress('timesTables');
+  };
+
   if (isLoading) {
     return <div className="mt-6 p-4 text-center">Loading times tables progress...</div>;
   }
@@ -146,6 +165,36 @@ const TimesTablesProgress: React.FC = () => {
               <BarChart2 className="h-4 w-4" />
               {isLoading ? "Loading..." : "Load Demo Data"}
             </Button>
+          )}
+          
+          {hasAnyAttempts && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  disabled={isLoading}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Clear Progress
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear times tables progress?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will reset all your times tables progress. All completed questions and statistics will be erased.
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={clearTimesTablesProgress}>
+                    Clear Progress
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
           
           <Button 

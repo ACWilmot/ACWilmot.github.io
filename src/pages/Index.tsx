@@ -20,13 +20,6 @@ import DifficultySelector from '@/components/DifficultySelector';
 import { Difficulty } from '@/types/questionTypes';
 import { useQuiz } from '@/context/QuizContext';
 import { Subject } from '@/context/QuizContext';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -66,8 +59,25 @@ const IndexPage = () => {
     }
   };
 
-  const handleQuestionCountChange = (value: string) => {
-    setQuestionCount(parseInt(value));
+  const handleSliderChange = (value: number[]) => {
+    // Map slider value to desired question counts: 5, 10, 20, 30, 50, 100
+    const questionCounts = [5, 10, 20, 30, 50, 100];
+    // Normalize the slider value (0-100) to an index in the questionCounts array
+    const index = Math.min(
+      Math.floor((value[0] / 100) * questionCounts.length),
+      questionCounts.length - 1
+    );
+    setQuestionCount(questionCounts[index]);
+  };
+
+  // Calculate the slider value based on question count
+  const getSliderValue = () => {
+    const questionCounts = [5, 10, 20, 30, 50, 100];
+    const index = questionCounts.indexOf(questionCount);
+    if (index === -1) return 20; // Default to second position (10 questions)
+    
+    // Convert index to a percentage value (0-100)
+    return Math.round((index / (questionCounts.length - 1)) * 100);
   };
 
   return (
@@ -166,22 +176,23 @@ const IndexPage = () => {
                 
                 <div className="glass p-6 rounded-xl mb-6">
                   <h3 className="text-lg font-medium mb-4">Number of questions</h3>
-                  <Select
-                    value={questionCount.toString()}
-                    onValueChange={handleQuestionCountChange}
-                  >
-                    <SelectTrigger className="w-full max-w-xs">
-                      <SelectValue placeholder="Select question count" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5 questions</SelectItem>
-                      <SelectItem value="10">10 questions</SelectItem>
-                      <SelectItem value="20">20 questions</SelectItem>
-                      <SelectItem value="30">30 questions</SelectItem>
-                      <SelectItem value="50">50 questions</SelectItem>
-                      <SelectItem value="100">100 questions</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="mb-6">
+                    <Slider
+                      defaultValue={[getSliderValue()]}
+                      max={100}
+                      step={20}
+                      onValueChange={handleSliderChange}
+                      className="w-full max-w-xs"
+                    />
+                  </div>
+                  <div className="flex justify-between max-w-xs text-sm text-muted-foreground mb-2">
+                    <span>5</span>
+                    <span>10</span>
+                    <span>20</span>
+                    <span>30</span>
+                    <span>50</span>
+                    <span>100</span>
+                  </div>
                   <p className="mt-4 text-sm">
                     You selected {questionCount} questions
                   </p>

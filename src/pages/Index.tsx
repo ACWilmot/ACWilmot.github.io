@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,6 +8,7 @@ import {
   BookText,
   ArrowRight,
   LineChart,
+  Layers,
 } from 'lucide-react';
 import { Slider } from "@/components/ui/slider"
 import { useAuth } from '@/context/AuthContext';
@@ -18,6 +20,13 @@ import DifficultySelector from '@/components/DifficultySelector';
 import { Difficulty } from '@/types/questionTypes';
 import { useQuiz } from '@/context/QuizContext';
 import { Subject } from '@/context/QuizContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -55,6 +64,10 @@ const IndexPage = () => {
       startQuiz(selectedSubject);
       navigate('/quiz');
     }
+  };
+
+  const handleQuestionCountChange = (value: string) => {
+    setQuestionCount(parseInt(value));
   };
 
   return (
@@ -104,7 +117,7 @@ const IndexPage = () => {
           >
             <div className="mb-8">
               <h2 className="text-2xl font-display font-semibold mb-6">Choose a subject</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <SubjectCard
                   subject="maths"
                   description="Numbers, shapes, and problem solving"
@@ -126,6 +139,13 @@ const IndexPage = () => {
                   isSelected={selectedSubject === 'verbal'}
                   onClick={() => handleSubjectSelect('verbal')}
                 />
+                <SubjectCard
+                  subject="all"
+                  description="Combined test with all subjects"
+                  icon={<Layers className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'all'}
+                  onClick={() => handleSubjectSelect('all')}
+                />
               </div>
             </div>
 
@@ -146,20 +166,22 @@ const IndexPage = () => {
                 
                 <div className="glass p-6 rounded-xl mb-6">
                   <h3 className="text-lg font-medium mb-4">Number of questions</h3>
-                  <Slider
-                    value={[questionCount]}
-                    min={5}
-                    max={20}
-                    step={5}
-                    onValueChange={(values) => setQuestionCount(values[0])}
-                    className="max-w-md"
-                  />
-                  <div className="flex justify-between max-w-md mt-2 text-sm text-muted-foreground">
-                    <span>5</span>
-                    <span>10</span>
-                    <span>15</span>
-                    <span>20</span>
-                  </div>
+                  <Select
+                    value={questionCount.toString()}
+                    onValueChange={handleQuestionCountChange}
+                  >
+                    <SelectTrigger className="w-full max-w-xs">
+                      <SelectValue placeholder="Select question count" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5 questions</SelectItem>
+                      <SelectItem value="10">10 questions</SelectItem>
+                      <SelectItem value="20">20 questions</SelectItem>
+                      <SelectItem value="30">30 questions</SelectItem>
+                      <SelectItem value="50">50 questions</SelectItem>
+                      <SelectItem value="100">100 questions</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <p className="mt-4 text-sm">
                     You selected {questionCount} questions
                   </p>

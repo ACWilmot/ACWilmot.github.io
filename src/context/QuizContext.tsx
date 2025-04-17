@@ -1,8 +1,9 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
 
-export type Subject = 'maths' | 'english' | 'verbal';
+export type Subject = 'maths' | 'english' | 'verbal' | 'all';
 
 interface QuizContextType {
   questions: Question[];
@@ -46,8 +47,18 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Simulate API call with a slight delay
     setTimeout(() => {
-      // Get questions for the selected subject and randomize their order
-      const subjectQuestions = [...sampleQuestions[subject]];
+      // Handle 'all' subjects by combining questions from all subjects
+      let subjectQuestions: Question[] = [];
+      
+      if (subject === 'all') {
+        // Combine questions from all subjects
+        Object.values(sampleQuestions).forEach(questions => {
+          subjectQuestions = [...subjectQuestions, ...questions];
+        });
+      } else {
+        // Get questions for a specific subject
+        subjectQuestions = [...sampleQuestions[subject]];
+      }
       
       // Filter by difficulty if a specific difficulty is selected
       const filteredQuestions = selectedDifficulty === 'all' 

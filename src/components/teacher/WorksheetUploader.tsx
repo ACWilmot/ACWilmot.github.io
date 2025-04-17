@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2, Check } from 'lucide-react';
+import { Upload, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -47,7 +47,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
       if (uploadError) throw uploadError;
 
       // Create database record
-      const dbRecord: any = {
+      const dbRecord: Record<string, any> = {
         user_id: userData.user.id,
         name: file.name,
         file_path: filePath,
@@ -159,25 +159,31 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
   };
 
   return (
-    <Card className={inQuiz ? "border-primary/30" : ""}>
-      <CardHeader className={inQuiz ? "pb-2" : ""}>
-        <CardTitle>Upload Worksheet</CardTitle>
+    <Card className={`${inQuiz ? "border-primary/30" : ""} shadow-md hover:shadow-lg transition-shadow duration-300`}>
+      <CardHeader className={`${inQuiz ? "pb-2" : ""} border-b`}>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="h-5 w-5 text-primary" />
+          Upload Worksheet
+        </CardTitle>
         <CardDescription>
           {inQuiz 
             ? "Upload your completed worksheet for immediate marking" 
             : "Upload completed worksheets in PDF format for marking"}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         <div className="flex items-center justify-center w-full">
-          <label className={`flex flex-col items-center justify-center w-full ${inQuiz ? 'h-24' : 'h-32'} border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50`}>
+          <label className={`flex flex-col items-center justify-center w-full ${inQuiz ? 'h-28' : 'h-36'} border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/30 transition-colors duration-200`}>
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               {uploading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Uploading...</p>
+                </div>
               ) : (
                 <>
-                  <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
-                  <p className="mb-2 text-sm text-muted-foreground">
+                  <Upload className="h-8 w-8 mb-3 text-primary/70" />
+                  <p className="mb-2 text-sm text-foreground font-medium">
                     Click to upload or drag and drop
                   </p>
                   <p className="text-xs text-muted-foreground">PDF files only</p>
@@ -194,7 +200,7 @@ const WorksheetUploader: React.FC<WorksheetUploaderProps> = ({
           </label>
         </div>
         {inQuiz && (
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="mt-4 text-center text-xs text-muted-foreground bg-muted/30 p-2 rounded-md">
             <p>Uploading will automatically mark your worksheet and take you to the results page</p>
           </div>
         )}

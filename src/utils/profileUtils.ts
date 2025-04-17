@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Profile, UserProgress } from '@/types/userTypes';
+import { Profile, UserProgress, TimesTableProgress } from '@/types/userTypes';
 import { resetSubjects, getDefaultTimesTablesProgress } from './progressUtils';
 import { toast } from 'sonner';
 
@@ -136,17 +136,21 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       
       // Process times tables progress if it exists
       if (data.timesTablesProgress && Array.isArray(data.timesTablesProgress)) {
-        profile.timesTablesProgress = data.timesTablesProgress.map(item => ({
-          table: item.table || 0,
-          attempts: item.attempts || 0,
-          correct: item.correct || 0,
-          recentAttempts: Array.isArray(item.recentAttempts) 
-            ? item.recentAttempts.map(attempt => ({
-                correct: !!attempt.correct,
-                timestamp: attempt.timestamp || new Date().toISOString()
-              }))
-            : []
-        }));
+        profile.timesTablesProgress = data.timesTablesProgress.map(item => {
+          // Cast the JSON item to an object with the properties we need
+          const jsonItem = item as Record<string, any>;
+          return {
+            table: typeof jsonItem.table === 'number' ? jsonItem.table : 0,
+            attempts: typeof jsonItem.attempts === 'number' ? jsonItem.attempts : 0,
+            correct: typeof jsonItem.correct === 'number' ? jsonItem.correct : 0,
+            recentAttempts: Array.isArray(jsonItem.recentAttempts) 
+              ? jsonItem.recentAttempts.map(attempt => ({
+                  correct: !!attempt.correct,
+                  timestamp: attempt.timestamp || new Date().toISOString()
+                }))
+              : []
+          };
+        });
       } else {
         profile.timesTablesProgress = getDefaultTimesTablesProgress();
       }

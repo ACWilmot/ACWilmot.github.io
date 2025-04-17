@@ -43,7 +43,7 @@ function App() {
               <Route path="/admin" element={<AdminPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <Toaster position="top-right" />
+            <Toaster position="bottom-right" richColors />
           </QuizProvider>
         </ProfileProvider>
       </AuthProvider>

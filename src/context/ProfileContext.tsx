@@ -121,8 +121,33 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             
             // Add timesTablesProgress if it exists in Supabase
             if (data.timesTablesProgress) {
-              userProfile.timesTablesProgress = data.timesTablesProgress as any;
-              console.log("Loaded times tables progress from Supabase:", userProfile.timesTablesProgress);
+              try {
+                // Parse and validate the timesTablesProgress data
+                const timesTablesProgressData = data.timesTablesProgress as any[];
+                
+                if (Array.isArray(timesTablesProgressData)) {
+                  // Ensure each entry has the required properties
+                  userProfile.timesTablesProgress = timesTablesProgressData.map(item => ({
+                    table: item.table || 0,
+                    attempts: item.attempts || 0,
+                    correct: item.correct || 0,
+                    recentAttempts: Array.isArray(item.recentAttempts) 
+                      ? item.recentAttempts.map((attempt: any) => ({
+                          correct: !!attempt.correct,
+                          timestamp: attempt.timestamp || new Date().toISOString()
+                        }))
+                      : []
+                  }));
+                  console.log("Loaded times tables progress from Supabase:", userProfile.timesTablesProgress);
+                } else {
+                  // Initialize with default progress if data is invalid
+                  userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
+                  console.log("Invalid times tables progress format, using default");
+                }
+              } catch (error) {
+                console.error("Error parsing times tables progress:", error);
+                userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
+              }
             } else {
               // Initialize with default progress
               userProfile.timesTablesProgress = getDefaultTimesTablesProgress();
@@ -173,8 +198,23 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       
       // For timesTablesProgress, ensure it's properly formatted for Supabase
       if (data.timesTablesProgress !== undefined) {
-        supabaseData.timesTablesProgress = data.timesTablesProgress;
-        console.log("Saving times tables progress to Supabase:", data.timesTablesProgress);
+        // Convert TimesTableProgress[] to a pure JSON object
+        // This is to make it compatible with Supabase's Json type
+        const jsonCompatibleData = data.timesTablesProgress.map(table => {
+          // Create a plain object with the necessary properties
+          return {
+            table: table.table,
+            attempts: table.attempts,
+            correct: table.correct,
+            recentAttempts: table.recentAttempts.map(attempt => ({
+              correct: attempt.correct,
+              timestamp: attempt.timestamp
+            }))
+          };
+        });
+        
+        supabaseData.timesTablesProgress = jsonCompatibleData;
+        console.log("Saving times tables progress to Supabase:", jsonCompatibleData);
       }
       
       const { error } = await supabase
@@ -279,10 +319,21 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Update the progress in the array
       updatedProgress[tableIndex] = tableProgress;
       
+      // Convert to JSON-compatible format before saving to Supabase
+      const jsonCompatibleData = updatedProgress.map(item => ({
+        table: item.table,
+        attempts: item.attempts,
+        correct: item.correct,
+        recentAttempts: item.recentAttempts.map(attempt => ({
+          correct: attempt.correct,
+          timestamp: attempt.timestamp
+        }))
+      }));
+      
       // Update in Supabase
       const { error } = await supabase
         .from('profiles')
-        .update({ timesTablesProgress: updatedProgress })
+        .update({ timesTablesProgress: jsonCompatibleData })
         .eq('id', profile.id);
         
       if (error) {
@@ -291,7 +342,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return;
       }
       
-      console.log("Times tables progress updated in Supabase:", updatedProgress);
+      console.log("Times tables progress updated in Supabase:", jsonCompatibleData);
       
       // Update local state
       setProfile(prev => {

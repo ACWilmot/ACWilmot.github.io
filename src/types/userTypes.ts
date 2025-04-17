@@ -44,11 +44,13 @@ export interface TimesTableAttempt {
   timestamp: string;
 }
 
+// Using record/index signature to make it compatible with Json type
 export interface TimesTableProgress {
   table: number;         // The times table number (1-12)
   attempts: number;      // Total attempts for this times table
   correct: number;       // Total correct answers
   recentAttempts: TimesTableAttempt[]; // Store the last 10 attempts
+  [key: string]: any;    // Add index signature to make compatible with Json
 }
 
 export interface Profile {

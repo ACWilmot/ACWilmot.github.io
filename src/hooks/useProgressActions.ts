@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, TimesTableProgress } from '@/types/userTypes';
@@ -103,13 +104,24 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
         currentTimesTablesProgress[tableIndex] = tableProgress;
       });
       
-      console.log("Updated times tables progress to save:", currentTimesTablesProgress);
+      // Convert to JSON-compatible format before saving to Supabase
+      const jsonCompatibleData = currentTimesTablesProgress.map(item => ({
+        table: item.table,
+        attempts: item.attempts,
+        correct: item.correct,
+        recentAttempts: item.recentAttempts.map(attempt => ({
+          correct: attempt.correct,
+          timestamp: attempt.timestamp
+        }))
+      }));
+      
+      console.log("Updated times tables progress to save:", jsonCompatibleData);
       
       // Update database with the JSON data properly formatted
       const { error } = await supabase
         .from('profiles')
         .update({
-          timesTablesProgress: currentTimesTablesProgress
+          timesTablesProgress: jsonCompatibleData
         })
         .eq('id', user.id);
         

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, TimesTableProgress } from '@/types/userTypes';
@@ -60,6 +59,8 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
     if (!user) return;
 
     try {
+      console.log("Starting times tables progress update with questions:", questions.length);
+      
       // Get existing times tables progress or create a new array
       const currentTimesTablesProgress = user.timesTablesProgress || 
         Array.from({ length: 12 }, (_, i) => ({
@@ -68,6 +69,8 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
           correct: 0,
           recentAttempts: []
         }));
+      
+      console.log("Current times tables progress:", currentTimesTablesProgress);
       
       // Process each question to update times tables progress
       questions.forEach(question => {
@@ -100,13 +103,14 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
         currentTimesTablesProgress[tableIndex] = tableProgress;
       });
       
+      console.log("Updated times tables progress to save:", currentTimesTablesProgress);
+      
       // Update database with the JSON data properly formatted
       const { error } = await supabase
         .from('profiles')
         .update({
-          progress: user.progress, // Keep existing progress
-          timesTablesProgress: currentTimesTablesProgress // Add new field
-        } as any) // Use type assertion to bypass type checking
+          timesTablesProgress: currentTimesTablesProgress
+        })
         .eq('id', user.id);
         
       if (error) {
@@ -114,6 +118,8 @@ export const useProgressActions = (user: Profile | null, setUser: (user: Profile
         toast.error("Failed to update times tables progress");
         return;
       }
+      
+      console.log("Times tables progress saved successfully to database");
       
       // Update local state
       setUser({

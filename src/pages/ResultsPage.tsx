@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -47,7 +48,9 @@ const ResultsPage = () => {
       try {
         // Handle times tables progress separately
         if (selectedSubject === 'timesTables') {
+          console.log("Updating times tables progress with", questions.length, "questions");
           await updateTimesTablesProgress(questions, userAnswers);
+          console.log("Times tables progress update completed");
         } else {
           // Regular progress update for other subjects
           console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);

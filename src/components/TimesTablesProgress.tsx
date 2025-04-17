@@ -16,8 +16,12 @@ const TimesTablesProgress: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  console.log("TimesTablesProgress rendering with user data:", user);
+  
   // If no times tables progress data exists yet, create a default structure
   const timesTablesProgress = user?.timesTablesProgress || getDefaultTimesTablesProgress();
+  
+  console.log("Using times tables progress:", timesTablesProgress);
 
   // Calculate progress percentages and recent accuracy
   const progressData = timesTablesProgress.map(table => {
@@ -39,6 +43,9 @@ const TimesTablesProgress: React.FC = () => {
   });
 
   const hasAnyAttempts = progressData.some(data => data.attempts > 0);
+  
+  console.log("Has any attempts:", hasAnyAttempts);
+  console.log("Progress data processed:", progressData);
 
   return (
     <div className="mt-6">

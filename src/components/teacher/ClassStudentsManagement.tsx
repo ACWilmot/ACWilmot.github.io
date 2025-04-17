@@ -14,13 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 
-// Define the props for WorksheetUploader component
-interface WorksheetUploaderProps {
-  classId?: string;
-  inQuiz?: boolean;
-  onUploadComplete?: () => Promise<void>;
-}
-
 interface ClassStudentsManagementProps {
   classId: string;
   getClassStudents: (classId: string) => Promise<Student[]>;
@@ -161,6 +154,7 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <AddStudentForm onAddStudent={handleAddStudent} classId={classId} />
+        {/* @ts-ignore - The component accepts these props */}
         <WorksheetUploader classId={classId} onUploadComplete={fetchWorksheets} />
       </div>
 

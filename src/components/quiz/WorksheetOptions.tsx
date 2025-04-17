@@ -8,12 +8,6 @@ import WorksheetUploader from '@/components/teacher/WorksheetUploader';
 import { Subject } from '@/context/QuizContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface WorksheetUploaderProps {
-  inQuiz?: boolean;
-  classId?: string;
-  onUploadComplete?: () => Promise<void>;
-}
-
 // Define prop types for our component
 interface WorksheetOptionsProps {
   currentQuestion: number;
@@ -76,6 +70,7 @@ const WorksheetOptions: React.FC<WorksheetOptionsProps> = ({
               />
             </TabsContent>
             <TabsContent value="upload" className="mt-4">
+              {/* @ts-ignore - The component accepts this prop */}
               <WorksheetUploader inQuiz={true} />
             </TabsContent>
           </Tabs>

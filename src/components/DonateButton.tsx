@@ -14,10 +14,10 @@ const DonateButton = () => {
       onClick={handleDonateClick}
       variant="outline" 
       size="sm"
-      className="bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary"
+      className="bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary mr-1"
     >
-      <Heart className="h-4 w-4 mr-2" />
-      <span className="hidden sm:inline">Donate</span>
+      <Heart className="h-4 w-4 mr-1.5" />
+      <span className="hidden sm:inline text-xs">Donate</span>
     </Button>
   );
 };

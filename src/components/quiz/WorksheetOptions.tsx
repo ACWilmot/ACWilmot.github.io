@@ -8,6 +8,13 @@ import WorksheetUploader from '@/components/teacher/WorksheetUploader';
 import { Subject } from '@/context/QuizContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface WorksheetUploaderProps {
+  inQuiz?: boolean;
+  classId?: string;
+  onUploadComplete?: () => Promise<void>;
+}
+
+// Define prop types for our component
 interface WorksheetOptionsProps {
   currentQuestion: number;
   totalQuestions: number;

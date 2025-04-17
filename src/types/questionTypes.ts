@@ -10,7 +10,7 @@ export interface Question {
   options: string[];
   correctAnswer: string;
   explanation: string;
-  difficulty: Difficulty | 'all'; // Updated to allow 'all' as a difficulty
+  difficulty: Difficulty;
   imageUrl?: string;
   optionImages?: string[];
 }

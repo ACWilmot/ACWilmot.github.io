@@ -58,54 +58,43 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
     
-    // Set the start time when the quiz begins
     setStartTime(Date.now());
     setEndTime(null);
     
-    // Simulate API call with a slight delay
     setTimeout(() => {
       let selectedQuestions: Question[] = [];
       
       if (subject === 'timesTables') {
-        // Generate times tables questions based on selected tables
         selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
         console.log("Generated times tables questions:", selectedQuestions);
       } else if (subject === 'all') {
-        // Combine questions from all subjects
         let subjectQuestions: Question[] = [];
         Object.values(sampleQuestions).forEach(questions => {
           subjectQuestions = [...subjectQuestions, ...questions];
         });
         
-        // Filter by difficulty if a specific difficulty is selected
         const filteredQuestions = selectedDifficulty === 'all' 
           ? subjectQuestions 
           : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
         
-        // Randomize the filtered questions
         for (let i = filteredQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
         }
         
-        // Take only the requested number of questions (or all if less available)
         selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       } else {
-        // Get questions for a specific subject
         const subjectQuestions = [...sampleQuestions[subject]];
         
-        // Filter by difficulty if a specific difficulty is selected
         const filteredQuestions = selectedDifficulty === 'all' 
           ? subjectQuestions 
           : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
         
-        // Randomize the filtered questions
         for (let i = filteredQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
         }
         
-        // Take only the requested number of questions (or all if less available)
         selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       }
       
@@ -130,7 +119,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       [questionId]: answer,
     }));
 
-    // Check if answer is correct and update score
     const question = questions.find((q) => q.id === questionId);
     if (question) {
       console.log(`Question found: ${question.text}, correct answer: ${question.correctAnswer}`);
@@ -147,7 +135,6 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Changed from correct to incorrect. Score decreased.");
       }
 
-      // Pass the timing information along with the answer data
       if (updateProgress && question.subject === 'timesTables' && question.timesTable) {
         updateProgress(question.subject, 1, wasCorrect ? 1 : 0);
         if (updateTimesTablesProgress) {

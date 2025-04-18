@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, TimesTableProgress } from '@/types/userTypes';
@@ -17,10 +16,8 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       console.log("Starting progress update:", { subject, completed, correct, userId: user.id });
       const lastAttempted = new Date().toISOString().split('T')[0];
       
-      // Get current progress values to accumulate them
       const currentProgress = user.progress[subject] || { completed: 0, correct: 0, lastAttempted: null };
       
-      // Create new progress by adding the new values to existing ones
       const newProgress = {
         ...user.progress,
         [subject]: {
@@ -47,7 +44,6 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
 
       console.log("Progress successfully updated in database for user:", user.id);
       
-      // Update local state if setUser function is provided
       if (setUser) {
         console.log("Updating local state with new progress");
         setUser({
@@ -76,55 +72,51 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       console.log("Starting times tables progress update for user:", user.id);
       console.log("Questions to process:", questions.length);
       
-      // Get existing times tables progress or create a new array
-      const currentTimesTablesProgress = user.timesTablesProgress || Array.from({ length: 12 }, (_, i) => ({
-        table: i + 1,
-        attempts: 0,
-        correct: 0,
-        recentAttempts: []
-      }));
+      const currentTimesTablesProgress = user.timesTablesProgress || getDefaultTimesTablesProgress();
       
-      console.log("Current times tables progress:", currentTimesTablesProgress);
-      
-      // Process each question to update times tables progress
       questions.forEach(question => {
         if (!question.timesTable || question.subject !== 'timesTables') {
           console.log("Skipping non-times table question:", question);
-          return; // Skip if not a times table question
+          return;
         }
         
         const tableIndex = currentTimesTablesProgress.findIndex(t => t.table === question.timesTable);
         if (tableIndex === -1) {
           console.log(`Table ${question.timesTable} not found in progress data`);
-          return; // Skip if table not found
+          return;
         }
         
         const tableProgress = currentTimesTablesProgress[tableIndex];
         const userAnswer = answers[question.id];
         const wasCorrect = userAnswer === question.correctAnswer;
+        const answerTime = (question as any).answerTime || null;
         
-        console.log(`Processing question for table ${question.timesTable}: Answer=${userAnswer}, Correct=${question.correctAnswer}, Result=${wasCorrect ? 'Correct' : 'Incorrect'}`);
-        
-        // Update overall statistics
         tableProgress.attempts += 1;
         if (wasCorrect) {
           tableProgress.correct += 1;
         }
         
-        // Add to recent attempts (keep only most recent 10)
         tableProgress.recentAttempts = [
           {
             correct: wasCorrect,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            answerTime: answerTime
           },
           ...(tableProgress.recentAttempts || []).slice(0, 9)
         ];
+
+        const validTimes = tableProgress.recentAttempts
+          .filter(attempt => attempt.answerTime !== undefined)
+          .map(attempt => attempt.answerTime as number);
         
-        // Update the progress in the array
+        if (validTimes.length > 0) {
+          const averageTime = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+          tableProgress.averageTime = Math.round(averageTime);
+        }
+        
         currentTimesTablesProgress[tableIndex] = tableProgress;
       });
       
-      // Convert to JSON-compatible format before saving to Supabase
       const jsonCompatibleData = currentTimesTablesProgress.map(item => ({
         table: item.table,
         attempts: item.attempts,
@@ -133,13 +125,13 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
           correct: attempt.correct,
           timestamp: attempt.timestamp
         })),
+        averageTime: item.averageTime,
         _type: "TimesTableProgress"
       }));
       
       console.log("Updated times tables progress to save:", jsonCompatibleData);
       console.log("Saving to user ID:", user.id);
       
-      // Update database with the JSON data properly formatted
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -155,7 +147,6 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       
       console.log("Times tables progress saved successfully to database");
       
-      // Update local state if setUser function is provided
       if (setUser) {
         console.log("Updating local profile state with new times tables progress");
         setUser({
@@ -181,8 +172,8 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
         .from('profiles')
         .update({
           progress: resetSubjects,
-          timesTablesProgress: null // Reset times tables progress too
-        } as any) // Use type assertion to bypass type checking
+          timesTablesProgress: null
+        } as any)
         .eq('id', user.id);
 
       if (error) {
@@ -208,13 +199,12 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
     if (!user) return;
 
     try {
-      // If resetting times tables progress, clear the entire array
       if (subject === 'timesTables') {
         const { error } = await supabase
           .from('profiles')
           .update({
             timesTablesProgress: null
-          } as any) // Use type assertion to bypass type checking
+          } as any)
           .eq('id', user.id);
           
         if (error) {
@@ -232,7 +222,6 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
         return;
       }
 
-      // Otherwise reset a regular subject
       const newProgress = {
         ...user.progress,
         [subject]: {
@@ -274,3 +263,12 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
     resetSubjectProgress
   };
 };
+
+function getDefaultTimesTablesProgress(): TimesTableProgress[] {
+  return Array.from({ length: 12 }, (_, i) => ({
+    table: i + 1,
+    attempts: 0,
+    correct: 0,
+    recentAttempts: []
+  }));
+}

@@ -125,7 +125,8 @@ const TimesTablesProgress: React.FC = () => {
       totalAccuracy,
       recentAccuracy,
       attempts: table.attempts,
-      recentAttempts: recentTotal
+      recentAttempts: recentTotal,
+      averageTime: table.averageTime || 0
     };
   });
 
@@ -231,7 +232,7 @@ const TimesTablesProgress: React.FC = () => {
                   
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Recent Accuracy (last {data.recentAttempts || 0} attempts)</span>
+                      <span>Recent Accuracy</span>
                       <span className="font-medium">
                         {data.recentAttempts > 0 ? `${data.recentAccuracy}%` : "N/A"}
                       </span>
@@ -240,6 +241,17 @@ const TimesTablesProgress: React.FC = () => {
                       value={data.recentAttempts > 0 ? data.recentAccuracy : 0} 
                       className={`h-2 ${data.recentAttempts === 0 ? "bg-muted" : ""}`} 
                     />
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Average Time</span>
+                      <span className="font-medium">
+                        {data.averageTime ? `${(data.averageTime / 1000).toFixed(1)}s` : "N/A"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </CardContent>

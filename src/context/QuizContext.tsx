@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
+import { useProgressActions } from '@/hooks/useProgressActions';
+import { useProfile } from './ProfileContext';
 
 export type Subject = 'maths' | 'english' | 'verbal' | 'all' | 'timesTables';
 
@@ -50,6 +52,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
+  const { updateProgress } = useProgressActions();
+  const { updateTimesTablesProgress } = useProfile();
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
@@ -117,6 +121,10 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const answerQuestion = (questionId: string, answer: string) => {
     console.log(`Answering question ${questionId} with answer: ${answer}`);
     
+    const currentTime = Date.now();
+    const questionStartTime = startTime || currentTime;
+    const answerTime = currentTime - questionStartTime;
+    
     setUserAnswers((prev) => ({
       ...prev,
       [questionId]: answer,
@@ -127,13 +135,27 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (question) {
       console.log(`Question found: ${question.text}, correct answer: ${question.correctAnswer}`);
       console.log(`Subject: ${question.subject}, Times Table: ${question.timesTable || 'N/A'}`);
+      console.log(`Time taken to answer: ${answerTime}ms`);
       
-      if (answer === question.correctAnswer && !userAnswers[questionId]) {
+      const wasCorrect = answer === question.correctAnswer;
+      
+      if (wasCorrect && !userAnswers[questionId]) {
         setScore((prev) => prev + 1);
         console.log("Correct answer! Score increased.");
-      } else if (userAnswers[questionId] === question.correctAnswer && answer !== question.correctAnswer) {
+      } else if (userAnswers[questionId] === question.correctAnswer && !wasCorrect) {
         setScore((prev) => prev - 1);
         console.log("Changed from correct to incorrect. Score decreased.");
+      }
+
+      // Pass the timing information along with the answer data
+      if (updateProgress && question.subject === 'timesTables' && question.timesTable) {
+        updateProgress(question.subject, 1, wasCorrect ? 1 : 0);
+        if (updateTimesTablesProgress) {
+          updateTimesTablesProgress([{
+            ...question,
+            answerTime
+          }], { [questionId]: answer });
+        }
       }
     }
   };

@@ -1,4 +1,3 @@
-
 export type UserRole = 'student' | 'teacher';
 
 export interface Student {
@@ -42,7 +41,8 @@ export type UserProgress = {
 export interface TimesTableAttempt {
   correct: boolean;
   timestamp: string;
-  [key: string]: any; // Add index signature to make compatible with Json
+  answerTime?: number; // Time taken to answer in milliseconds
+  [key: string]: any;
 }
 
 // Using record/index signature to make it compatible with Json type

@@ -71,6 +71,7 @@ export type Database = {
           progress: Json
           role: string | null
           students: string[] | null
+          timestablesprogress: Json | null
           timesTablesProgress: Json | null
         }
         Insert: {
@@ -81,6 +82,7 @@ export type Database = {
           progress?: Json
           role?: string | null
           students?: string[] | null
+          timestablesprogress?: Json | null
           timesTablesProgress?: Json | null
         }
         Update: {
@@ -91,6 +93,7 @@ export type Database = {
           progress?: Json
           role?: string | null
           students?: string[] | null
+          timestablesprogress?: Json | null
           timesTablesProgress?: Json | null
         }
         Relationships: []

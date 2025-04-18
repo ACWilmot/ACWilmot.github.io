@@ -61,7 +61,7 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
     }
   };
 
-  const updateTimesTablesProgress = async (questions: Question[], answers: Record<string, string>): Promise<void> => {
+  const updateTimesTablesProgress = async (questions: (Question & { answerTime?: number })[], answers: Record<string, string>): Promise<void> => {
     if (!user) {
       console.error("Cannot update times tables progress: No user available");
       toast.error("Failed to update times tables progress - please log in again");
@@ -89,7 +89,7 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
         const tableProgress = currentTimesTablesProgress[tableIndex];
         const userAnswer = answers[question.id];
         const wasCorrect = userAnswer === question.correctAnswer;
-        const answerTime = (question as any).answerTime || null;
+        const answerTime = question.answerTime || null;
         
         tableProgress.attempts += 1;
         if (wasCorrect) {

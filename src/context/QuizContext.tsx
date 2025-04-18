@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
@@ -138,10 +139,12 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (updateProgress && question.subject === 'timesTables' && question.timesTable) {
         updateProgress(question.subject, 1, wasCorrect ? 1 : 0);
         if (updateTimesTablesProgress) {
-          updateTimesTablesProgress([{
+          // Create a new question object with the answerTime property
+          const questionWithTime = {
             ...question,
             answerTime
-          }], { [questionId]: answer });
+          };
+          updateTimesTablesProgress([questionWithTime], { [questionId]: answer });
         }
       }
     }

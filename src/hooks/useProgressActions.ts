@@ -123,7 +123,8 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
         correct: item.correct,
         recentAttempts: item.recentAttempts.map(attempt => ({
           correct: attempt.correct,
-          timestamp: attempt.timestamp
+          timestamp: attempt.timestamp,
+          answerTime: attempt.answerTime
         })),
         averageTime: item.averageTime,
         _type: "TimesTableProgress"
@@ -269,6 +270,7 @@ function getDefaultTimesTablesProgress(): TimesTableProgress[] {
     table: i + 1,
     attempts: 0,
     correct: 0,
-    recentAttempts: []
+    recentAttempts: [],
+    averageTime: 0
   }));
 }

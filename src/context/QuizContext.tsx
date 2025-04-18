@@ -52,7 +52,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
-  const { updateProgress } = useProgressActions();
+  const { updateProgress } = useProgressActions(null, null);
   const { updateTimesTablesProgress } = useProfile();
 
   const startQuiz = (subject: Subject) => {

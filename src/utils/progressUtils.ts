@@ -1,4 +1,3 @@
-
 export const resetSubjects = {
   maths: {
     completed: 0,
@@ -28,11 +27,13 @@ export const getResetSubjects = () => {
 };
 
 // Helper to generate default times tables progress array
-export const getDefaultTimesTablesProgress = () => {
+export function getDefaultTimesTablesProgress(): TimesTableProgress[] {
   return Array.from({ length: 12 }, (_, i) => ({
     table: i + 1,
     attempts: 0,
     correct: 0,
-    recentAttempts: []
+    recentAttempts: [],
+    averageTime: 0,
+    _type: "TimesTableProgress"
   }));
-};
+}

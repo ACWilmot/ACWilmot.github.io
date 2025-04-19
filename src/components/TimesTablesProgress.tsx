@@ -39,8 +39,7 @@ const generateDemoData = (): TimesTableProgress[] => {
       table,
       attempts,
       correct,
-      recentAttempts,
-      averageTime: Math.floor(Math.random() * 5000) + 1000 // Random average time between 1-6 seconds
+      recentAttempts
     };
   });
 };
@@ -79,7 +78,6 @@ const TimesTablesProgress: React.FC = () => {
           correct: attempt.correct,
           timestamp: attempt.timestamp
         })),
-        averageTime: item.averageTime,
         _type: "TimesTableProgress"
       }));
       
@@ -122,16 +120,13 @@ const TimesTablesProgress: React.FC = () => {
     const recentCorrect = recentAttempts.filter(attempt => attempt.correct).length;
     const recentAccuracy = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
     
-    const averageTimeInSeconds = table.averageTime > 0 ? (table.averageTime / 1000).toFixed(1) : null;
-    
     return {
       table: table.table,
       totalAccuracy,
       recentAccuracy,
       attempts: table.attempts,
       recentAttempts: recentTotal,
-      averageTime: table.averageTime || 0,
-      averageTimeFormatted: averageTimeInSeconds
+      averageTime: table.averageTime || 0
     };
   });
 
@@ -254,7 +249,7 @@ const TimesTablesProgress: React.FC = () => {
                     <div className="flex justify-between text-sm mb-1">
                       <span>Average Time</span>
                       <span className="font-medium">
-                        {data.averageTimeFormatted ? `${data.averageTimeFormatted}s` : "N/A"}
+                        {data.averageTime ? `${(data.averageTime / 1000).toFixed(1)}s` : "N/A"}
                       </span>
                     </div>
                   </div>

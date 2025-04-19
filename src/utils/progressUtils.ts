@@ -1,6 +1,3 @@
-
-import { TimesTableProgress } from '@/types/userTypes';
-
 export const resetSubjects = {
   maths: {
     completed: 0,

@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, TimesTableProgress } from '@/types/userTypes';
-import { resetSubjects, getDefaultTimesTablesProgress } from '@/utils/progressUtils';
+import { resetSubjects } from '@/utils/progressUtils';
 import { Question } from '@/types/questionTypes';
 
 export const useProgressActions = (user: Profile | null, setUser: ((user: Profile | null) => void) | null) => {
@@ -105,15 +105,13 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
           ...(tableProgress.recentAttempts || []).slice(0, 9)
         ];
 
-        // Calculate average time from valid entries only
         const validTimes = tableProgress.recentAttempts
-          .filter(attempt => typeof attempt.answerTime === 'number' && attempt.answerTime > 0)
+          .filter(attempt => attempt.answerTime !== undefined)
           .map(attempt => attempt.answerTime as number);
         
         if (validTimes.length > 0) {
           const averageTime = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
           tableProgress.averageTime = Math.round(averageTime);
-          console.log(`Updated average time for table ${question.timesTable}: ${tableProgress.averageTime}ms`);
         }
         
         currentTimesTablesProgress[tableIndex] = tableProgress;
@@ -267,4 +265,12 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
   };
 };
 
-// Remove this function as it's now imported from progressUtils
+function getDefaultTimesTablesProgress(): TimesTableProgress[] {
+  return Array.from({ length: 12 }, (_, i) => ({
+    table: i + 1,
+    attempts: 0,
+    correct: 0,
+    recentAttempts: [],
+    averageTime: 0
+  }));
+}

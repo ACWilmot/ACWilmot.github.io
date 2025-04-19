@@ -51,8 +51,12 @@ export interface TimesTableProgress {
   table: number;
   attempts: number;
   correct: number;
-  recentAttempts: TimesTableAttempt[];
-  averageTime: number; // Changed from optional to required with default 0
+  recentAttempts: {
+    correct: boolean;
+    timestamp: string;
+    answerTime?: number; // Added this property to match usage
+  }[];
+  averageTime?: number; // Added this property to match usage
   [key: string]: any;
 }
 

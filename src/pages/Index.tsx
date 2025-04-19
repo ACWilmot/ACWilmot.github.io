@@ -36,7 +36,6 @@ const IndexPage = () => {
 
   React.useEffect(() => {
     setSelectedSubject('all');
-    setSelectedTimesTables([]);
   }, [setSelectedSubject]);
 
   const handleSubjectSelect = (subject: Subject) => {

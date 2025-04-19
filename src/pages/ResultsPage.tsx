@@ -62,7 +62,7 @@ const ResultsPage = () => {
               timesTable: q.timesTable,
               userAnswer: userAnswers[q.id],
               correctAnswer: q.correctAnswer,
-              answerTime: q.answerTime // Include the answer time we stored
+              answerTime: (q as Question & { answerTime?: number }).answerTime // Type assertion for answerTime
             })));
             
             // Direct update to Supabase for times tables progress
@@ -92,7 +92,7 @@ const ResultsPage = () => {
                   const tableProgress = currentProgress[tableIndex];
                   const userAnswer = userAnswers[question.id];
                   const wasCorrect = userAnswer === question.correctAnswer;
-                  const answerTime = question.answerTime || 0;
+                  const answerTime = (question as Question & { answerTime?: number }).answerTime || 0;
                   
                   // Update statistics
                   tableProgress.attempts += 1;

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
@@ -141,12 +140,11 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Changed from correct to incorrect. Score decreased.");
       }
 
-      // Add the answer time to the question object for later progress tracking
-      question.answerTime = answerTime;
+      // Add the answer time to the question
+      (question as Question & { answerTime?: number }).answerTime = answerTime;
 
       // Only update progress if profile is available and it's a times table question
       if (profile && question.subject === 'timesTables' && question.timesTable) {
-        // Use the correct method signature with only 2 arguments
         updateProgress(question.subject, wasCorrect);
         
         if (updateTimesTablesProgress && profile) {

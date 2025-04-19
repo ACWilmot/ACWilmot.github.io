@@ -39,7 +39,8 @@ const generateDemoData = (): TimesTableProgress[] => {
       table,
       attempts,
       correct,
-      recentAttempts
+      recentAttempts,
+      averageTime: Math.floor(Math.random() * 5000) + 1000 // Random average time between 1-6 seconds
     };
   });
 };
@@ -78,6 +79,7 @@ const TimesTablesProgress: React.FC = () => {
           correct: attempt.correct,
           timestamp: attempt.timestamp
         })),
+        averageTime: item.averageTime,
         _type: "TimesTableProgress"
       }));
       

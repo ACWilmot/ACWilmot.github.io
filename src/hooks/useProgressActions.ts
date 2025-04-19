@@ -268,12 +268,3 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
 };
 
 // Remove this function as it's now imported from progressUtils
-function getDefaultTimesTablesProgress(): TimesTableProgress[] {
-  return Array.from({ length: 12 }, (_, i) => ({
-    table: i + 1,
-    attempts: 0,
-    correct: 0,
-    recentAttempts: [],
-    averageTime: 0
-  }));
-}

@@ -11,7 +11,7 @@ interface ProfileContextType {
   isLoading: boolean;
   updateProfile: (data: Partial<Profile>) => Promise<void>;
   updateProgress: (subject: string, correct: boolean) => Promise<void>;
-  updateTimesTablesProgress: (table: number, correct: boolean, answerTime: number = 0) => Promise<void>;
+  updateTimesTablesProgress: (table: number, correct: boolean, answerTime?: number) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -166,7 +166,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const updateTimesTablesProgress = async (table: number, correct: boolean, answerTime: number = 0): Promise<void> => {
+  const updateTimesTablesProgress = async (table: number, correct: boolean, answerTime = 0): Promise<void> => {
     if (!profile || !profile.timesTablesProgress) {
       console.error("Cannot update times tables progress: No profile available or times tables progress not initialized");
       return;

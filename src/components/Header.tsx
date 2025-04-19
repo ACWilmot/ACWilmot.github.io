@@ -12,24 +12,30 @@ const Header: React.FC = () => {
   const { isAuthenticated, userRole } = useAuth();
 
   return (
-    <header className="w-full py-3 px-4 md:px-6 flex items-center justify-between glass fixed top-0 z-50 animate-slide-down">
+    <header className="w-full py-4 px-6 flex items-center justify-between bg-background/80 backdrop-blur-lg border-b shadow-sm fixed top-0 z-50">
       <div 
-        className="flex items-center gap-2 cursor-pointer transition-transform hover:scale-[1.02]" 
+        className="flex items-center gap-2 cursor-pointer transition-all hover:scale-105"
         onClick={() => navigate('/')}
       >
-        <Book className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-        <span className="text-lg md:text-xl font-display font-medium tracking-tight">SmartPrep</span>
+        <Book className="h-6 w-6 text-primary" />
+        <span className="text-xl font-display font-semibold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+          SmartPrep
+        </span>
       </div>
       
-      <nav className="hidden md:flex items-center justify-center flex-1 mx-6">
-        <div className="flex items-center gap-4 md:gap-8">
-          <NavLink href="/">Home</NavLink>
-          <NavLink href="/quiz">Practice</NavLink>
-          {isAuthenticated && userRole === 'student' && <NavLink href="/progress">My Progress</NavLink>}
-          {isAuthenticated && userRole === 'teacher' && <NavLink href="/teacher/dashboard">Dashboard</NavLink>}
-          {isAuthenticated && <NavLink href="/admin">Admin</NavLink>}
-          <NavLink href="/questions">Questions</NavLink>
-          <NavLink href="/about">About</NavLink>
+      <nav className="flex items-center justify-center flex-1 mx-8">
+        <div className="flex items-center gap-1">
+          {[
+            { label: 'Home', path: '/' },
+            { label: 'Practice', path: '/quiz' },
+            ...(isAuthenticated && userRole === 'student' ? [{ label: 'My Progress', path: '/progress' }] : []),
+            ...(isAuthenticated && userRole === 'teacher' ? [{ label: 'Dashboard', path: '/teacher/dashboard' }] : []),
+            ...(isAuthenticated ? [{ label: 'Admin', path: '/admin' }] : []),
+            { label: 'Questions', path: '/questions' },
+            { label: 'About', path: '/about' },
+          ].map((item) => (
+            <NavLink key={item.path} href={item.path}>{item.label}</NavLink>
+          ))}
         </div>
       </nav>
 
@@ -38,7 +44,7 @@ const Header: React.FC = () => {
         {isAuthenticated ? (
           <UserProfile />
         ) : (
-          <div className="flex items-center gap-1 md:gap-2">
+          <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="hidden sm:flex">
               <LogIn className="h-4 w-4 mr-2" />
               <span>Sign In</span>
@@ -47,10 +53,9 @@ const Header: React.FC = () => {
               <UserPlus className="h-4 w-4 mr-2" />
               <span>Register</span>
             </Button>
-            
-            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher/login')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher/login')} className="flex items-center gap-1.5">
               <GraduationCap className="h-4 w-4" />
-              <span className="hidden sm:inline ml-1.5">Teacher</span>
+              <span className="hidden sm:inline">Teacher</span>
             </Button>
           </div>
         )}
@@ -59,21 +64,16 @@ const Header: React.FC = () => {
   );
 };
 
-interface NavLinkProps {
-  href: string;
-  children: React.ReactNode;
-}
-
-const NavLink: React.FC<NavLinkProps> = ({ href, children }) => {
+const NavLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => {
   const navigate = useNavigate();
   
   return (
     <button 
       onClick={() => navigate(href)}
-      className="relative text-sm font-medium text-foreground/80 hover:text-foreground transition-colors duration-200 group"
+      className="relative px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors rounded-md hover:bg-primary/5"
     >
       {children}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 ease-in-out"></span>
+      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary/0 group-hover:bg-primary/100 transition-all duration-300" />
     </button>
   );
 };

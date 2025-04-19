@@ -9,6 +9,7 @@ interface SubjectCardProps {
   icon: React.ReactNode;
   isSelected: boolean;
   onClick: () => void;
+  className?: string; // Added className prop
 }
 
 const SubjectCard: React.FC<SubjectCardProps> = ({
@@ -16,7 +17,8 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
   description,
   icon,
   isSelected,
-  onClick
+  onClick,
+  className
 }) => {
   return (
     <button
@@ -25,7 +27,8 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
         "p-4 rounded-xl border border-border transition-all duration-200 flex flex-col items-start text-left h-full",
         isSelected
           ? "bg-primary/5 border-primary"
-          : "hover:bg-primary/5 hover:border-primary/40"
+          : "hover:bg-primary/5 hover:border-primary/40",
+        className // Added className to the cn function
       )}
     >
       <div className={cn(

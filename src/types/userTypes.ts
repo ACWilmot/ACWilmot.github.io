@@ -1,3 +1,4 @@
+
 export type UserRole = 'student' | 'teacher';
 
 export interface Student {
@@ -53,8 +54,9 @@ export interface TimesTableProgress {
   recentAttempts: {
     correct: boolean;
     timestamp: string;
+    answerTime?: number; // Added this property to match usage
   }[];
-  averageTime?: number;
+  averageTime?: number; // Added this property to match usage
   [key: string]: any;
 }
 

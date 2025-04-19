@@ -120,13 +120,16 @@ const TimesTablesProgress: React.FC = () => {
     const recentCorrect = recentAttempts.filter(attempt => attempt.correct).length;
     const recentAccuracy = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
     
+    const averageTimeInSeconds = table.averageTime > 0 ? (table.averageTime / 1000).toFixed(1) : null;
+    
     return {
       table: table.table,
       totalAccuracy,
       recentAccuracy,
       attempts: table.attempts,
       recentAttempts: recentTotal,
-      averageTime: table.averageTime || 0
+      averageTime: table.averageTime || 0,
+      averageTimeFormatted: averageTimeInSeconds
     };
   });
 
@@ -249,7 +252,7 @@ const TimesTablesProgress: React.FC = () => {
                     <div className="flex justify-between text-sm mb-1">
                       <span>Average Time</span>
                       <span className="font-medium">
-                        {data.averageTime ? `${(data.averageTime / 1000).toFixed(1)}s` : "N/A"}
+                        {data.averageTimeFormatted ? `${data.averageTimeFormatted}s` : "N/A"}
                       </span>
                     </div>
                   </div>

@@ -11,7 +11,7 @@ interface ProfileContextType {
   isLoading: boolean;
   updateProfile: (data: Partial<Profile>) => Promise<void>;
   updateProgress: (subject: string, correct: boolean) => Promise<void>;
-  updateTimesTablesProgress: (table: number, correct: boolean) => Promise<void>;
+  updateTimesTablesProgress: (table: number, correct: boolean, answerTime: number = 0) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -22,18 +22,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [authReady, setAuthReady] = useState<boolean>(false);
   const [authAttempted, setAuthAttempted] = useState<boolean>(false);
   
-  // Safely access auth context with retry logic
   let auth;
   try {
     auth = useAuth();
     if (!authReady) setAuthReady(true);
   } catch (error) {
-    // If auth context isn't ready yet, just return children and try again later
     if (!authAttempted) {
       console.log("Auth context not ready yet in ProfileProvider, will retry");
       setAuthAttempted(true);
       
-      // Schedule a retry after a short delay
       setTimeout(() => {
         setAuthAttempted(false);
       }, 500);
@@ -41,14 +38,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return <>{children}</>;
   }
 
-  // Only run this effect when auth is ready and user changes
   useEffect(() => {
     if (!authReady || !auth) return;
     
     if (auth.user) {
       setIsLoading(true);
       
-      // Use the fetchUserProfile utility instead of direct database access
       fetchUserProfile(auth.user.id)
         .then(profile => {
           if (profile) {
@@ -77,22 +72,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsLoading(true);
     
     try {
-      // Convert the Profile data to a Supabase-compatible format
       const supabaseData: Record<string, any> = {};
       
-      // Only copy the properties that are present in data
       if (data.name !== undefined) supabaseData.name = data.name;
       if (data.role !== undefined) supabaseData.role = data.role;
       if (data.email !== undefined) supabaseData.email = data.email;
       if (data.progress !== undefined) supabaseData.progress = data.progress;
       if (data.students !== undefined) supabaseData.students = data.students;
       
-      // For timesTablesProgress, ensure it's properly formatted for Supabase
       if (data.timesTablesProgress !== undefined) {
-        // Convert TimesTableProgress[] to a pure JSON object
-        // This is to make it compatible with Supabase's Json type
         const jsonCompatibleData = data.timesTablesProgress.map(table => {
-          // Create a plain object with the necessary properties
           return {
             table: table.table,
             attempts: table.attempts,
@@ -130,12 +119,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateProgress = async (subject: string, correct: boolean): Promise<void> => {
-    if (!profile) return;
+    if (!profile) {
+      console.error("Cannot update progress: No profile available");
+      return;
+    }
     
     setIsLoading(true);
     
     try {
-      // Get current progress
       const updatedProgress = { ...profile.progress };
       const subjectKey = subject as keyof typeof updatedProgress;
       
@@ -147,7 +138,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         };
       }
       
-      // Update in Supabase
       const { error } = await supabase
         .from('profiles')
         .update({ progress: updatedProgress })
@@ -159,7 +149,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return;
       }
       
-      // Update local state
       setProfile(prev => {
         if (!prev) return null;
         return {
@@ -177,51 +166,59 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // Method to update times tables progress
-  const updateTimesTablesProgress = async (table: number, correct: boolean): Promise<void> => {
-    if (!profile || !profile.timesTablesProgress) return;
+  const updateTimesTablesProgress = async (table: number, correct: boolean, answerTime: number = 0): Promise<void> => {
+    if (!profile || !profile.timesTablesProgress) {
+      console.error("Cannot update times tables progress: No profile available or times tables progress not initialized");
+      return;
+    }
     
     setIsLoading(true);
     
     try {
-      // Clone the current progress
       const updatedProgress = [...profile.timesTablesProgress];
       
-      // Find the table entry
       const tableIndex = updatedProgress.findIndex(t => t.table === table);
       if (tableIndex === -1) return;
       
-      // Update the table progress
       const tableProgress = updatedProgress[tableIndex];
       tableProgress.attempts += 1;
       if (correct) {
         tableProgress.correct += 1;
       }
       
-      // Add to recent attempts (keep only most recent 10)
       tableProgress.recentAttempts = [
         {
           correct,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          answerTime: answerTime
         },
         ...(tableProgress.recentAttempts || []).slice(0, 9)
       ];
       
-      // Update the progress in the array
+      const validTimes = tableProgress.recentAttempts
+        .filter(attempt => typeof attempt.answerTime === 'number' && attempt.answerTime > 0)
+        .map(attempt => attempt.answerTime as number);
+      
+      if (validTimes.length > 0) {
+        const averageTime = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+        tableProgress.averageTime = Math.round(averageTime);
+      }
+      
       updatedProgress[tableIndex] = tableProgress;
       
-      // Convert to JSON-compatible format before saving to Supabase
       const jsonCompatibleData = updatedProgress.map(item => ({
         table: item.table,
         attempts: item.attempts,
         correct: item.correct,
         recentAttempts: item.recentAttempts.map(attempt => ({
           correct: attempt.correct,
-          timestamp: attempt.timestamp
-        }))
+          timestamp: attempt.timestamp,
+          answerTime: attempt.answerTime
+        })),
+        averageTime: item.averageTime,
+        _type: "TimesTableProgress"
       }));
       
-      // Update in Supabase
       const { error } = await supabase
         .from('profiles')
         .update({ timesTablesProgress: jsonCompatibleData })
@@ -233,9 +230,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return;
       }
       
-      console.log("Times tables progress updated in Supabase:", jsonCompatibleData);
+      console.log("Times tables progress updated in Supabase with answer time:", answerTime);
       
-      // Update local state
       setProfile(prev => {
         if (!prev) return null;
         return {
@@ -253,7 +249,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // Only provide context when auth is ready
   if (!authReady) {
     return <>{children}</>;
   }

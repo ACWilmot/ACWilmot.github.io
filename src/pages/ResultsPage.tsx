@@ -61,7 +61,8 @@ const ResultsPage = () => {
               id: q.id,
               timesTable: q.timesTable,
               userAnswer: userAnswers[q.id],
-              correctAnswer: q.correctAnswer
+              correctAnswer: q.correctAnswer,
+              answerTime: q.answerTime // Include the answer time we stored
             })));
             
             // Direct update to Supabase for times tables progress
@@ -73,7 +74,8 @@ const ResultsPage = () => {
                     table: i + 1,
                     attempts: 0,
                     correct: 0,
-                    recentAttempts: []
+                    recentAttempts: [],
+                    averageTime: 0
                   }));
                 
                 // Process each question
@@ -90,6 +92,7 @@ const ResultsPage = () => {
                   const tableProgress = currentProgress[tableIndex];
                   const userAnswer = userAnswers[question.id];
                   const wasCorrect = userAnswer === question.correctAnswer;
+                  const answerTime = question.answerTime || 0;
                   
                   // Update statistics
                   tableProgress.attempts += 1;
@@ -97,14 +100,25 @@ const ResultsPage = () => {
                     tableProgress.correct += 1;
                   }
                   
-                  // Add to recent attempts
+                  // Add to recent attempts with answer time
                   tableProgress.recentAttempts = [
                     {
                       correct: wasCorrect,
-                      timestamp: new Date().toISOString()
+                      timestamp: new Date().toISOString(),
+                      answerTime: answerTime
                     },
                     ...(tableProgress.recentAttempts || []).slice(0, 9)
                   ];
+                  
+                  // Calculate average time
+                  const validTimes = tableProgress.recentAttempts
+                    .filter(attempt => typeof attempt.answerTime === 'number' && attempt.answerTime > 0)
+                    .map(attempt => attempt.answerTime as number);
+                  
+                  if (validTimes.length > 0) {
+                    const averageTime = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+                    tableProgress.averageTime = Math.round(averageTime);
+                  }
                   
                   // Update in array
                   currentProgress[tableIndex] = tableProgress;
@@ -117,11 +131,14 @@ const ResultsPage = () => {
                   correct: item.correct,
                   recentAttempts: item.recentAttempts.map(attempt => ({
                     correct: attempt.correct,
-                    timestamp: attempt.timestamp
-                  }))
+                    timestamp: attempt.timestamp,
+                    answerTime: attempt.answerTime
+                  })),
+                  averageTime: item.averageTime,
+                  _type: "TimesTableProgress"
                 }));
                 
-                console.log("Saving times tables progress directly to Supabase:", jsonCompatibleData);
+                console.log("Saving times tables progress directly to Supabase with answer times:", jsonCompatibleData);
                 
                 // Save to Supabase
                 const { error } = await supabase

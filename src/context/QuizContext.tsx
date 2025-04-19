@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useRef } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
@@ -53,14 +53,16 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
+  const questionStartTimeRef = useRef<number | null>(null);
   const { updateProgress } = useProgressActions(null, null);
-  const { updateTimesTablesProgress } = useProfile();
+  const { profile, updateTimesTablesProgress } = useProfile();
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
     
     setStartTime(Date.now());
     setEndTime(null);
+    questionStartTimeRef.current = Date.now(); // Initialize question start time
     
     setTimeout(() => {
       let selectedQuestions: Question[] = [];
@@ -112,19 +114,22 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log(`Answering question ${questionId} with answer: ${answer}`);
     
     const currentTime = Date.now();
-    const questionStartTime = startTime || currentTime;
-    const answerTime = currentTime - questionStartTime;
+    // Calculate time taken for this specific question
+    const answerTime = questionStartTimeRef.current ? currentTime - questionStartTimeRef.current : 0;
     
+    console.log(`Time taken to answer this question: ${answerTime}ms`);
+    
+    // Store the answer
     setUserAnswers((prev) => ({
       ...prev,
       [questionId]: answer,
     }));
 
+    // Find the question and update score
     const question = questions.find((q) => q.id === questionId);
     if (question) {
       console.log(`Question found: ${question.text}, correct answer: ${question.correctAnswer}`);
       console.log(`Subject: ${question.subject}, Times Table: ${question.timesTable || 'N/A'}`);
-      console.log(`Time taken to answer: ${answerTime}ms`);
       
       const wasCorrect = answer === question.correctAnswer;
       
@@ -136,10 +141,16 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Changed from correct to incorrect. Score decreased.");
       }
 
-      if (updateProgress && question.subject === 'timesTables' && question.timesTable) {
-        updateProgress(question.subject, 1, wasCorrect ? 1 : 0);
-        if (updateTimesTablesProgress) {
-          updateTimesTablesProgress(question.timesTable, wasCorrect);
+      // Add the answer time to the question object for later progress tracking
+      question.answerTime = answerTime;
+
+      // Only update progress if profile is available and it's a times table question
+      if (profile && question.subject === 'timesTables' && question.timesTable) {
+        // Use the correct method signature with only 2 arguments
+        updateProgress(question.subject, wasCorrect);
+        
+        if (updateTimesTablesProgress && profile) {
+          updateTimesTablesProgress(question.timesTable, wasCorrect, answerTime);
         }
       }
     }
@@ -148,12 +159,16 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const goToNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
+      // Reset the question start time for the new question
+      questionStartTimeRef.current = Date.now();
     }
   };
 
   const goToPreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
+      // Reset the question start time when navigating back
+      questionStartTimeRef.current = Date.now();
     }
   };
 
@@ -165,6 +180,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedSubject(null);
     setStartTime(null);
     setEndTime(null);
+    questionStartTimeRef.current = null;
   };
   
   const endQuiz = () => {

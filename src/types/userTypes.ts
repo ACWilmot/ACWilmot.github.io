@@ -1,4 +1,3 @@
-
 export type UserRole = 'student' | 'teacher';
 
 export interface Student {
@@ -48,12 +47,15 @@ export interface TimesTableAttempt {
 
 // Using record/index signature to make it compatible with Json type
 export interface TimesTableProgress {
-  table: number;         // The times table number (1-12)
-  attempts: number;      // Total attempts for this times table
-  correct: number;       // Total correct answers
-  recentAttempts: TimesTableAttempt[]; // Store the last 10 attempts
-  averageTime?: number;  // Average time in milliseconds to answer questions
-  [key: string]: any;    // Add index signature to make compatible with Json
+  table: number;
+  attempts: number;
+  correct: number;
+  recentAttempts: {
+    correct: boolean;
+    timestamp: string;
+  }[];
+  averageTime?: number;
+  [key: string]: any;
 }
 
 export interface Profile {

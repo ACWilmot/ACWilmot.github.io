@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,11 +19,15 @@ const UserProfile = () => {
 
   if (!user) return null;
 
-  // Get initials for avatar
   const initials = user.name.split(' ')
     .map(n => n[0])
     .join('')
     .toUpperCase();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <DropdownMenu>
@@ -36,7 +41,7 @@ const UserProfile = () => {
           <span className="text-sm font-medium hidden md:block">{user.name}</span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
@@ -48,7 +53,7 @@ const UserProfile = () => {
           <span>My Progress</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Logout</span>
         </DropdownMenuItem>

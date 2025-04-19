@@ -34,27 +34,26 @@ const IndexPage = () => {
     setSelectedTimesTables,
   } = useQuiz();
 
+  React.useEffect(() => {
+    setSelectedSubject('all');
+  }, [setSelectedSubject]);
+
   const handleSubjectSelect = (subject: Subject) => {
     setSelectedSubject(subject);
   };
 
   const handleStartQuiz = () => {
     if (selectedSubject) {
-      // Validate times tables selection
       if (selectedSubject === 'timesTables' && selectedTimesTables.length === 0) {
-        // Don't start quiz if no times tables selected
         return;
       }
-      
       startQuiz(selectedSubject);
       navigate('/quiz');
     }
   };
 
   const handleSliderChange = (value: number[]) => {
-    // Map slider value to desired question counts: 5, 10, 20, 30, 50, 100
     const questionCounts = [5, 10, 20, 30, 50, 100];
-    // Normalize the slider value (0-100) to an index in the questionCounts array
     const index = Math.min(
       Math.floor((value[0] / 100) * questionCounts.length),
       questionCounts.length - 1
@@ -62,13 +61,10 @@ const IndexPage = () => {
     setQuestionCount(questionCounts[index]);
   };
 
-  // Calculate the slider value based on question count
   const getSliderValue = () => {
     const questionCounts = [5, 10, 20, 30, 50, 100];
     const index = questionCounts.indexOf(questionCount);
-    if (index === -1) return 20; // Default to second position (10 questions)
-    
-    // Convert index to a percentage value (0-100)
+    if (index === -1) return 20;
     return Math.round((index / (questionCounts.length - 1)) * 100);
   };
 
@@ -80,7 +76,7 @@ const IndexPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-6xl px-4 py-16 md:py-24">
+      <div className="container max-w-6xl px-4 py-8 md:py-16">
         <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -133,11 +129,18 @@ const IndexPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="max-w-4xl mx-auto glass p-8 rounded-2xl"
+            className="max-w-4xl mx-auto glass p-8 rounded-2xl mt-8"
           >
             <div className="mb-8">
               <h2 className="text-2xl font-display font-semibold mb-6">Choose a subject</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <SubjectCard
+                  subject="all"
+                  description="Combined test with all subjects"
+                  icon={<Layers className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'all'}
+                  onClick={() => handleSubjectSelect('all')}
+                />
                 <SubjectCard
                   subject="maths"
                   description="Numbers, shapes, and problem solving"
@@ -160,90 +163,81 @@ const IndexPage = () => {
                   onClick={() => handleSubjectSelect('verbal')}
                 />
                 <SubjectCard
-                  subject="all"
-                  description="Combined test with all subjects"
-                  icon={<Layers className="h-5 w-5" />}
-                  isSelected={selectedSubject === 'all'}
-                  onClick={() => handleSubjectSelect('all')}
-                />
-                <SubjectCard
                   subject="timesTables"
                   description="Practice multiplication tables"
                   icon={<Table2 className="h-5 w-5" />}
                   isSelected={selectedSubject === 'timesTables'}
                   onClick={() => handleSubjectSelect('timesTables')}
+                  className="bg-primary/5"
                 />
               </div>
             </div>
 
-            {selectedSubject && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mb-8"
-              >
-                {selectedSubject !== 'timesTables' && (
-                  <>
-                    <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
-                    <div className="flex justify-center mb-8">
-                      <DifficultySelector 
-                        selectedDifficulty={selectedDifficulty}
-                        onChange={setSelectedDifficulty}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {selectedSubject === 'timesTables' && (
-                  <div className="mb-8">
-                    <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select times tables</h2>
-                    <TimesTablesSelector
-                      selectedTables={selectedTimesTables}
-                      onChange={setSelectedTimesTables}
-                      className="mb-6"
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ duration: 0.3 }}
+              className="mb-8"
+            >
+              {selectedSubject !== 'timesTables' && (
+                <>
+                  <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
+                  <div className="flex justify-center mb-8">
+                    <DifficultySelector 
+                      selectedDifficulty={selectedDifficulty}
+                      onChange={setSelectedDifficulty}
                     />
                   </div>
-                )}
-                
-                <div className="glass p-6 rounded-xl mb-6 flex flex-col items-center">
-                  <h3 className="text-lg font-medium mb-4">Number of questions</h3>
-                  <div className="w-full max-w-md mb-6">
-                    <Slider
-                      defaultValue={[getSliderValue()]}
-                      max={100}
-                      step={20}
-                      onValueChange={handleSliderChange}
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="flex justify-between w-full max-w-md text-sm text-muted-foreground mb-2">
-                    <span>5</span>
-                    <span>10</span>
-                    <span>20</span>
-                    <span>30</span>
-                    <span>50</span>
-                    <span>100</span>
-                  </div>
-                  <p className="mt-4 text-sm text-center">
-                    You selected {questionCount} questions
-                  </p>
-                </div>
+                </>
+              )}
 
-                <div className="flex justify-center">
-                  <Button
-                    onClick={handleStartQuiz}
-                    className="rounded-lg"
-                    size="lg"
-                    disabled={!isReadyToStart()}
-                  >
-                    Start Practice Test
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+              {selectedSubject === 'timesTables' && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select times tables</h2>
+                  <TimesTablesSelector
+                    selectedTables={selectedTimesTables}
+                    onChange={setSelectedTimesTables}
+                    className="mb-6"
+                  />
                 </div>
-              </motion.div>
-            )}
+              )}
+              
+              <div className="glass p-6 rounded-xl mb-6 flex flex-col items-center">
+                <h3 className="text-lg font-medium mb-4">Number of questions</h3>
+                <div className="w-full max-w-md mb-6">
+                  <Slider
+                    defaultValue={[getSliderValue()]}
+                    max={100}
+                    step={20}
+                    onValueChange={handleSliderChange}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex justify-between w-full max-w-md text-sm text-muted-foreground mb-2">
+                  <span>5</span>
+                  <span>10</span>
+                  <span>20</span>
+                  <span>30</span>
+                  <span>50</span>
+                  <span>100</span>
+                </div>
+                <p className="mt-4 text-sm text-center">
+                  You selected {questionCount} questions
+                </p>
+              </div>
+
+              <div className="flex justify-center">
+                <Button
+                  onClick={handleStartQuiz}
+                  className="rounded-lg"
+                  size="lg"
+                  disabled={!isReadyToStart()}
+                >
+                  Start Practice Test
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </div>

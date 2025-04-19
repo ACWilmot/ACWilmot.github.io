@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,7 +8,6 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from "sonner";
 import QuizTimer from '@/components/QuizTimer';
 
-// Newly extracted components
 import QuizHeader from '@/components/quiz/QuizHeader';
 import QuizControls from '@/components/quiz/QuizControls';
 import WorksheetOptions from '@/components/quiz/WorksheetOptions';
@@ -37,21 +35,18 @@ const QuizPage = () => {
   const [showExplanation, setShowExplanation] = useState(false);
   const [showWorksheetOption, setShowWorksheetOption] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
   
   console.log("QuizPage rendering - Auth status:", isAuthenticated);
   console.log("Selected subject:", selectedSubject);
   console.log("Is loading:", isLoading);
   console.log("Questions count:", questions.length);
   
-  // Check authentication and redirect if not authenticated
   useEffect(() => {
     console.log("Auth check effect running, isAuthenticated:", isAuthenticated);
     
-    // Mark that we've checked authentication 
     setAuthChecked(true);
     
-    // Only redirect if we've explicitly determined the user is not authenticated
-    // This prevents redirect loops in loading/indeterminate states
     if (isAuthenticated === false) {
       console.log("User not authenticated, redirecting to login");
       toast.error("Please sign in to access practice quizzes");
@@ -59,7 +54,6 @@ const QuizPage = () => {
       return;
     }
     
-    // If no subject is selected, redirect to home
     if (!isLoading && !selectedSubject && isAuthenticated) {
       console.log("No subject selected, redirecting to home");
       navigate('/');
@@ -74,22 +68,25 @@ const QuizPage = () => {
     if (currentQuestion) {
       answerQuestion(currentQuestion.id, answer);
       setShowExplanation(true);
+      setQuestionStartTime(null);
     }
   };
   
   const handleNext = () => {
     setShowExplanation(false);
     if (isLastQuestion) {
-      endQuiz(); // Record the end time
+      endQuiz();
       navigate('/results');
     } else {
       goToNextQuestion();
+      setQuestionStartTime(Date.now());
     }
   };
   
   const handlePrevious = () => {
     setShowExplanation(false);
     goToPreviousQuestion();
+    setQuestionStartTime(Date.now());
   };
   
   const handleExit = () => {
@@ -100,7 +97,6 @@ const QuizPage = () => {
     }
   };
 
-  // Show loading while we're determining auth state
   if (!authChecked) {
     console.log("Auth not checked yet, showing loading");
     return (
@@ -118,7 +114,6 @@ const QuizPage = () => {
     );
   }
 
-  // Regular loading for quiz questions
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">
@@ -140,6 +135,12 @@ const QuizPage = () => {
     return null;
   }
 
+  useEffect(() => {
+    if (currentQuestion && !questionStartTime && !showExplanation) {
+      setQuestionStartTime(Date.now());
+    }
+  }, [currentQuestion, questionStartTime, showExplanation]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <Header />
@@ -156,7 +157,8 @@ const QuizPage = () => {
             />
             
             <QuizTimer 
-              startTime={startTime} 
+              startTime={startTime}
+              questionStartTime={questionStartTime}
               className="md:ml-4"
             />
           </div>

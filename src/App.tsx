@@ -1,6 +1,6 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from './context/AuthContext';
 import { QuizProvider } from './context/QuizContext';
 import { ProfileProvider } from './context/ProfileContext';
@@ -21,33 +21,34 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <ProfileProvider>
-          <QuizProvider>
-            <Routes>
-              <Route path="/" element={<IndexPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/questions" element={<QuestionsPage />} />
-              <Route path="/quiz" element={<QuizPage />} />
-              <Route path="/results" element={<ResultsPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/teacher-login" element={<TeacherLoginPage />} />
-              <Route path="/teacher/login" element={<TeacherLoginPage />} />
-              <Route path="/teacher-register" element={<TeacherRegisterPage />} />
-              <Route path="/teacher/register" element={<TeacherRegisterPage />} />
-              <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
-              {/* Remove the old redundant route that might be causing confusion */}
-              <Route path="/progress" element={<ProgressPage />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster position="bottom-right" richColors />
-          </QuizProvider>
-        </ProfileProvider>
-      </AuthProvider>
-    </Router>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <Router>
+        <AuthProvider>
+          <ProfileProvider>
+            <QuizProvider>
+              <Routes>
+                <Route path="/" element={<IndexPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/questions" element={<QuestionsPage />} />
+                <Route path="/quiz" element={<QuizPage />} />
+                <Route path="/results" element={<ResultsPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/teacher-login" element={<TeacherLoginPage />} />
+                <Route path="/teacher/login" element={<TeacherLoginPage />} />
+                <Route path="/teacher-register" element={<TeacherRegisterPage />} />
+                <Route path="/teacher/register" element={<TeacherRegisterPage />} />
+                <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
+                <Route path="/progress" element={<ProgressPage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Toaster position="bottom-right" richColors />
+            </QuizProvider>
+          </ProfileProvider>
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 

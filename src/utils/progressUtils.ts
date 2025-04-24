@@ -1,3 +1,16 @@
+
+interface TimesTableProgress {
+  table: number;
+  attempts: number;
+  correct: number;
+  recentAttempts: Array<{
+    correct: boolean;
+    timestamp: string;
+  }>;
+  averageTime: number;
+  _type: "TimesTableProgress";
+}
+
 export const resetSubjects = {
   maths: {
     completed: 0,

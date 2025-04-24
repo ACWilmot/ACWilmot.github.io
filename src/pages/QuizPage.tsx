@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,12 +7,11 @@ import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from "sonner";
 import QuizTimer from '@/components/QuizTimer';
-
-// Newly extracted components
 import QuizHeader from '@/components/quiz/QuizHeader';
 import QuizControls from '@/components/quiz/QuizControls';
 import WorksheetOptions from '@/components/quiz/WorksheetOptions';
 import QuizProgress from '@/components/quiz/QuizProgress';
+import SoundEffects from '@/utils/soundEffects';
 
 const QuizPage = () => {
   const navigate = useNavigate();
@@ -43,15 +41,11 @@ const QuizPage = () => {
   console.log("Is loading:", isLoading);
   console.log("Questions count:", questions.length);
   
-  // Check authentication and redirect if not authenticated
   useEffect(() => {
     console.log("Auth check effect running, isAuthenticated:", isAuthenticated);
     
-    // Mark that we've checked authentication 
     setAuthChecked(true);
     
-    // Only redirect if we've explicitly determined the user is not authenticated
-    // This prevents redirect loops in loading/indeterminate states
     if (isAuthenticated === false) {
       console.log("User not authenticated, redirecting to login");
       toast.error("Please sign in to access practice quizzes");
@@ -59,7 +53,6 @@ const QuizPage = () => {
       return;
     }
     
-    // If no subject is selected, redirect to home
     if (!isLoading && !selectedSubject && isAuthenticated) {
       console.log("No subject selected, redirecting to home");
       navigate('/');
@@ -72,15 +65,23 @@ const QuizPage = () => {
   
   const handleAnswer = (answer: string) => {
     if (currentQuestion) {
+      const isCorrect = answer === currentQuestion.correctAnswer;
       answerQuestion(currentQuestion.id, answer);
       setShowExplanation(true);
+      
+      if (isCorrect) {
+        SoundEffects.playCorrectAnswer();
+      } else {
+        SoundEffects.playIncorrectAnswer();
+      }
     }
   };
   
   const handleNext = () => {
     setShowExplanation(false);
     if (isLastQuestion) {
-      endQuiz(); // Record the end time
+      endQuiz();
+      SoundEffects.playQuizComplete();
       navigate('/results');
     } else {
       goToNextQuestion();
@@ -100,7 +101,6 @@ const QuizPage = () => {
     }
   };
 
-  // Show loading while we're determining auth state
   if (!authChecked) {
     console.log("Auth not checked yet, showing loading");
     return (
@@ -118,7 +118,6 @@ const QuizPage = () => {
     );
   }
 
-  // Regular loading for quiz questions
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/20">

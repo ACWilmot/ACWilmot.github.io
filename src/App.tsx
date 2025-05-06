@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme-provider";
 
 import IndexPage from './pages/IndexPage';
 import QuestionsPage from './pages/QuestionsPage';
@@ -24,8 +25,8 @@ import TestSetupPage from './pages/TestSetupPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <TeacherProvider>
           <ToastProvider />
           <ThemeProvider attribute="class" defaultTheme="light">
@@ -49,8 +50,8 @@ function App() {
             </Routes>
           </ThemeProvider>
         </TeacherProvider>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

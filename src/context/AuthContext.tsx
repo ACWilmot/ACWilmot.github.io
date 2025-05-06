@@ -1,6 +1,7 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Profile } from '@/types/userTypes';
 import { AuthContextType } from '@/types/authTypes';
 import { fetchUserProfile } from '@/utils/profileUtils';
@@ -17,7 +18,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [sessionChecked, setSessionChecked] = useState<boolean>(false);
+  
+  // We're now safely inside the BrowserRouter context in App.tsx
   const navigate = useNavigate();
+  const location = useLocation();
   
   const authActions = useAuthActions(user, setUser);
   const progressActions = useProgressActions(user, setUser);
@@ -53,7 +57,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
                 
                 console.log("Redirecting based on role:", profile.role);
                 if (profile.role === 'teacher') {
-                  navigate('/teacher/dashboard');
+                  navigate('/teacher-dashboard');
                 } else {
                   navigate('/progress');
                 }

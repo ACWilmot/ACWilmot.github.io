@@ -16,6 +16,7 @@ const QuizPage = () => {
     userAnswers,
     selectedSubject,
     selectedDifficulty,
+    isLoading,
     questionCount,
     startTime,
     answerQuestion,
@@ -26,11 +27,9 @@ const QuizPage = () => {
   } = useQuiz();
   
   const [authChecked, setAuthChecked] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     setAuthChecked(true);
-    setIsLoading(false);
     
     if (isAuthenticated === false) {
       toast.error("Please sign in to access practice quizzes");
@@ -41,7 +40,7 @@ const QuizPage = () => {
     if (!isLoading && !selectedSubject && isAuthenticated) {
       navigate('/');
     }
-  }, [selectedSubject, navigate, isAuthenticated]);
+  }, [selectedSubject, isLoading, navigate, isAuthenticated]);
 
   if (!authChecked) {
     return <QuizLoadingStates.AuthChecking />;

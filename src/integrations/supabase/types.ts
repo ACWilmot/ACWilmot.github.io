@@ -12,19 +12,19 @@ export type Database = {
       class_enrollments: {
         Row: {
           class_id: string
-          enrolled_at: string
+          enrolled_at: string | null
           id: string
           student_id: string
         }
         Insert: {
           class_id: string
-          enrolled_at?: string
+          enrolled_at?: string | null
           id?: string
           student_id: string
         }
         Update: {
           class_id?: string
-          enrolled_at?: string
+          enrolled_at?: string | null
           id?: string
           student_id?: string
         }
@@ -40,121 +40,27 @@ export type Database = {
       }
       classes: {
         Row: {
-          class_code: string
-          created_at: string
+          created_at: string | null
           description: string | null
           id: string
           name: string
           teacher_id: string
         }
         Insert: {
-          class_code: string
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name: string
           teacher_id: string
         }
         Update: {
-          class_code?: string
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name?: string
           teacher_id?: string
         }
         Relationships: []
-      }
-      homework_assignments: {
-        Row: {
-          assigned_at: string
-          class_id: string
-          description: string | null
-          difficulty: string
-          due_date: string | null
-          id: string
-          question_count: number
-          subject: string
-          title: string
-        }
-        Insert: {
-          assigned_at?: string
-          class_id: string
-          description?: string | null
-          difficulty: string
-          due_date?: string | null
-          id?: string
-          question_count: number
-          subject: string
-          title: string
-        }
-        Update: {
-          assigned_at?: string
-          class_id?: string
-          description?: string | null
-          difficulty?: string
-          due_date?: string | null
-          id?: string
-          question_count?: number
-          subject?: string
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "homework_assignments_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      homework_attempts: {
-        Row: {
-          answers: Json | null
-          completed: boolean
-          completed_at: string | null
-          correct_answers: number | null
-          homework_id: string
-          id: string
-          reset_at: string | null
-          score: number | null
-          started_at: string | null
-          student_id: string
-        }
-        Insert: {
-          answers?: Json | null
-          completed?: boolean
-          completed_at?: string | null
-          correct_answers?: number | null
-          homework_id: string
-          id?: string
-          reset_at?: string | null
-          score?: number | null
-          started_at?: string | null
-          student_id: string
-        }
-        Update: {
-          answers?: Json | null
-          completed?: boolean
-          completed_at?: string | null
-          correct_answers?: number | null
-          homework_id?: string
-          id?: string
-          reset_at?: string | null
-          score?: number | null
-          started_at?: string | null
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "homework_attempts_homework_id_fkey"
-            columns: ["homework_id"]
-            isOneToOne: false
-            referencedRelation: "homework_assignments"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       profiles: {
         Row: {
@@ -229,7 +135,15 @@ export type Database = {
           uploaded_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "worksheet_uploads_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -239,14 +153,6 @@ export type Database = {
       can_manage_enrollments: {
         Args: { class_id_param: string; student_id_param: string }
         Returns: boolean
-      }
-      create_test_class_data: {
-        Args: { teacher_email: string; num_students: number }
-        Returns: undefined
-      }
-      generate_class_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
       }
       get_teacher_classes: {
         Args: { teacher_id_param: string }
@@ -258,6 +164,10 @@ export type Database = {
           teacher_id: string
           student_count: number
         }[]
+      }
+      is_class_owner: {
+        Args: { class_row: Database["public"]["Tables"]["classes"]["Row"] }
+        Returns: boolean
       }
       is_enrollment_owner: {
         Args: { enrollment_class_id: string }

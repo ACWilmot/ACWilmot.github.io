@@ -5,17 +5,18 @@ import { useStudentManagement } from './useStudentManagement';
 
 export const useTeacherActions = (user: Profile | null, setUser: (user: Profile | null) => void) => {
   // Use the class management hook
-  const classManagement = useClassManagement();
+  const classManagement = useClassManagement(user, setUser);
   
   // Use the student management hook for general student operations
   const studentManagement = useStudentManagement(user, setUser);
 
   return {
     // Class management actions
-    classes: classManagement.classes,
-    loading: classManagement.loading,
-    insertClasses: classManagement.insertClasses,
-    deleteClass: classManagement.deleteClass,
+    getClasses: classManagement.getClasses,
+    createClass: classManagement.createClass,
+    addStudentToClass: classManagement.addStudentToClass,
+    removeStudentFromClass: classManagement.removeStudentFromClass,
+    getClassStudents: classManagement.getClassStudents,
     
     // Student management actions
     getStudents: studentManagement.getStudents,

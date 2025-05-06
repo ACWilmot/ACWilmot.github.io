@@ -1,27 +1,31 @@
 
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import QuizHeader from './QuizHeader';
-import QuizControls from './QuizControls';
-import QuizProgress from './QuizProgress';
+import { AnimatePresence } from 'framer-motion';
 import QuestionCard from '@/components/QuestionCard';
+import QuizTimer from '@/components/QuizTimer';
+import QuizHeader from '@/components/quiz/QuizHeader';
+import QuizControls from '@/components/quiz/QuizControls';
+import WorksheetOptions from '@/components/quiz/WorksheetOptions';
+import QuizProgress from '@/components/quiz/QuizProgress';
+import SoundEffects from '@/utils/soundEffects';
 import { Question } from '@/types/questionTypes';
+import { Subject } from '@/context/QuizContext';
+import Header from '@/components/Header';
 
 interface QuizContentProps {
   questions: Question[];
   currentQuestionIndex: number;
   userAnswers: Record<string, string>;
-  selectedSubject: string | null;
-  selectedDifficulty: string | null;
+  selectedSubject: Subject | null;
+  selectedDifficulty: string;
   questionCount: number;
-  startTime: Date | null;
+  startTime: number | null;
   answerQuestion: (questionId: string, answer: string) => void;
   goToNextQuestion: () => void;
   goToPreviousQuestion: () => void;
   resetQuiz: () => void;
   endQuiz: () => void;
-  isHomework?: boolean;
-  homeworkTitle?: string;
 }
 
 const QuizContent: React.FC<QuizContentProps> = ({
@@ -36,67 +40,106 @@ const QuizContent: React.FC<QuizContentProps> = ({
   goToNextQuestion,
   goToPreviousQuestion,
   resetQuiz,
-  endQuiz,
-  isHomework = false,
-  homeworkTitle
+  endQuiz
 }) => {
   const navigate = useNavigate();
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [showWorksheetOption, setShowWorksheetOption] = useState(false);
+  
+  const currentQuestion = questions[currentQuestionIndex];
+  const userAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
-  useEffect(() => {
-    // If the reset happens during this component's lifecycle, go back to the home page
-    if (questions.length === 0) {
+  const handleAnswer = (answer: string) => {
+    if (currentQuestion) {
+      const isCorrect = answer === currentQuestion.correctAnswer;
+      answerQuestion(currentQuestion.id, answer);
+      setShowExplanation(true);
+      
+      if (isCorrect) {
+        SoundEffects.playCorrectAnswer();
+      } else {
+        SoundEffects.playIncorrectAnswer();
+      }
+    }
+  };
+
+  const handleNext = () => {
+    setShowExplanation(false);
+    if (isLastQuestion) {
+      endQuiz();
+      SoundEffects.playQuizComplete();
+      navigate('/results');
+    } else {
+      goToNextQuestion();
+    }
+  };
+
+  const handlePrevious = () => {
+    setShowExplanation(false);
+    goToPreviousQuestion();
+  };
+
+  const handleExit = () => {
+    const confirmed = window.confirm('Are you sure you want to exit this quiz? Your progress will be lost.');
+    if (confirmed) {
+      resetQuiz();
       navigate('/');
     }
-  }, [questions, navigate]);
-
-  if (!questions[currentQuestionIndex]) {
-    return null;
-  }
-
-  const currentQuestion = questions[currentQuestionIndex];
-  const isFirstQuestion = currentQuestionIndex === 0;
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const hasAnsweredCurrent = userAnswers[currentQuestion.id] !== undefined;
-  const hasAnsweredAll = questions.every(q => userAnswers[q.id] !== undefined);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <QuizHeader 
-        subject={selectedSubject} 
-        difficulty={selectedDifficulty} 
-        questionCount={questionCount}
-        startTime={startTime}
-        isHomework={isHomework}
-        homeworkTitle={homeworkTitle}
-      />
-
-      <div className="container max-w-4xl px-4 py-8 flex-grow">
-        <QuizProgress 
-          currentQuestion={currentQuestionIndex + 1} 
-          totalQuestions={questions.length} 
-          answers={userAnswers}
-          questions={questions}
-        />
-
-        <QuestionCard 
-          question={currentQuestion}
-          userAnswer={userAnswers[currentQuestion.id]}
-          onAnswer={(answer) => answerQuestion(currentQuestion.id, answer)}
-          showExplanation={false}
-        />
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      <Header />
+      
+      <main className="pt-32 pb-16 px-6 max-w-7xl mx-auto">
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <QuizHeader 
+              subject={selectedSubject}
+              difficulty={selectedDifficulty}
+              questionCount={questionCount}
+              totalQuestions={questions.length}
+              onExit={handleExit}
+            />
+            
+            <QuizTimer 
+              startTime={startTime} 
+              className="md:ml-4"
+            />
+          </div>
+          
+          <WorksheetOptions 
+            currentQuestion={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
+            showWorksheetOption={showWorksheetOption}
+            setShowWorksheetOption={setShowWorksheetOption}
+            questions={questions}
+            subject={selectedSubject}
+            difficulty={selectedDifficulty}
+          />
+        </div>
+        
+        <AnimatePresence mode="wait">
+          <QuestionCard
+            key={currentQuestion.id}
+            question={currentQuestion}
+            userAnswer={userAnswer}
+            onAnswer={handleAnswer}
+            showExplanation={showExplanation}
+          />
+        </AnimatePresence>
         
         <QuizControls 
-          onPrevious={goToPreviousQuestion}
-          onNext={goToNextQuestion}
-          onFinish={endQuiz}
-          onReset={resetQuiz}
-          isFirstQuestion={isFirstQuestion}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          isFirstQuestion={currentQuestionIndex === 0}
           isLastQuestion={isLastQuestion}
-          hasAnsweredCurrent={hasAnsweredCurrent}
-          hasAnsweredAll={hasAnsweredAll}
-          isHomework={isHomework}
+          isAnswered={!!userAnswer}
         />
-      </div>
+        
+        <QuizProgress />
+      </main>
     </div>
   );
 };

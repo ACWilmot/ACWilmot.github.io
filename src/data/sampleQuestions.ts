@@ -8,7 +8,7 @@ const sampleQuestions: SubjectQuestions = {
   maths: mathsQuestions,
   english: englishQuestions,
   verbal: verbalQuestions,
-  science: [], // Added empty array for science
+  all: [], // This will be populated dynamically when 'all' is selected
   timesTables: [], // This will be generated dynamically
 };
 

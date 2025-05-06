@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Question, Difficulty } from '@/types/questionTypes';
 
-export interface QuestionCardProps {
+interface QuestionCardProps {
   question: Question;
   userAnswer: string | undefined;
   onAnswer: (answer: string) => void;

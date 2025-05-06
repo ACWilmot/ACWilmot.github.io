@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { UserPlus, AlertCircle, Loader2 } from 'lucide-react';
@@ -8,18 +8,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AddStudentFormProps {
   onAddStudent: (email: string) => Promise<boolean>;
-  classId?: string; // Make classId optional
+  classId: string;
 }
 
 const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }) => {
-  const [studentEmail, setStudentEmail] = useState('');
+  const [studentEmailInput, setStudentEmailInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!studentEmail.trim()) {
+    if (!studentEmailInput.trim()) {
       setError("Please enter a student email address");
       return;
     }
@@ -28,10 +28,11 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
     setError(null);
     
     try {
-      const success = await onAddStudent(studentEmail.trim());
+      console.log(`Attempting to add student ${studentEmailInput} to class ${classId}`);
+      const success = await onAddStudent(studentEmailInput.trim());
       
       if (success) {
-        setStudentEmail('');
+        setStudentEmailInput('');
       }
     } catch (err) {
       console.error("Error adding student:", err);
@@ -42,11 +43,12 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
   };
 
   return (
-    <Card>
+    <Card className="mb-8">
       <CardHeader>
         <CardTitle>Add Student to Class</CardTitle>
         <CardDescription>
-          Enter a student's email to add them to this class
+          Enter a student's email to add them to this class. 
+          Note: If the student is already in another class, they will be moved to this class.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -56,17 +58,16 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <form onSubmit={handleAddStudent} className="space-y-4">
+        <form onSubmit={handleAddStudent} className="flex gap-2">
           <Input 
             placeholder="Student Email" 
-            value={studentEmail} 
-            onChange={(e) => setStudentEmail(e.target.value)}
+            value={studentEmailInput} 
+            onChange={(e) => setStudentEmailInput(e.target.value)}
             disabled={isSubmitting}
           />
           <Button 
             type="submit"
-            disabled={isSubmitting || !studentEmail.trim()}
-            className="w-full"
+            disabled={isSubmitting || !studentEmailInput.trim()}
           >
             {isSubmitting ? (
               <>
@@ -76,7 +77,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }
             ) : (
               <>
                 <UserPlus className="h-4 w-4 mr-2" />
-                Add Student
+                Add
               </>
             )}
           </Button>

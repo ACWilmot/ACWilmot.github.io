@@ -7,26 +7,19 @@ import { createTestClass, setupTestStudentTeacherRelationship } from '@/utils/te
 import { AlertCircle, Users, School, ArrowRight } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
 
 const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const handleCreateTestClass = async () => {
     try {
       setLoading(true);
       setError(null);
       setSuccess(null);
-      // Create a test class with the current user's ID or a default ID
-      await createTestClass(
-        user?.id || 'default-teacher-id', 
-        'Example Class',
-        'A class for demonstration purposes'
-      );
+      await createTestClass();
       setSuccess('Example class with 10 students created successfully');
     } catch (err) {
       console.error('Error creating test class:', err);

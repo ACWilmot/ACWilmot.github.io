@@ -4,31 +4,22 @@ import { List, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
-import { Question } from '@/types/questionTypes';
+import { useQuiz } from '@/context/QuizContext';
 import ProgressBar from '@/components/ProgressBar';
 
-interface QuizProgressProps {
-  currentQuestion: number;
-  totalQuestions: number;
-  answers: Record<string, string>;
-  questions: Question[];
-}
-
-const QuizProgress: React.FC<QuizProgressProps> = ({ 
-  currentQuestion,
-  totalQuestions,
-  answers,
-  questions
-}) => {
+const QuizProgress: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const { 
+    questions, 
+    currentQuestionIndex, 
+    userAnswers,
+    score
+  } = useQuiz();
   
   // Calculate stats
-  const answeredQuestions = Object.keys(answers).length;
-  const unansweredQuestions = totalQuestions - answeredQuestions;
-  const percentage = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
-  
-  // Calculate correct answers
-  const correctCount = questions.filter(q => answers[q.id] === q.correctAnswer).length;
+  const answeredQuestions = Object.keys(userAnswers).length;
+  const unansweredQuestions = questions.length - answeredQuestions;
+  const percentage = questions.length > 0 ? (answeredQuestions / questions.length) * 100 : 0;
   
   return (
     <div className="mt-12 text-center">
@@ -52,8 +43,8 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
           
           <div className="mt-4 space-y-6">
             <ProgressBar 
-              currentQuestion={currentQuestion} 
-              totalQuestions={totalQuestions} 
+              currentQuestion={currentQuestionIndex + 1} 
+              totalQuestions={questions.length} 
             />
             
             <div className="grid grid-cols-3 gap-3 text-center">
@@ -62,7 +53,7 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
                 <p className="text-xs text-muted-foreground">Answered</p>
               </Card>
               <Card className="p-3">
-                <p className="text-xl font-display font-bold">{correctCount}</p>
+                <p className="text-xl font-display font-bold">{score}</p>
                 <p className="text-xs text-muted-foreground">Correct</p>
               </Card>
               <Card className="p-3">
@@ -76,9 +67,9 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
                 <h3 className="font-medium text-sm">Answered Questions:</h3>
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
                   {questions.map((question, index) => {
-                    if (!answers[question.id]) return null;
+                    if (!userAnswers[question.id]) return null;
                     
-                    const isCorrect = answers[question.id] === question.correctAnswer;
+                    const isCorrect = userAnswers[question.id] === question.correctAnswer;
                     
                     return (
                       <Card key={question.id} className="flex items-center p-3 text-left text-sm">

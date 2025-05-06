@@ -1,71 +1,57 @@
 
 import React from 'react';
-import QuizTimer from '@/components/QuizTimer';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Difficulty } from '@/types/questionTypes';
 
 interface QuizHeaderProps {
   subject: string | null;
-  difficulty: string | null;
+  difficulty: string;
   questionCount: number;
-  startTime: Date | null;
-  isHomework?: boolean;
-  homeworkTitle?: string;
+  totalQuestions: number;
+  onExit: () => void;
 }
 
-const QuizHeader: React.FC<QuizHeaderProps> = ({ 
-  subject, 
-  difficulty, 
-  questionCount, 
-  startTime,
-  isHomework = false,
-  homeworkTitle
+const QuizHeader: React.FC<QuizHeaderProps> = ({
+  subject,
+  difficulty,
+  questionCount,
+  totalQuestions,
+  onExit,
 }) => {
-  const getSubjectDisplay = () => {
-    switch(subject) {
-      case 'maths': return 'Mathematics';
-      case 'english': return 'English';
-      case 'verbal': return 'Verbal Reasoning';
-      case 'nonVerbal': return 'Non-verbal Reasoning';
-      default: return subject;
-    }
-  };
-
-  const getDifficultyDisplay = () => {
-    switch(difficulty) {
-      case 'easy': return 'Easy';
-      case 'medium': return 'Medium';
-      case 'hard': return 'Hard';
-      default: return difficulty;
+  const getDifficultyColor = (difficulty: Difficulty) => {
+    switch (difficulty) {
+      case 'easy': return 'bg-green-500/10 text-green-600';
+      case 'medium': return 'bg-amber-500/10 text-amber-600';
+      case 'hard': return 'bg-rose-500/10 text-rose-600';
+      default: return 'bg-primary/10 text-primary';
     }
   };
 
   return (
-    <div className="sticky top-0 bg-background border-b z-10 shadow-sm">
-      <div className="container max-w-4xl px-4 py-3">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
-          <div>
-            {isHomework ? (
-              <h1 className="text-lg font-bold tracking-tight sm:text-xl">
-                Homework: {homeworkTitle}
-              </h1>
-            ) : (
-              <h1 className="text-lg font-bold tracking-tight sm:text-xl">
-                Practice Quiz
-              </h1>
-            )}
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium">{getSubjectDisplay()}</span>
-              <span className="mx-1">•</span>
-              <span className="capitalize">{getDifficultyDisplay()}</span>
-              <span className="mx-1">•</span>
-              <span>{questionCount} questions</span>
-            </div>
-          </div>
-          {startTime && (
-            <div className="flex items-center">
-              <QuizTimer startTime={startTime.getTime()} />
-            </div>
+    <div className="flex items-center gap-2">
+      <Button 
+        variant="outline" 
+        size="icon" 
+        onClick={onExit}
+        className="h-9 w-9 rounded-full"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="sr-only">Back to home</span>
+      </Button>
+      
+      <div>
+        <h1 className="text-xl font-display font-semibold">
+          {subject?.charAt(0).toUpperCase() + subject?.slice(1)} Practice
+          {difficulty !== 'all' && (
+            <span className={`ml-2 text-sm px-2 py-0.5 rounded-full ${getDifficultyColor(difficulty as Difficulty)}`}>
+              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+            </span>
           )}
-        </div>
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {totalQuestions} questions selected from the question pool
+        </p>
       </div>
     </div>
   );

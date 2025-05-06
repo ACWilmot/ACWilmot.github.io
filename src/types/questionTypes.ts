@@ -1,7 +1,7 @@
 
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
+import { Subject } from '@/context/QuizContext';
 
-export type Subject = 'maths' | 'english' | 'science' | 'verbal' | 'timesTables' | 'all';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
 
 export interface Question {
   id: string;
@@ -16,4 +16,4 @@ export interface Question {
   timesTable?: number; // Add times table identifier
 }
 
-export type SubjectQuestions = Record<Exclude<Subject, 'all'>, Question[]>;
+export type SubjectQuestions = Record<Subject, Question[]>;

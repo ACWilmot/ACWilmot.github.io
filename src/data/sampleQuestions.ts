@@ -1,5 +1,5 @@
 
-import { SubjectQuestions } from '@/types/questionTypes';
+import { SubjectQuestions, Subject } from '@/types/questionTypes';
 import mathsQuestions from './questions/maths';
 import englishQuestions from './questions/english';
 import verbalQuestions from './questions/verbal';
@@ -13,3 +13,8 @@ const sampleQuestions: SubjectQuestions = {
 };
 
 export default sampleQuestions;
+
+// Helper function to get questions for a specific subject
+export const getQuestionsForSubject = (subject: Subject) => {
+  return sampleQuestions[subject] || [];
+};

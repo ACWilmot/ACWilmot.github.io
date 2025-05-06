@@ -1,7 +1,8 @@
 
-import { Subject } from '@/context/QuizContext';
-
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
+
+// Export the Subject type to be used in other files
+export type Subject = 'maths' | 'english' | 'verbal' | 'all' | 'timesTables';
 
 export interface Question {
   id: string;

@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -51,12 +52,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
               if (profile) {
                 setUser(profile);
                 
-                console.log("Redirecting based on role:", profile.role);
-                if (profile.role === 'teacher') {
-                  navigate('/teacher/dashboard');
-                } else {
-                  navigate('/progress');
-                }
+                console.log("User signed in successfully:", profile.role);
+                // No automatic redirection here anymore
               } else {
                 console.error("No profile found for signed in user");
                 toast.error("Error loading user profile. Please try again.");
@@ -76,7 +73,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         setUser(null);
-        navigate('/login');
+        navigate('/');
       }
     });
 

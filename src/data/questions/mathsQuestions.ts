@@ -1,5 +1,4 @@
-
-import { Question } from '@/types/questionTypes';
+import { Question, Difficulty, Subject } from '@/types/questionTypes';
 
 const mathsQuestions: Question[] = [
   {
@@ -649,5 +648,20 @@ mathsQuestions.forEach(question => {
     question.difficulty = 'medium';  // Set default difficulty if missing
   }
 });
+
+// Add the getQuestionsForSubject function
+export function getQuestionsForSubject(subject: Subject, difficulty: Difficulty = 'all'): Question[] {
+  // For maths, filter from mathsQuestions
+  if (subject === 'maths') {
+    if (difficulty === 'all') {
+      return mathsQuestions;
+    } else {
+      return mathsQuestions.filter(question => question.difficulty === difficulty);
+    }
+  }
+  
+  // For other subjects, return an empty array for now
+  return [];
+}
 
 export default mathsQuestions;

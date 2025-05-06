@@ -6,13 +6,13 @@ interface QuizContextType {
   questions: Question[];
   currentQuestionIndex: number;
   userAnswers: Record<string, string>;
-  selectedSubject: string | null;
+  selectedSubject: Subject | null;
   selectedDifficulty: Difficulty | null;
   questionCount: number;
   startTime: Date | null;
   endQuiz: () => void;
   resetQuiz: () => void;
-  startQuiz: (subject: string, difficulty?: Difficulty) => void;
+  startQuiz: (subject: Subject, difficulty?: Difficulty) => void;
   answerQuestion: (questionId: string, answer: string) => void;
   goToNextQuestion: () => void;
   goToPreviousQuestion: () => void;
@@ -43,12 +43,9 @@ export const QuizProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [startTime, setStartTime] = useState<Date | null>(null);
 
-  const startQuiz = (subject: string, difficulty: Difficulty = 'easy') => {
-    // Convert the subject string to Subject type
-    const subjectType = subject as Subject;
-    
+  const startQuiz = (subject: Subject, difficulty: Difficulty = 'easy') => {
     // Get questions for the subject
-    const allQuestions = getQuestionsForSubject(subjectType, difficulty);
+    const allQuestions = getQuestionsForSubject(subject, difficulty);
     
     // Shuffle and get the requested number
     const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
@@ -57,7 +54,7 @@ export const QuizProvider: React.FC<{children: React.ReactNode}> = ({ children }
     setQuestions(selectedQuestions);
     setCurrentQuestionIndex(0);
     setUserAnswers({});
-    setSelectedSubject(subjectType);
+    setSelectedSubject(subject);
     setSelectedDifficulty(difficulty);
     setStartTime(new Date());
   };

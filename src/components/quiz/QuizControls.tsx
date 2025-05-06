@@ -1,43 +1,76 @@
 
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Check, 
+  RefreshCcw
+} from 'lucide-react';
 
 interface QuizControlsProps {
   onPrevious: () => void;
   onNext: () => void;
+  onFinish: () => void;
+  onReset: () => void;
   isFirstQuestion: boolean;
   isLastQuestion: boolean;
-  isAnswered: boolean;
+  hasAnsweredCurrent: boolean;
+  hasAnsweredAll: boolean;
+  isHomework?: boolean;
 }
 
-const QuizControls: React.FC<QuizControlsProps> = ({
-  onPrevious,
-  onNext,
-  isFirstQuestion,
-  isLastQuestion,
-  isAnswered,
+const QuizControls: React.FC<QuizControlsProps> = ({ 
+  onPrevious, 
+  onNext, 
+  onFinish, 
+  onReset, 
+  isFirstQuestion, 
+  isLastQuestion, 
+  hasAnsweredCurrent, 
+  hasAnsweredAll,
+  isHomework = false
 }) => {
   return (
-    <div className="flex justify-between mt-8 max-w-2xl mx-auto">
-      <Button 
-        variant="outline"
+    <div className="mt-6 flex justify-between items-center flex-wrap gap-3">
+      <Button
+        variant="ghost"
         onClick={onPrevious}
         disabled={isFirstQuestion}
-        className="flex items-center gap-2"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ArrowLeft className="h-4 w-4 mr-2" />
         Previous
       </Button>
       
-      <Button
-        onClick={onNext}
-        disabled={!isAnswered}
-        className="flex items-center gap-2"
-      >
-        {isLastQuestion ? 'Finish Quiz' : 'Next'}
-        {!isLastQuestion && <ChevronRight className="h-4 w-4" />}
-      </Button>
+      <div className="flex items-center gap-3">
+        {!isHomework && (
+          <Button
+            variant="outline"
+            onClick={onReset}
+          >
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Reset
+          </Button>
+        )}
+        
+        {isLastQuestion && hasAnsweredAll ? (
+          <Button
+            onClick={onFinish}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Finish {isHomework ? 'Homework' : 'Quiz'}
+          </Button>
+        ) : (
+          <Button
+            onClick={onNext}
+            disabled={!hasAnsweredCurrent}
+          >
+            Next
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

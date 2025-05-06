@@ -4,34 +4,53 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Layout } from '@/components/Layout';
 import { Users, AlertTriangle, Loader2 } from 'lucide-react';
-import ClassesManagement from '@/components/teacher/ClassesManagement';
-import ClassStudentsManagement from '@/components/teacher/ClassStudentsManagement';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { TeacherProvider, useTeacher } from '@/context/TeacherContext';
+import TeacherClassList from '@/components/teacher/TeacherClassList';
+import ClassDashboard from '@/components/teacher/ClassDashboard';
+
+const TeacherDashboardContent = () => {
+  const { selectedClass } = useTeacher();
+  
+  return (
+    <div className="container max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-display font-bold flex items-center gap-2">
+            <Users className="h-6 w-6 text-primary" />
+            Teacher Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {selectedClass 
+              ? "Manage students and monitor progress in this class" 
+              : "Create and manage your classes"}
+          </p>
+        </div>
+      </div>
+
+      {selectedClass ? (
+        <ClassDashboard />
+      ) : (
+        <TeacherClassList />
+      )}
+    </div>
+  );
+};
 
 const TeacherDashboardPage = () => {
   const navigate = useNavigate();
-  const { 
-    isAuthenticated, 
-    userRole, 
-    user, 
-    getClasses, 
-    createClass, 
-    addStudentToClass, 
-    removeStudentFromClass, 
-    getClassStudents 
-  } = useAuth();
-  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+  const { isAuthenticated, userRole } = useAuth();
   const [authChecking, setAuthChecking] = useState(true);
 
   // Redirect if not authenticated or not a teacher
   useEffect(() => {
     // Add a small delay to ensure auth state is properly checked
     const timer = setTimeout(() => {
-      console.log("Teacher Dashboard auth check:", { isAuthenticated, userRole, user });
+      console.log("Teacher Dashboard auth check:", { isAuthenticated, userRole });
       
       if (!isAuthenticated) {
         console.log("User not authenticated, redirecting to login");
-        navigate('/teacher-login');
+        navigate('/login');
       } else if (userRole !== 'teacher') {
         console.log("User is not a teacher, redirecting to home");
         navigate('/');
@@ -41,16 +60,7 @@ const TeacherDashboardPage = () => {
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [isAuthenticated, userRole, navigate, user]);
-
-  const handleClassSelect = (classId: string) => {
-    console.log("Selected class:", classId);
-    setSelectedClassId(classId);
-  };
-
-  const handleBack = () => {
-    setSelectedClassId(null);
-  };
+  }, [isAuthenticated, userRole, navigate]);
 
   if (authChecking) {
     return (
@@ -82,41 +92,10 @@ const TeacherDashboardPage = () => {
 
   return (
     <Layout>
-      <div className="container pt-32 pb-16 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-display font-bold flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" />
-              Teacher Dashboard
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {selectedClassId 
-                ? "Manage students and monitor progress in this class" 
-                : "Create and manage your classes"}
-            </p>
-            {user && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Logged in as: {user.name} (ID: {user.id.slice(0, 8)}...)
-              </p>
-            )}
-          </div>
-        </div>
-
-        {selectedClassId ? (
-          <ClassStudentsManagement
-            classId={selectedClassId}
-            getClassStudents={getClassStudents}
-            addStudentToClass={addStudentToClass}
-            removeStudentFromClass={removeStudentFromClass}
-            onBack={handleBack}
-          />
-        ) : (
-          <ClassesManagement
-            getClasses={getClasses}
-            createClass={createClass}
-            onClassSelect={handleClassSelect}
-          />
-        )}
+      <div className="container pt-32 pb-16">
+        <TeacherProvider>
+          <TeacherDashboardContent />
+        </TeacherProvider>
       </div>
     </Layout>
   );

@@ -1,231 +1,152 @@
-
 import React, { createContext, useContext, useState } from 'react';
-import sampleQuestions from '@/data/sampleQuestions';
-import { Question, Difficulty } from '@/types/questionTypes';
-import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
-import { useProgressActions } from '@/hooks/useProgressActions';
-import { useProfile } from './ProfileContext';
-
-export type Subject = 'maths' | 'english' | 'verbal' | 'all' | 'timesTables';
+import { Question, Difficulty, Subject } from '@/types/questionTypes';
+import { getQuestionsForSubject } from '@/data/questions/mathsQuestions';
 
 interface QuizContextType {
   questions: Question[];
   currentQuestionIndex: number;
-  score: number;
   userAnswers: Record<string, string>;
-  selectedSubject: Subject | null;
-  selectedDifficulty: Difficulty | 'all';
-  isLoading: boolean;
+  selectedSubject: string | null;
+  selectedDifficulty: Difficulty | null;
   questionCount: number;
-  selectedTimesTables: number[];
-  startTime: number | null;
-  endTime: number | null;
-  setQuestionCount: (count: number) => void;
-  setSelectedSubject: (subject: Subject | null) => void;
-  setSelectedDifficulty: (difficulty: Difficulty | 'all') => void;
-  setSelectedTimesTables: (tables: number[]) => void;
-  startQuiz: (subject: Subject) => void;
+  startTime: Date | null;
+  endQuiz: () => void;
+  resetQuiz: () => void;
+  startQuiz: (subject: string, difficulty?: Difficulty) => void;
   answerQuestion: (questionId: string, answer: string) => void;
   goToNextQuestion: () => void;
   goToPreviousQuestion: () => void;
-  resetQuiz: () => void;
-  endQuiz: () => void;
-  getResults: () => {
-    score: number;
-    totalQuestions: number;
-    percentage: number;
-    answeredQuestions: number;
-    timeTaken: number | null;
+  getResults: () => { 
+    score: number; 
+    totalQuestions: number; 
+    percentage: number 
   };
+  // Added for the homework page:
+  setQuestions: React.Dispatch<React.SetStateAction<Question[]>>;
+  setCurrentQuestionIndex: React.Dispatch<React.SetStateAction<number>>;
+  setUserAnswers: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  setStartTime: React.Dispatch<React.SetStateAction<Date | null>>;
+  setSelectedSubject: React.Dispatch<React.SetStateAction<Subject | null>>;
+  setSelectedDifficulty: React.Dispatch<React.SetStateAction<Difficulty | null>>;
+  setQuestionCount: React.Dispatch<React.SetStateAction<number>>;
+  score: number;
 }
 
-const QuizContext = createContext<QuizContextType | undefined>(undefined);
+const QuizContext = createContext<QuizContextType | null>(null);
 
-export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const QuizProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [questionCount, setQuestionCount] = useState(10);
-  const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [endTime, setEndTime] = useState<number | null>(null);
-  const { updateProgress } = useProgressActions(null, null);
-  const { updateTimesTablesProgress } = useProfile();
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
+  const [questionCount, setQuestionCount] = useState<number>(10);
+  const [startTime, setStartTime] = useState<Date | null>(null);
 
-  const startQuiz = (subject: Subject) => {
-    setIsLoading(true);
+  const startQuiz = (subject: string, difficulty: Difficulty = 'easy') => {
+    // Convert the subject string to Subject type
+    const subjectType = subject as Subject;
     
-    setStartTime(Date.now());
-    setEndTime(null);
+    // Get questions for the subject
+    const allQuestions = getQuestionsForSubject(subjectType, difficulty);
     
-    setTimeout(() => {
-      let selectedQuestions: Question[] = [];
-      
-      if (subject === 'timesTables') {
-        selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
-        console.log("Generated times tables questions:", selectedQuestions);
-      } else if (subject === 'all') {
-        let subjectQuestions: Question[] = [];
-        Object.values(sampleQuestions).forEach(questions => {
-          subjectQuestions = [...subjectQuestions, ...questions];
-        });
-        
-        const filteredQuestions = selectedDifficulty === 'all' 
-          ? subjectQuestions 
-          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
-        
-        for (let i = filteredQuestions.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
-        }
-        
-        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
-      } else {
-        const subjectQuestions = [...sampleQuestions[subject]];
-        
-        const filteredQuestions = selectedDifficulty === 'all' 
-          ? subjectQuestions 
-          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
-        
-        for (let i = filteredQuestions.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
-        }
-        
-        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
-      }
-      
-      setQuestions(selectedQuestions);
-      setSelectedSubject(subject);
-      setCurrentQuestionIndex(0);
-      setScore(0);
-      setUserAnswers({});
-      setIsLoading(false);
-    }, 800);
-  };
-
-  const answerQuestion = (questionId: string, answer: string) => {
-    console.log(`Answering question ${questionId} with answer: ${answer}`);
+    // Shuffle and get the requested number
+    const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+    const selectedQuestions = shuffled.slice(0, questionCount);
     
-    const currentTime = Date.now();
-    const questionStartTime = startTime || currentTime;
-    const answerTime = currentTime - questionStartTime;
-    
-    setUserAnswers((prev) => ({
-      ...prev,
-      [questionId]: answer,
-    }));
-
-    const question = questions.find((q) => q.id === questionId);
-    if (question) {
-      console.log(`Question found: ${question.text}, correct answer: ${question.correctAnswer}`);
-      console.log(`Subject: ${question.subject}, Times Table: ${question.timesTable || 'N/A'}`);
-      console.log(`Time taken to answer: ${answerTime}ms`);
-      
-      const wasCorrect = answer === question.correctAnswer;
-      
-      if (wasCorrect && !userAnswers[questionId]) {
-        setScore((prev) => prev + 1);
-        console.log("Correct answer! Score increased.");
-      } else if (userAnswers[questionId] === question.correctAnswer && !wasCorrect) {
-        setScore((prev) => prev - 1);
-        console.log("Changed from correct to incorrect. Score decreased.");
-      }
-
-      if (updateProgress && question.subject === 'timesTables' && question.timesTable) {
-        updateProgress(question.subject, 1, wasCorrect ? 1 : 0);
-        if (updateTimesTablesProgress) {
-          updateTimesTablesProgress(question.timesTable, wasCorrect);
-        }
-      }
-    }
-  };
-
-  const goToNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }
-  };
-
-  const goToPreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-    }
+    setQuestions(selectedQuestions);
+    setCurrentQuestionIndex(0);
+    setUserAnswers({});
+    setSelectedSubject(subjectType);
+    setSelectedDifficulty(difficulty);
+    setStartTime(new Date());
   };
 
   const resetQuiz = () => {
     setQuestions([]);
     setCurrentQuestionIndex(0);
-    setScore(0);
     setUserAnswers({});
     setSelectedSubject(null);
+    setSelectedDifficulty(null);
     setStartTime(null);
-    setEndTime(null);
   };
-  
+
   const endQuiz = () => {
-    console.log("Quiz ended. Storing final results...");
-    setEndTime(Date.now());
+    // Navigate to results page
+    window.location.href = '/results';
+  };
+
+  const answerQuestion = (questionId: string, answer: string) => {
+    setUserAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
+  const goToNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const goToPreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
   };
 
   const getResults = () => {
-    const answeredQuestions = Object.keys(userAnswers).length;
-    const percentage = questions.length ? (score / questions.length) * 100 : 0;
-    
-    let timeTaken = null;
-    if (startTime) {
-      const end = endTime || Date.now();
-      timeTaken = end - startTime;
-    }
+    let score = 0;
+    questions.forEach(question => {
+      if (userAnswers[question.id] === question.correctAnswer) {
+        score++;
+      }
+    });
 
     return {
       score,
       totalQuestions: questions.length,
-      percentage,
-      answeredQuestions,
-      timeTaken,
+      percentage: questions.length > 0 ? (score / questions.length) * 100 : 0
     };
   };
 
+  // Calculate score for display in progress dialog
+  const score = questions.filter(q => userAnswers[q.id] === q.correctAnswer).length;
+
   return (
-    <QuizContext.Provider
-      value={{
-        questions,
-        currentQuestionIndex,
-        score,
-        userAnswers,
-        selectedSubject,
-        selectedDifficulty,
-        isLoading,
-        questionCount,
-        selectedTimesTables,
-        startTime,
-        endTime,
-        setQuestionCount,
-        setSelectedSubject,
-        setSelectedDifficulty,
-        setSelectedTimesTables,
-        startQuiz,
-        answerQuestion,
-        goToNextQuestion,
-        goToPreviousQuestion,
-        resetQuiz,
-        endQuiz,
-        getResults,
-      }}
-    >
+    <QuizContext.Provider value={{
+      questions,
+      currentQuestionIndex,
+      userAnswers,
+      selectedSubject,
+      selectedDifficulty,
+      questionCount,
+      startTime,
+      resetQuiz,
+      startQuiz,
+      answerQuestion,
+      goToNextQuestion,
+      goToPreviousQuestion,
+      endQuiz,
+      getResults,
+      // Expose these for the homework page
+      setQuestions,
+      setCurrentQuestionIndex,
+      setUserAnswers,
+      setStartTime,
+      setSelectedSubject,
+      setSelectedDifficulty,
+      setQuestionCount,
+      score
+    }}>
       {children}
     </QuizContext.Provider>
   );
 };
 
-export const useQuiz = (): QuizContextType => {
+export const useQuiz = () => {
   const context = useContext(QuizContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useQuiz must be used within a QuizProvider');
   }
   return context;

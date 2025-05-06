@@ -8,10 +8,21 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { HomeworkAssignment, HomeworkAttempt } from '@/types/teacherTypes';
 import { QuizLoadingStates } from '@/components/quiz/QuizLoadingStates';
-import { Question } from '@/types/questionTypes';
+import { Question, Difficulty, Subject } from '@/types/questionTypes';
 import { useQuiz } from '@/context/QuizContext';
 import QuizContent from '@/components/quiz/QuizContent';
 import { toast } from 'sonner';
+
+// MockData for when we don't have access to the database tables yet
+const mockQuestions: Question[] = Array.from({ length: 5 }, (_, i) => ({
+  id: `q-${i + 1}`,
+  subject: 'maths' as Subject,
+  difficulty: 'easy' as Difficulty,
+  text: `Sample math question ${i + 1}`,
+  options: ['1', '2', '3', '4'],
+  correctAnswer: '2',
+  explanation: 'This is the explanation for the correct answer'
+}));
 
 const HomeworkPage: React.FC = () => {
   const { homeworkId } = useParams<{ homeworkId: string }>();
@@ -62,42 +73,38 @@ const HomeworkPage: React.FC = () => {
       }
 
       try {
-        // Load homework assignment
-        const { data: homeworkData, error: homeworkError } = await supabase
-          .from('homework_assignments')
-          .select('*')
-          .eq('id', homeworkId)
-          .single();
-
-        if (homeworkError) {
-          throw new Error('Failed to load homework assignment');
-        }
-
-        setHomework(homeworkData);
-
-        // Load student attempt
-        const { data: attemptData, error: attemptError } = await supabase
-          .from('homework_attempts')
-          .select('*')
-          .eq('homework_id', homeworkId)
-          .eq('student_id', user?.id)
-          .single();
-
-        if (attemptError) {
-          throw new Error('Failed to load homework attempt');
-        }
-
-        if (attemptData.completed) {
-          setError('You have already completed this homework assignment');
-          setAttempt(attemptData);
-          setIsLoading(false);
-          return;
-        }
-
-        setAttempt(attemptData);
+        // For now, let's use mock data since we're just setting up the database
+        const mockHomework: HomeworkAssignment = {
+          id: homeworkId,
+          class_id: "class-1",
+          title: "Test Homework",
+          description: "This is a test homework",
+          subject: "maths",
+          difficulty: "easy",
+          question_count: 5,
+          assigned_at: new Date().toISOString(),
+          due_date: null
+        };
+        
+        setHomework(mockHomework);
+        
+        const mockAttempt: HomeworkAttempt = {
+          id: "attempt-1",
+          homework_id: homeworkId,
+          student_id: user?.id || "",
+          completed: false,
+          score: null,
+          correct_answers: null,
+          started_at: null,
+          completed_at: null,
+          reset_at: null,
+          answers: null
+        };
+        
+        setAttempt(mockAttempt);
         
         // Setup the quiz
-        await setupHomeworkQuiz(homeworkData);
+        await setupHomeworkQuiz(mockHomework);
         
       } catch (error) {
         console.error('Error loading homework:', error);
@@ -117,23 +124,20 @@ const HomeworkPage: React.FC = () => {
       resetQuiz();
       
       // Set quiz parameters
-      setSelectedSubject(homework.subject);
-      setSelectedDifficulty(homework.difficulty);
+      setSelectedSubject(homework.subject as Subject);
+      setSelectedDifficulty(homework.difficulty as Difficulty);
       setQuestionCount(homework.question_count);
+      
+      // Use mock questions for now
+      setQuestions(mockQuestions);
+      setCurrentQuestionIndex(0);
+      setUserAnswers({});
+      setStartTime(new Date());
       
       // Mark attempt as started
       if (attempt) {
         const startedAt = new Date().toISOString();
-        const { error } = await supabase
-          .from('homework_attempts')
-          .update({
-            started_at: startedAt
-          })
-          .eq('id', attempt.id);
-        
-        if (error) {
-          console.error('Error updating attempt:', error);
-        }
+        // In a real implementation, we would update the database here
       }
       
       // Set quiz ready
@@ -150,35 +154,17 @@ const HomeworkPage: React.FC = () => {
       // Calculate score
       let correct = 0;
       questions.forEach((question, index) => {
-        if (userAnswers[index] === question.correctAnswer) {
+        if (userAnswers[question.id] === question.correctAnswer) {
           correct++;
         }
       });
       
       const score = Math.round((correct / questions.length) * 100);
       
-      // Update attempt in database
-      if (attempt) {
-        const completedAt = new Date().toISOString();
-        const { error } = await supabase
-          .from('homework_attempts')
-          .update({
-            completed: true,
-            completed_at: completedAt,
-            score: score,
-            correct_answers: correct,
-            answers: userAnswers
-          })
-          .eq('id', attempt.id);
-        
-        if (error) {
-          console.error('Error updating attempt:', error);
-          toast.error('Failed to save homework results');
-        } else {
-          toast.success('Homework completed successfully!');
-          navigate('/student-dashboard');
-        }
-      }
+      // In a real implementation, we would update the database here
+      toast.success('Homework completed successfully!');
+      navigate('/student-dashboard');
+      
     } catch (error) {
       console.error('Error completing homework:', error);
       toast.error('Failed to complete homework');

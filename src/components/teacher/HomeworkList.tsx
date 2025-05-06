@@ -87,7 +87,7 @@ const HomeworkList: React.FC = () => {
                   <div className="flex justify-between w-full">
                     <h3 className="font-semibold text-left">{homework.title}</h3>
                     <div className="flex items-center gap-2">
-                      <Badge variant={homework.completion_rate === 100 ? "secondary" : "secondary"}>
+                      <Badge variant="secondary">
                         {homework.completion_rate.toFixed(0)}% Complete
                       </Badge>
                     </div>

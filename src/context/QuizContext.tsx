@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
 import { getQuestionsForSubject } from '@/data/questions/mathsQuestions';
@@ -10,6 +11,8 @@ interface QuizContextType {
   selectedDifficulty: Difficulty | null;
   questionCount: number;
   startTime: Date | null;
+  selectedTimesTables: number[];
+  setSelectedTimesTables: React.Dispatch<React.SetStateAction<number[]>>;
   endQuiz: () => void;
   resetQuiz: () => void;
   startQuiz: (subject: Subject, difficulty?: Difficulty) => void;
@@ -42,6 +45,7 @@ export const QuizProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([]);
 
   const startQuiz = (subject: Subject, difficulty: Difficulty = 'easy') => {
     // Get questions for the subject
@@ -119,6 +123,8 @@ export const QuizProvider: React.FC<{children: React.ReactNode}> = ({ children }
       selectedDifficulty,
       questionCount,
       startTime,
+      selectedTimesTables,
+      setSelectedTimesTables,
       resetQuiz,
       startQuiz,
       answerQuestion,

@@ -1,7 +1,7 @@
 
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
 
-export type Subject = 'maths' | 'english' | 'science' | 'verbal' | 'timesTables';
+export type Subject = 'maths' | 'english' | 'science' | 'verbal' | 'timesTables' | 'all';
 
 export interface Question {
   id: string;
@@ -16,4 +16,4 @@ export interface Question {
   timesTable?: number; // Add times table identifier
 }
 
-export type SubjectQuestions = Record<Subject, Question[]>;
+export type SubjectQuestions = Record<Exclude<Subject, 'all'>, Question[]>;

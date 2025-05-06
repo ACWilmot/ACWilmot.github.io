@@ -81,8 +81,8 @@ const QuizContent: React.FC<QuizContentProps> = ({
         <QuestionCard 
           question={currentQuestion}
           userAnswer={userAnswers[currentQuestion.id]}
-          onAnswerSelected={(answer) => answerQuestion(currentQuestion.id, answer)}
-          showFeedback={false}
+          onAnswer={(answer) => answerQuestion(currentQuestion.id, answer)}
+          showExplanation={false}
         />
         
         <QuizControls 

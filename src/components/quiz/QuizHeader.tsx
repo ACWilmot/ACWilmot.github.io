@@ -62,7 +62,7 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
           </div>
           {startTime && (
             <div className="flex items-center">
-              <QuizTimer startTime={startTime} />
+              <QuizTimer startTime={startTime.getTime()} />
             </div>
           )}
         </div>

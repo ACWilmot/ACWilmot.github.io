@@ -8,9 +8,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AddStudentFormProps {
   onAddStudent: (email: string) => Promise<boolean>;
+  classId?: string; // Make classId optional
 }
 
-const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent }) => {
+const AddStudentForm: React.FC<AddStudentFormProps> = ({ onAddStudent, classId }) => {
   const [studentEmail, setStudentEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

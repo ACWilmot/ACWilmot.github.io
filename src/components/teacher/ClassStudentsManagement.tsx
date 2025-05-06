@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Student } from '@/types/userTypes';
+import { StudentWithProgress } from '@/types/teacherTypes';
 import TeacherDashboardStats from './TeacherDashboardStats';
 import StudentsList from './StudentsList';
 import AddStudentForm from './AddStudentForm';
-import WorksheetUploader from './WorksheetUploader';
-import WorksheetList from './WorksheetList';
 import { toast } from 'sonner';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -121,12 +120,16 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
           console.log("Student removed successfully, refreshing student list");
           toast.success("Student removed from class");
           await fetchStudents();
+          return true;
         }
+        return false;
       } catch (error) {
         console.error("Error removing student:", error);
         toast.error("Failed to remove student from class");
+        return false;
       }
     }
+    return false;
   };
 
   const handleRefreshStudents = () => {
@@ -154,11 +157,7 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <AddStudentForm onAddStudent={handleAddStudent} classId={classId} />
-        {/* @ts-ignore - The component accepts these props */}
-        <WorksheetUploader classId={classId} onUploadComplete={fetchWorksheets} />
       </div>
-
-      <WorksheetList worksheets={worksheets} loading={loadingWorksheets} />
 
       <Card>
         <CardHeader>
@@ -175,7 +174,7 @@ const ClassStudentsManagement: React.FC<ClassStudentsManagementProps> = ({
         </CardHeader>
         <CardContent>
           <StudentsList 
-            students={students} 
+            students={students as StudentWithProgress[]}
             loading={loading} 
             searchTerm={searchTerm}
             onRemoveStudent={handleRemoveStudent}

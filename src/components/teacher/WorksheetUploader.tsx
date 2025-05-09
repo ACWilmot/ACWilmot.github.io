@@ -24,8 +24,7 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, FileType, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Subject } from '@/context/QuizContext';
-import { Difficulty } from '@/types/questionTypes';
+import { Subject, Difficulty } from '@/types/questionTypes';
 
 const formSchema = z.object({
   title: z.string().min(3, {

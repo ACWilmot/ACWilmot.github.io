@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import sampleQuestions from '@/data/sampleQuestions';
-import { Subject, Difficulty } from '@/types/questionTypes';
+import { Subject, Difficulty, Question } from '@/types/questionTypes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Table,

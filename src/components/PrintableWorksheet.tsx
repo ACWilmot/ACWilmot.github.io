@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Button } from './ui/button';
 import { Printer, FileDown, FileText } from 'lucide-react';
-import { Question } from '@/types/questionTypes';
-import { Subject } from '@/context/QuizContext';
+import { Question, Subject } from '@/types/questionTypes';
 
 // Use react-to-print for PDF generation
 import { useReactToPrint } from 'react-to-print';

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Subject } from '@/context/QuizContext';
+import { Subject } from '@/types/questionTypes';
 
 interface SubjectCardProps {
   subject: Subject;
@@ -9,7 +9,7 @@ interface SubjectCardProps {
   icon: React.ReactNode;
   isSelected: boolean;
   onClick: () => void;
-  className?: string; // Added className prop
+  className?: string;
 }
 
 const SubjectCard: React.FC<SubjectCardProps> = ({

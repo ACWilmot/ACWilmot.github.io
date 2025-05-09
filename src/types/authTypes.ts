@@ -15,8 +15,9 @@ export interface AuthContextType {
   resetProgress: () => Promise<void>;
   resetSubjectProgress: (subject: string) => Promise<void>;
   getClasses: () => Promise<any[]>;
-  createClass: (name: string, description?: string) => Promise<string | null>;
+  createClass: (name: string, description?: string) => Promise<any>;
   addStudentToClass: (classId: string, studentEmail: string) => Promise<boolean>;
   removeStudentFromClass: (classId: string, studentId: string) => Promise<boolean>;
   getClassStudents: (classId: string) => Promise<any[]>;
+  createTestUser?: (email: string, password: string, role: string) => Promise<void>;
 }

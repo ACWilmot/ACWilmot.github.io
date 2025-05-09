@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -9,8 +8,7 @@ import QuizControls from '@/components/quiz/QuizControls';
 import WorksheetOptions from '@/components/quiz/WorksheetOptions';
 import QuizProgress from '@/components/quiz/QuizProgress';
 import SoundEffects from '@/utils/soundEffects';
-import { Question } from '@/types/questionTypes';
-import { Subject } from '@/context/QuizContext';
+import { Question, Subject } from '@/types/questionTypes';
 import Header from '@/components/Header';
 
 interface QuizContentProps {

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
@@ -15,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
-import { Subject } from '@/context/QuizContext';
+import { Subject } from '@/types/questionTypes';
 
 interface Worksheet {
   id: string;

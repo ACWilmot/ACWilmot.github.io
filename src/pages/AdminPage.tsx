@@ -10,8 +10,12 @@ const AdminPage: React.FC = () => {
   
   const handleCreateTeacher = async () => {
     try {
-      await createTestUser('teacher@example.com', 'password123', 'teacher');
-      toast.success('Test teacher created');
+      if (createTestUser) {
+        await createTestUser('teacher@example.com', 'password123', 'teacher');
+        toast.success('Test teacher created');
+      } else {
+        toast.error('Test user creation function is not available');
+      }
     } catch (error) {
       console.error('Error creating test teacher:', error);
       toast.error('Error creating test teacher');
@@ -20,8 +24,12 @@ const AdminPage: React.FC = () => {
 
   const handleCreateStudent = async () => {
     try {
-      await createTestUser('student@example.com', 'password123', 'student');
-      toast.success('Test student created');
+      if (createTestUser) {
+        await createTestUser('student@example.com', 'password123', 'student');
+        toast.success('Test student created');
+      } else {
+        toast.error('Test user creation function is not available');
+      }
     } catch (error) {
       console.error('Error creating test student:', error);
       toast.error('Error creating test student');

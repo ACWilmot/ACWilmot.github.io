@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import ProgressBar from '@/components/ProgressBar';
 import PrintableWorksheet from '@/components/PrintableWorksheet';
 import WorksheetUploader from '@/components/teacher/WorksheetUploader';
-import { Subject } from '@/context/QuizContext';
+import { Subject } from '@/types/questionTypes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Define prop types for our component

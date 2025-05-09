@@ -15,6 +15,7 @@ export interface Question {
   imageUrl?: string;
   optionImages?: string[];
   timesTable?: number; // Add times table identifier
+  year?: number; // Add year level identifier
 }
 
 export type SubjectQuestions = Record<Subject, Question[]>;

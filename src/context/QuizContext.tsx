@@ -1,12 +1,10 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
-import { Question, Difficulty } from '@/types/questionTypes';
+import { Question, Difficulty, Subject } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useProfile } from './ProfileContext';
-
-export type Subject = 'maths' | 'english' | 'verbal' | 'all' | 'timesTables';
 
 interface QuizContextType {
   questions: Question[];
@@ -15,6 +13,7 @@ interface QuizContextType {
   userAnswers: Record<string, string>;
   selectedSubject: Subject | null;
   selectedDifficulty: Difficulty | 'all';
+  selectedYear: number | null;
   isLoading: boolean;
   questionCount: number;
   selectedTimesTables: number[];
@@ -23,6 +22,7 @@ interface QuizContextType {
   setQuestionCount: (count: number) => void;
   setSelectedSubject: (subject: Subject | null) => void;
   setSelectedDifficulty: (difficulty: Difficulty | 'all') => void;
+  setSelectedYear: (year: number | null) => void;
   setSelectedTimesTables: (tables: number[]) => void;
   startQuiz: (subject: Subject) => void;
   answerQuestion: (questionId: string, answer: string) => void;
@@ -48,6 +48,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(10);
   const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
@@ -74,9 +75,16 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
           subjectQuestions = [...subjectQuestions, ...questions];
         });
         
-        const filteredQuestions = selectedDifficulty === 'all' 
+        // Filter by difficulty and year if selected
+        let filteredQuestions = selectedDifficulty === 'all' 
           ? subjectQuestions 
           : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
+          
+        if (selectedYear) {
+          filteredQuestions = filteredQuestions.filter(q => 
+            !q.year || q.year === selectedYear
+          );
+        }
         
         for (let i = filteredQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -87,9 +95,16 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         const subjectQuestions = [...sampleQuestions[subject]];
         
-        const filteredQuestions = selectedDifficulty === 'all' 
+        // Filter by difficulty and year if selected
+        let filteredQuestions = selectedDifficulty === 'all' 
           ? subjectQuestions 
           : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
+          
+        if (selectedYear) {
+          filteredQuestions = filteredQuestions.filter(q => 
+            !q.year || q.year === selectedYear
+          );
+        }
         
         for (let i = filteredQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -200,6 +215,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userAnswers,
         selectedSubject,
         selectedDifficulty,
+        selectedYear,
         isLoading,
         questionCount,
         selectedTimesTables,
@@ -208,6 +224,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setQuestionCount,
         setSelectedSubject,
         setSelectedDifficulty,
+        setSelectedYear,
         setSelectedTimesTables,
         startQuiz,
         answerQuestion,

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -19,6 +19,7 @@ import { Layout } from '@/components/Layout';
 import SubjectCard from '@/components/SubjectCard';
 import { Button } from '@/components/ui/button';
 import DifficultySelector from '@/components/DifficultySelector';
+import YearSelector from '@/components/YearSelector';
 import { useQuiz } from '@/context/QuizContext';
 import TimesTablesSelector from '@/components/TimesTablesSelector';
 import { Subject } from '@/types/questionTypes';
@@ -34,6 +35,8 @@ const IndexPage = () => {
     setQuestionCount,
     selectedDifficulty,
     setSelectedDifficulty,
+    selectedYear,
+    setSelectedYear,
     selectedTimesTables,
     setSelectedTimesTables,
   } = useQuiz();
@@ -210,10 +213,18 @@ const IndexPage = () => {
               {selectedSubject !== 'timesTables' && (
                 <>
                   <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
-                  <div className="flex justify-center mb-8">
+                  <div className="flex justify-center mb-6">
                     <DifficultySelector 
                       selectedDifficulty={selectedDifficulty}
                       onChange={setSelectedDifficulty}
+                    />
+                  </div>
+                  
+                  <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select year level</h2>
+                  <div className="flex justify-center mb-8">
+                    <YearSelector
+                      selectedYear={selectedYear}
+                      onChange={setSelectedYear}
                     />
                   </div>
                 </>

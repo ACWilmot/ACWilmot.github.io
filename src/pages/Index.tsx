@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,6 +9,9 @@ import {
   ArrowRight,
   Layers,
   Table2,
+  History,
+  Globe,
+  Church,
 } from 'lucide-react';
 import { Slider } from "@/components/ui/slider"
 import { useAuth } from '@/context/AuthContext';
@@ -17,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import DifficultySelector from '@/components/DifficultySelector';
 import { useQuiz } from '@/context/QuizContext';
 import TimesTablesSelector from '@/components/TimesTablesSelector';
-import { Subject } from '@/context/QuizContext';
+import { Subject } from '@/types/questionTypes';
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -133,7 +137,7 @@ const IndexPage = () => {
           >
             <div className="mb-8">
               <h2 className="text-2xl font-display font-semibold mb-6">Choose a subject</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <SubjectCard
                   subject="all"
                   description="Combined test with all subjects"
@@ -162,6 +166,9 @@ const IndexPage = () => {
                   isSelected={selectedSubject === 'verbal'}
                   onClick={() => handleSubjectSelect('verbal')}
                 />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                 <SubjectCard
                   subject="timesTables"
                   description="Practice multiplication tables"
@@ -169,6 +176,27 @@ const IndexPage = () => {
                   isSelected={selectedSubject === 'timesTables'}
                   onClick={() => handleSubjectSelect('timesTables')}
                   className="bg-primary/5"
+                />
+                <SubjectCard
+                  subject="history"
+                  description="Year 4 British and world history"
+                  icon={<History className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'history'}
+                  onClick={() => handleSubjectSelect('history')}
+                />
+                <SubjectCard
+                  subject="geography"
+                  description="Year 4 UK and global geography"
+                  icon={<Globe className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'geography'}
+                  onClick={() => handleSubjectSelect('geography')}
+                />
+                <SubjectCard
+                  subject="religiousEd"
+                  description="Year 4 religious education"
+                  icon={<Church className="h-5 w-5" />}
+                  isSelected={selectedSubject === 'religiousEd'}
+                  onClick={() => handleSubjectSelect('religiousEd')}
                 />
               </div>
             </div>

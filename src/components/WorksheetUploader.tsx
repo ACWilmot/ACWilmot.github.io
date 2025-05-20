@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -109,7 +110,7 @@ const WorksheetUploader: React.FC = () => {
       <CardHeader>
         <CardTitle>Upload Worksheet</CardTitle>
         <CardDescription>
-          Create a new worksheet for students to practice with
+          Create a new worksheet for practice
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -125,7 +126,7 @@ const WorksheetUploader: React.FC = () => {
                     <Input placeholder="Enter worksheet title" {...field} />
                   </FormControl>
                   <FormDescription>
-                    This will be displayed to students when selecting worksheets.
+                    This will be displayed when selecting worksheets.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

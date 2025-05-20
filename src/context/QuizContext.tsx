@@ -54,7 +54,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
   const { updateProgress } = useProgressActions(null, null);
-  const { profile } = useProfile();
+  const { profile, updateTimesTablesProgress } = useProfile();
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
@@ -152,8 +152,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (updateProgress && question.subject === 'timesTables' && question.timesTable) {
         updateProgress(question.subject, 1, wasCorrect ? 1 : 0);
-        if (profile?.timesTablesProgress) {
-          // Track times tables progress in profile directly
+        if (updateTimesTablesProgress && profile) {
+          updateTimesTablesProgress(question.timesTable, wasCorrect);
           console.log('Times table progress tracked directly in profile');
         }
       }

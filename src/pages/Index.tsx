@@ -24,7 +24,7 @@ import { useQuiz } from '@/context/QuizContext';
 import TimesTablesSelector from '@/components/TimesTablesSelector';
 import { Subject } from '@/types/questionTypes';
 
-const IndexPage = () => {
+const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const {
@@ -284,4 +284,4 @@ const IndexPage = () => {
   );
 };
 
-export default IndexPage;
+export default Index;

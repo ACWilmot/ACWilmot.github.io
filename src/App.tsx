@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import QuizPage from './pages/QuizPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -10,24 +10,27 @@ import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { Toaster } from './components/ui/sonner';
 import { QuizProvider } from './context/QuizContext';
+import Index from './pages/Index';
 
 function App() {
   return (
-    <AuthProvider>
-      <ProfileProvider>
-        <QuizProvider>
-          <Routes>
-            <Route path="/" element={<QuizPage />} />
-            <Route path="/quiz" element={<QuizPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/questions" element={<QuestionsPage />} />
-          </Routes>
-        </QuizProvider>
-      </ProfileProvider>
-      <Toaster position="top-right" />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <ProfileProvider>
+          <QuizProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/quiz" element={<QuizPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/questions" element={<QuestionsPage />} />
+            </Routes>
+          </QuizProvider>
+        </ProfileProvider>
+        <Toaster position="top-right" />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

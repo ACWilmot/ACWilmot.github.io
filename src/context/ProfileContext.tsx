@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, TimesTableProgress } from '@/types/userTypes';
@@ -9,7 +10,7 @@ interface ProfileContextProps {
   profile: Profile | null;
   isLoading: boolean;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
-  updateTimesTablesProgress?: (table: number, correct: boolean) => void;
+  updateTimesTablesProgress: (table: number, correct: boolean) => void;
 }
 
 const ProfileContext = createContext<ProfileContextProps | undefined>(undefined);

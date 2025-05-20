@@ -39,15 +39,15 @@ const QuestionsPage = () => {
       setShowTimesTables(true);
     } else {
       setShowTimesTables(false);
-      setSelectedSubject(subject);
-      startQuiz(subject);
+      setSelectedSubject(subject as any);
+      startQuiz(subject as any);
       navigate('/quiz');
     }
   };
 
   const handleTimesTablesStart = () => {
-    setSelectedSubject('timesTables');
-    startQuiz('timesTables');
+    setSelectedSubject('timesTables' as any);
+    startQuiz('timesTables' as any);
     navigate('/quiz');
   };
 
@@ -138,13 +138,11 @@ const QuestionsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <DifficultySelector 
-                onChange={setSelectedDifficulty} 
-                value={selectedDifficulty}
+                onChange={(difficulty) => setSelectedDifficulty(difficulty)} 
                 disabled={!isPremium} 
               />
               <YearSelector 
-                onChange={setSelectedYear} 
-                value={selectedYear}
+                onChange={(year) => setSelectedYear(year)} 
                 disabled={!isPremium} 
               />
             </div>
@@ -154,7 +152,7 @@ const QuestionsPage = () => {
         {showTimesTables && (
           <TimesTablesSelector 
             selectedTables={selectedTimesTables}
-            onSelectTables={setSelectedTimesTables}
+            onChange={setSelectedTimesTables}
             onStart={handleTimesTablesStart}
           />
         )}

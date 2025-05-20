@@ -28,7 +28,7 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-1">
           {[
             { label: 'Home', path: '/' },
-            { label: 'Practice', path: '/quiz' },
+            // Removed 'Practice' link
             ...(isAuthenticated ? [{ label: 'My Progress', path: '/progress' }] : []),
             { label: 'Questions', path: '/questions' },
             { label: 'About', path: '/about' },

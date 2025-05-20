@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
@@ -37,6 +36,7 @@ interface QuizContextType {
     answeredQuestions: number;
     timeTaken: number | null;
   };
+  shouldShowYearSelector: (subject: Subject | null) => boolean;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -56,6 +56,13 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [endTime, setEndTime] = useState<number | null>(null);
   const { updateProgress } = useProgressActions(null, null);
   const { profile, updateTimesTablesProgress } = useProfile();
+
+  // Helper function to determine if year selector should be shown for the current subject
+  const shouldShowYearSelector = (subject: Subject | null): boolean => {
+    if (!subject) return true;
+    // Don't show year selector for timesTables or verbal
+    return subject !== 'timesTables' && subject !== 'verbal';
+  };
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
@@ -80,7 +87,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ? subjectQuestions 
           : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
           
-        if (selectedYear) {
+        // Only filter by year for subjects that use year filtering
+        if (selectedYear && shouldShowYearSelector(subject)) {
           filteredQuestions = filteredQuestions.filter(q => 
             !q.year || q.year === selectedYear
           );
@@ -100,7 +108,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ? subjectQuestions 
           : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
           
-        if (selectedYear) {
+        // Only filter by year for subjects that use year filtering
+        if (selectedYear && shouldShowYearSelector(subject)) {
           filteredQuestions = filteredQuestions.filter(q => 
             !q.year || q.year === selectedYear
           );
@@ -234,6 +243,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         resetQuiz,
         endQuiz,
         getResults,
+        shouldShowYearSelector,
       }}
     >
       {children}

@@ -21,7 +21,7 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onChange, cla
   };
 
   return (
-    <div className={`w-full max-w-xl mx-auto ${className}`}>
+    <div className={`w-full max-w-2xl mx-auto ${className}`}>
       <div className="space-y-4">
         <div>
           <Label className="text-center block text-lg font-medium mb-2">
@@ -41,7 +41,7 @@ const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onChange, cla
           {yearLabels.map((label, i) => (
             <span 
               key={i} 
-              className="cursor-pointer px-2"
+              className="cursor-pointer px-4"
               onClick={() => onChange(yearOptions[i])}
             >
               {label}

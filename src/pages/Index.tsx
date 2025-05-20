@@ -247,16 +247,21 @@ const Index = () => {
                     </div>
                   </div>
                   
-                  <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select year level</h2>
-                  <div className="flex justify-center mb-8">
-                    {/* Grey out for free users but keep it visible */}
-                    <div className={!isSubscribed ? "opacity-50 pointer-events-none w-full" : ""}>
-                      <YearSelector
-                        selectedYear={selectedYear}
-                        onChange={setSelectedYear}
-                      />
-                    </div>
-                  </div>
+                  {/* Only show year selector for subjects that need it */}
+                  {selectedSubject && useQuiz().shouldShowYearSelector(selectedSubject) && (
+                    <>
+                      <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select year level</h2>
+                      <div className="flex justify-center mb-8">
+                        {/* Grey out for free users but keep it visible */}
+                        <div className={!isSubscribed ? "opacity-50 pointer-events-none w-full" : ""}>
+                          <YearSelector
+                            selectedYear={selectedYear}
+                            onChange={setSelectedYear}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 

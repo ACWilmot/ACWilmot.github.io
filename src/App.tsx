@@ -16,6 +16,7 @@ import ProgressPage from './pages/ProgressPage';
 import ResultsPage from './pages/ResultsPage';
 import QuestionBrowserPage from './pages/QuestionBrowserPage';
 import ProfilePage from './pages/ProfilePage';
+import { supabase } from './integrations/supabase/client';
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
                 <Route path="/questions" element={<QuestionsPage />} />
                 <Route path="/progress" element={<ProgressPage />} />
                 <Route path="/results" element={<ResultsPage />} />
-                <Route path="/browse" element={<QuestionBrowserPage />} />
+                <Route path="/browse" element={<QuestionBrowserPage supabaseClient={supabase} />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Routes>
             </QuizProvider>

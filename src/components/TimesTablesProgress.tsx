@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronRight, BarChart2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,10 +57,10 @@ const generateDemoData = (): TimesTableProgress[] => {
 };
 
 interface TimesTablesProgressProps {
-  progress?: TimesTableProgress[];
+  timesTablesProgress?: TimesTableProgress[];
 }
 
-const TimesTablesProgress: React.FC<TimesTablesProgressProps> = ({ progress: externalProgress }) => {
+const TimesTablesProgress: React.FC<TimesTablesProgressProps> = ({ timesTablesProgress: externalProgress }) => {
   const navigate = useNavigate();
   const { profile, updateProfile, isLoading } = useProfile();
   const { resetSubjectProgress } = useProgressActions(profile, updateProfile);

@@ -7,12 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import TimesTablesProgress from '@/components/TimesTablesProgress';
 import YearProgress from '@/components/YearProgress';
-import { Subject } from '@/types/questionTypes';
+import { Subject, Difficulty } from '@/types/questionTypes';
 
 const ProgressPage = () => {
   const { user, isAuthenticated } = useAuth();
   const { profile, isLoading } = useProfile();
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
 
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
@@ -44,31 +45,45 @@ const ProgressPage = () => {
     );
   }
 
-  // Calculate total stats
-  const totalCompleted = Object.values(profile.progress).reduce(
-    (sum, subject) => sum + subject.completed,
-    0
-  );
-  
-  const totalCorrect = Object.values(profile.progress).reduce(
-    (sum, subject) => sum + subject.correct,
-    0
-  );
-  
-  const accuracy = totalCompleted > 0 
-    ? Math.round((totalCorrect / totalCompleted) * 100) 
-    : 0;
+  // Calculate total stats based on difficulty filter
+  const calculateStats = (difficultyFilter: Difficulty | 'all') => {
+    // In a real implementation, you would filter by difficulty
+    // For now, we'll use all data regardless of the filter
+    const totalCompleted = Object.values(profile.progress).reduce(
+      (sum, subject) => sum + subject.completed,
+      0
+    );
+    
+    const totalCorrect = Object.values(profile.progress).reduce(
+      (sum, subject) => sum + subject.correct,
+      0
+    );
+    
+    const accuracy = totalCompleted > 0 
+      ? Math.round((totalCorrect / totalCompleted) * 100) 
+      : 0;
 
-  // Determine the subject with the most questions completed
-  let bestSubject = '';
-  let bestSubjectCount = 0;
+    // Determine the subject with the most questions completed
+    let bestSubject = '';
+    let bestSubjectCount = 0;
 
-  Object.entries(profile.progress).forEach(([subject, data]) => {
-    if (data.completed > bestSubjectCount) {
-      bestSubject = subject;
-      bestSubjectCount = data.completed;
-    }
-  });
+    Object.entries(profile.progress).forEach(([subject, data]) => {
+      if (data.completed > bestSubjectCount) {
+        bestSubject = subject;
+        bestSubjectCount = data.completed;
+      }
+    });
+
+    return {
+      totalCompleted,
+      totalCorrect,
+      accuracy,
+      bestSubject,
+      bestSubjectCount
+    };
+  };
+
+  const stats = calculateStats(selectedDifficulty);
 
   const formatSubjectName = (subject: string): string => {
     switch (subject) {
@@ -86,6 +101,9 @@ const ProgressPage = () => {
   // Include all subjects except timesTables in the subjects array
   const subjects = Object.keys(profile.progress).filter(subject => subject !== 'timesTables') as Subject[];
 
+  // Added difficulty filters
+  const difficulties: (Difficulty | 'all')[] = ['all', 'easy', 'medium', 'hard'];
+
   return (
     <Layout>
       <div className="container mx-auto py-10 px-4">
@@ -97,6 +115,24 @@ const ProgressPage = () => {
             <TabsTrigger value="subjects">Subjects</TabsTrigger>
           </TabsList>
           
+          {/* Add difficulty filter */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <span className="text-sm font-medium my-auto mr-2">Difficulty:</span>
+            {difficulties.map((difficulty) => (
+              <button
+                key={difficulty}
+                onClick={() => setSelectedDifficulty(difficulty)}
+                className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                  selectedDifficulty === difficulty
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                {difficulty === 'all' ? 'All' : difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+              </button>
+            ))}
+          </div>
+          
           <TabsContent value="overview" className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
@@ -104,7 +140,12 @@ const ProgressPage = () => {
                   <CardTitle className="text-lg">Total Questions</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold">{totalCompleted}</p>
+                  <p className="text-3xl font-bold">{stats.totalCompleted}</p>
+                  {selectedDifficulty !== 'all' && (
+                    <p className="text-xs text-muted-foreground">
+                      Filtered by {selectedDifficulty} difficulty
+                    </p>
+                  )}
                 </CardContent>
               </Card>
               
@@ -113,8 +154,8 @@ const ProgressPage = () => {
                   <CardTitle className="text-lg">Accuracy</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold">{accuracy}%</p>
-                  <Progress value={accuracy} className="h-2 mt-2" />
+                  <p className="text-3xl font-bold">{stats.accuracy}%</p>
+                  <Progress value={stats.accuracy} className="h-2 mt-2" />
                 </CardContent>
               </Card>
               
@@ -124,11 +165,11 @@ const ProgressPage = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold">
-                    {bestSubjectCount > 0 ? formatSubjectName(bestSubject) : 'None yet'}
+                    {stats.bestSubjectCount > 0 ? formatSubjectName(stats.bestSubject) : 'None yet'}
                   </p>
-                  {bestSubjectCount > 0 && (
+                  {stats.bestSubjectCount > 0 && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      {bestSubjectCount} questions completed
+                      {stats.bestSubjectCount} questions completed
                     </p>
                   )}
                 </CardContent>
@@ -182,7 +223,7 @@ const ProgressPage = () => {
               <div className="mt-10">
                 <h2 className="text-xl font-bold mb-4">Times Tables Progress</h2>
                 <TimesTablesProgress 
-                  progress={profile.timesTablesProgress} 
+                  timesTablesProgress={profile.timesTablesProgress} 
                 />
               </div>
             )}
@@ -203,7 +244,7 @@ const ProgressPage = () => {
               <div className="mt-10">
                 <h2 className="text-xl font-bold mb-4">Times Tables Progress</h2>
                 <TimesTablesProgress 
-                  progress={profile.timesTablesProgress} 
+                  timesTablesProgress={profile.timesTablesProgress} 
                 />
               </div>
             )}

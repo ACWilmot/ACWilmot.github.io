@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,8 +89,7 @@ const QuestionBrowserPage = () => {
             explanation: q.explanation || '',
             difficulty: q.difficulty as Difficulty,
             imageUrl: q.image_url,
-            optionImages: Array.isArray(q.option_images) ? 
-              q.option_images.map(img => String(img)) : [], // Convert option_images to string[]
+            optionImages: Array.isArray(q.option_images) ? q.option_images : [],
             year: q.year,
             timesTable: q.times_table
           }));
@@ -152,7 +152,7 @@ const QuestionBrowserPage = () => {
         variant: result.success ? "default" : "destructive",
       });
       
-      // Re-fetch questions to update the list
+      // Refresh the questions list
       if (result.uploaded > 0) {
         setIsLoading(true);
         // Re-fetch questions to update the list
@@ -187,8 +187,7 @@ const QuestionBrowserPage = () => {
             explanation: q.explanation || '',
             difficulty: q.difficulty as Difficulty,
             imageUrl: q.image_url,
-            optionImages: Array.isArray(q.option_images) ? 
-              q.option_images.map(img => String(img)) : [], // Convert option_images to string[]
+            optionImages: Array.isArray(q.option_images) ? q.option_images : [],
             year: q.year,
             timesTable: q.times_table
           }));

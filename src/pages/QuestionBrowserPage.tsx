@@ -81,12 +81,12 @@ const QuestionBrowserPage = () => {
         if (data) {
           const mappedQuestions = data.map(q => ({
             id: q.id,
-            subject: q.subject as Subject, // Type assertion to match the Subject type
+            subject: q.subject as Subject, 
             text: q.text,
-            options: q.options,
+            options: Array.isArray(q.options) ? q.options : [], // Ensure options is an array of strings
             correctAnswer: q.correct_answer,
             explanation: q.explanation || '',
-            difficulty: q.difficulty as Difficulty, // Type assertion to match the Difficulty type
+            difficulty: q.difficulty as Difficulty,
             imageUrl: q.image_url,
             optionImages: q.option_images,
             year: q.year,
@@ -181,7 +181,7 @@ const QuestionBrowserPage = () => {
             id: q.id,
             subject: q.subject as Subject,
             text: q.text,
-            options: Array.isArray(q.options) ? q.options : [],
+            options: Array.isArray(q.options) ? q.options : [], // Ensure options is an array
             correctAnswer: q.correct_answer,
             explanation: q.explanation || '',
             difficulty: q.difficulty as Difficulty,

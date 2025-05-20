@@ -1,9 +1,7 @@
 
 import { Question } from '@/types/questionTypes';
 
-// Extract 'easy' difficulty questions from the existing verbal questions
-// Getting these from the verbalQuestions.ts file
-const easyQuestions: Question[] = [
+const easyVerbalQuestions: Question[] = [
   {
     id: 'v1',
     subject: 'verbal',
@@ -177,4 +175,4 @@ const easyQuestions: Question[] = [
   }
 ];
 
-export default easyQuestions;
+export default easyVerbalQuestions;

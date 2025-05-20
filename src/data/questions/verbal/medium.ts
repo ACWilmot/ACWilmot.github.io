@@ -1,8 +1,7 @@
 
 import { Question } from '@/types/questionTypes';
 
-// Extract 'medium' difficulty questions from the existing verbal questions
-const mediumQuestions: Question[] = [
+const mediumVerbalQuestions: Question[] = [
   {
     id: 'v2',
     subject: 'verbal',
@@ -199,14 +198,42 @@ const mediumQuestions: Question[] = [
     text: 'Choose the sentence that uses the word "its" correctly.',
     options: [
       'The dog wagged it\'s tail.',
-      'The dog wagged its\'s tail.',
+      'The dog wagged its\' tail.',
       'The dog wagged it tail.',
       'The dog wagged its tail.'
     ],
     correctAnswer: 'The dog wagged its tail.',
     explanation: '"Its" is a possessive pronoun that shows ownership.',
     difficulty: 'medium'
+  },
+  {
+    id: 'v34',
+    subject: 'verbal',
+    text: 'Identify the sentence that uses a colon correctly.',
+    options: [
+      'I need: apples, bananas, and oranges.',
+      'I need apples: bananas, and oranges.',
+      'I need apples, bananas: and oranges.',
+      'I need the following: apples, bananas, and oranges.'
+    ],
+    correctAnswer: 'I need the following: apples, bananas, and oranges.',
+    explanation: 'A colon is used to introduce a list or explanation.',
+    difficulty: 'medium'
+  },
+  {
+    id: 'v36',
+    subject: 'verbal',
+    text: 'What is the purpose of a semicolon?',
+    options: [
+      'To end a sentence',
+      'To join two independent clauses',
+      'To show possession',
+      'To indicate a question'
+    ],
+    correctAnswer: 'To join two independent clauses',
+    explanation: 'A semicolon is used to join two independent clauses that are closely related.',
+    difficulty: 'medium'
   }
 ];
 
-export default mediumQuestions;
+export default mediumVerbalQuestions;

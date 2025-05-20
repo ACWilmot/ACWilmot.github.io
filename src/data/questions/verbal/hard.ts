@@ -1,8 +1,7 @@
 
 import { Question } from '@/types/questionTypes';
 
-// Extract 'hard' difficulty questions from the existing verbal questions
-const hardQuestions: Question[] = [
+const hardVerbalQuestions: Question[] = [
   {
     id: 'v12',
     subject: 'verbal',
@@ -15,34 +14,6 @@ const hardQuestions: Question[] = [
     ],
     correctAnswer: 'Running quickly, the bus was caught by Maria.',
     explanation: 'A misplaced modifier is a phrase or clause placed awkwardly in a sentence so that it appears to modify or refer to an unintended word. In the correct sentence, "Maria, running quickly, caught the bus," the modifier "running quickly" clearly refers to Maria.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'v34',
-    subject: 'verbal',
-    text: 'Identify the sentence that uses a colon correctly.',
-    options: [
-      'I need: apples, bananas, and oranges.',
-      'I need apples: bananas, and oranges.',
-      'I need apples, bananas: and oranges.',
-      'I need the following: apples, bananas, and oranges.'
-    ],
-    correctAnswer: 'I need the following: apples, bananas, and oranges.',
-    explanation: 'A colon is used to introduce a list or explanation.',
-    difficulty: 'hard'
-  },
-  {
-    id: 'v36',
-    subject: 'verbal',
-    text: 'What is the purpose of a semicolon?',
-    options: [
-      'To end a sentence',
-      'To join two independent clauses',
-      'To show possession',
-      'To indicate a question'
-    ],
-    correctAnswer: 'To join two independent clauses',
-    explanation: 'A semicolon is used to join two independent clauses that are closely related.',
     difficulty: 'hard'
   },
   {
@@ -200,4 +171,4 @@ const hardQuestions: Question[] = [
   }
 ];
 
-export default hardQuestions;
+export default hardVerbalQuestions;

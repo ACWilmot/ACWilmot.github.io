@@ -31,6 +31,21 @@ export const resetSubjects = {
     completed: 0,
     correct: 0,
     lastAttempted: null
+  },
+  history: {
+    completed: 0,
+    correct: 0,
+    lastAttempted: null
+  },
+  geography: {
+    completed: 0,
+    correct: 0,
+    lastAttempted: null
+  },
+  religiousEd: {
+    completed: 0,
+    correct: 0,
+    lastAttempted: null
   }
 };
 

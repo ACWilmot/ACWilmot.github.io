@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
@@ -139,6 +138,7 @@ const ProgressPage = () => {
     );
   }
 
+  // Include all subjects except timesTables in the subjects array
   const subjects = Object.keys(profile.progress).filter(subject => subject !== 'timesTables');
 
   return (

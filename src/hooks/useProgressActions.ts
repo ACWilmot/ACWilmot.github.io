@@ -1,8 +1,34 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { Profile, TimesTableProgress } from '@/types/userTypes';
-import { resetSubjects } from '@/utils/progressUtils';
 import { Question } from '@/types/questionTypes';
+
+// Add this function since we removed it from progressUtils.ts
+const getResetSubjects = () => {
+  return {
+    maths: {
+      completed: 0,
+      correct: 0,
+      lastAttempted: null
+    },
+    english: {
+      completed: 0,
+      correct: 0,
+      lastAttempted: null
+    },
+    verbal: {
+      completed: 0,
+      correct: 0,
+      lastAttempted: null
+    },
+    timesTables: {
+      completed: 0,
+      correct: 0,
+      lastAttempted: null
+    }
+  };
+};
 
 export const useProgressActions = (user: Profile | null, setUser: ((user: Profile | null) => void) | null) => {
   const updateProgress = async (subject: string, completed: number, correct: number): Promise<void> => {
@@ -172,7 +198,7 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
       const { error } = await supabase
         .from('profiles')
         .update({
-          progress: resetSubjects,
+          progress: getResetSubjects(),
           timesTablesProgress: null
         } as any)
         .eq('id', user.id);
@@ -183,11 +209,13 @@ export const useProgressActions = (user: Profile | null, setUser: ((user: Profil
         return;
       }
 
-      setUser({
-        ...user,
-        progress: resetSubjects,
-        timesTablesProgress: undefined
-      });
+      if (setUser) {
+        setUser({
+          ...user,
+          progress: getResetSubjects(),
+          timesTablesProgress: undefined
+        });
+      }
 
       toast.success("Progress reset successfully");
     } catch (error) {

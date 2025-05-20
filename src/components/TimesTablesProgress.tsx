@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronRight, BarChart2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { TimesTableProgress } from '@/types/userTypes';
 import { useProfile } from '@/context/ProfileContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { getDefaultTimesTablesProgress } from '@/utils/progressUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +23,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
+
+// Add this helper function here since we removed it from progressUtils.ts
+const getDefaultTimesTablesProgress = (): TimesTableProgress[] => {
+  return Array.from({ length: 12 }, (_, i) => ({
+    table: i + 1,
+    attempts: 0,
+    correct: 0,
+    recentAttempts: [],
+    averageTime: 0,
+    _type: "TimesTableProgress"
+  }));
+};
 
 const generateDemoData = (): TimesTableProgress[] => {
   return Array.from({ length: 12 }, (_, i) => {

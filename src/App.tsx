@@ -11,6 +11,8 @@ import { ProfileProvider } from './context/ProfileContext';
 import { Toaster } from './components/ui/sonner';
 import { QuizProvider } from './context/QuizContext';
 import Index from './pages/Index';
+import ProgressPage from './pages/ProgressPage';
+import ResultsPage from './pages/ResultsPage';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/questions" element={<QuestionsPage />} />
+              <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/results" element={<ResultsPage />} />
             </Routes>
           </QuizProvider>
         </ProfileProvider>

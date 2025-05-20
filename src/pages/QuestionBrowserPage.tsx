@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,7 +84,7 @@ const QuestionBrowserPage = () => {
             id: q.id,
             subject: q.subject as Subject, 
             text: q.text,
-            options: Array.isArray(q.options) ? q.options : [], // Ensure options is an array of strings
+            options: Array.isArray(q.options) ? q.options.map(opt => String(opt)) : [], // Convert all options to strings
             correctAnswer: q.correct_answer,
             explanation: q.explanation || '',
             difficulty: q.difficulty as Difficulty,
@@ -181,7 +182,7 @@ const QuestionBrowserPage = () => {
             id: q.id,
             subject: q.subject as Subject,
             text: q.text,
-            options: Array.isArray(q.options) ? q.options : [], // Ensure options is an array
+            options: Array.isArray(q.options) ? q.options.map(opt => String(opt)) : [], // Convert all options to strings
             correctAnswer: q.correct_answer,
             explanation: q.explanation || '',
             difficulty: q.difficulty as Difficulty,

@@ -33,7 +33,7 @@ export const uploadQuestionBatch = async (
         id: question.id,
         subject: question.subject,
         text: question.text,
-        options: question.options,
+        options: question.options, // Options should be an array of strings
         correct_answer: question.correctAnswer,
         explanation: question.explanation,
         difficulty: question.difficulty,

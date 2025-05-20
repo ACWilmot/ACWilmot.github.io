@@ -56,6 +56,10 @@ serve(async (req) => {
       logStep("No existing customer found, will be created during checkout");
     }
 
+    // Get origin for success and cancel URLs
+    const origin = req.headers.get("origin") || "http://localhost:5173";
+    logStep("Origin determined for return URLs", { origin });
+
     // Create a Stripe checkout session for subscription
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -75,8 +79,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/profile?checkout_success=true`,
-      cancel_url: `${req.headers.get("origin")}/profile?checkout_cancel=true`,
+      success_url: `${origin}/profile?checkout_success=true`,
+      cancel_url: `${origin}/profile?checkout_cancel=true`,
     });
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });

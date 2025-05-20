@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, User, Settings, LogOut, Crown, Loader2, Calendar, AlertCircle } from 'lucide-react';
+import { CreditCard, User, LogOut, Crown, Loader2, Calendar, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -18,6 +18,7 @@ const ProfilePage = () => {
   const { isSubscribed, subscriptionTier, subscriptionEnd, isLoading, refreshSubscription, createCheckoutSession, openCustomerPortal } = useSubscription();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isProcessing, setIsProcessing] = useState(false);
   
   useEffect(() => {
     if (!user) {
@@ -27,27 +28,51 @@ const ProfilePage = () => {
     
     // Handle checkout success/cancel URL parameters
     const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab') || 'account';
+    
     if (searchParams.get('checkout_success') === 'true') {
       toast.success('Subscription checkout completed successfully!');
       refreshSubscription();
-      navigate('/profile', { replace: true });
+      navigate('/profile?tab=subscription', { replace: true });
     } else if (searchParams.get('checkout_cancel') === 'true') {
       toast.info('Subscription checkout was canceled');
-      navigate('/profile', { replace: true });
+      navigate('/profile?tab=subscription', { replace: true });
     }
   }, [user, location, navigate]);
 
   const handleSubscribe = async () => {
-    const checkoutUrl = await createCheckoutSession();
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
+    try {
+      setIsProcessing(true);
+      const checkoutUrl = await createCheckoutSession();
+      if (checkoutUrl) {
+        console.log("Redirecting to checkout URL:", checkoutUrl);
+        window.location.href = checkoutUrl;
+      } else {
+        setIsProcessing(false);
+        toast.error("Failed to create checkout session");
+      }
+    } catch (error) {
+      console.error("Error during subscription process:", error);
+      setIsProcessing(false);
+      toast.error("An error occurred during the subscription process");
     }
   };
 
   const handleManageSubscription = async () => {
-    const portalUrl = await openCustomerPortal();
-    if (portalUrl) {
-      window.location.href = portalUrl;
+    try {
+      setIsProcessing(true);
+      const portalUrl = await openCustomerPortal();
+      if (portalUrl) {
+        console.log("Redirecting to customer portal:", portalUrl);
+        window.location.href = portalUrl;
+      } else {
+        setIsProcessing(false);
+        toast.error("Failed to open customer portal");
+      }
+    } catch (error) {
+      console.error("Error opening customer portal:", error);
+      setIsProcessing(false);
+      toast.error("An error occurred while opening the customer portal");
     }
   };
 
@@ -64,6 +89,10 @@ const ProfilePage = () => {
     .map(n => n[0])
     .join('')
     .toUpperCase();
+
+  // Determine the active tab from URL params
+  const searchParams = new URLSearchParams(location.search);
+  const activeTab = searchParams.get('tab') || 'account';
 
   return (
     <Layout>
@@ -137,10 +166,22 @@ const ProfilePage = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <Tabs defaultValue="account" className="w-full">
+            <Tabs defaultValue={activeTab} value={activeTab} className="w-full">
               <TabsList className="w-full">
-                <TabsTrigger value="account" className="flex-1">Account</TabsTrigger>
-                <TabsTrigger value="subscription" className="flex-1">Subscription</TabsTrigger>
+                <TabsTrigger 
+                  value="account" 
+                  className="flex-1"
+                  onClick={() => navigate('/profile?tab=account')}
+                >
+                  Account
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="subscription" 
+                  className="flex-1"
+                  onClick={() => navigate('/profile?tab=subscription')}
+                >
+                  Subscription
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="account" className="space-y-6 pt-4">
@@ -259,7 +300,12 @@ const ProfilePage = () => {
                           </div>
                         </div>
                         
-                        {isSubscribed ? (
+                        {isProcessing ? (
+                          <Button disabled className="w-full">
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </Button>
+                        ) : isSubscribed ? (
                           <Button onClick={handleManageSubscription} className="w-full">
                             Manage Subscription
                           </Button>

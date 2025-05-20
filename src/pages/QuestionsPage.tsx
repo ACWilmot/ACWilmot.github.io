@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import SubjectCard from '@/components/SubjectCard';
@@ -8,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import TimesTablesSelector from '@/components/TimesTablesSelector';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Lock } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const QuestionsPage = () => {
@@ -137,9 +138,11 @@ const QuestionsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <DifficultySelector 
+                selectedDifficulty={selectedDifficulty} 
                 onChange={(difficulty) => setSelectedDifficulty(difficulty)} 
               />
               <YearSelector 
+                selectedYear={selectedYear}
                 onChange={(year) => setSelectedYear(year)} 
               />
             </div>

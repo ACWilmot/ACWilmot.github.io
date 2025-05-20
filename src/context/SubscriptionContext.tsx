@@ -60,17 +60,26 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const createCheckoutSession = async (): Promise<string | null> => {
     try {
+      toast.info("Preparing checkout...");
+      console.log("Creating checkout session...");
+      
       const { data, error } = await supabase.functions.invoke('create-checkout');
       
       if (error) {
-        throw error;
+        console.error('Error creating checkout session:', error);
+        toast.error("Failed to create checkout session");
+        return null;
       }
       
-      if (data.url) {
+      console.log("Checkout data returned:", data);
+      
+      if (data?.url) {
         return data.url;
+      } else {
+        console.error('No URL returned from checkout session');
+        toast.error("Unexpected response from server");
+        return null;
       }
-      
-      return null;
     } catch (error) {
       console.error('Error creating checkout session:', error);
       toast.error("Failed to create checkout session");
@@ -80,17 +89,21 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const openCustomerPortal = async (): Promise<string | null> => {
     try {
+      toast.info("Opening customer portal...");
       const { data, error } = await supabase.functions.invoke('customer-portal');
       
       if (error) {
-        throw error;
+        console.error('Error opening customer portal:', error);
+        toast.error("Failed to open customer portal");
+        return null;
       }
       
-      if (data.url) {
+      if (data?.url) {
         return data.url;
+      } else {
+        toast.error("Unexpected response from server");
+        return null;
       }
-      
-      return null;
     } catch (error) {
       console.error('Error opening customer portal:', error);
       toast.error("Failed to open customer portal");

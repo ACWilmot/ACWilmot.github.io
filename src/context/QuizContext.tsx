@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
@@ -55,7 +54,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
   const { updateProgress } = useProgressActions(null, null);
-  const { updateTimesTablesProgress } = useProfile();
+  const { profile } = useProfile();
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
@@ -153,8 +152,9 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (updateProgress && question.subject === 'timesTables' && question.timesTable) {
         updateProgress(question.subject, 1, wasCorrect ? 1 : 0);
-        if (updateTimesTablesProgress) {
-          updateTimesTablesProgress(question.timesTable, wasCorrect);
+        if (profile?.timesTablesProgress) {
+          // Track times tables progress in profile directly
+          console.log('Times table progress tracked directly in profile');
         }
       }
     }

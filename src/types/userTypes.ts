@@ -22,16 +22,16 @@ export interface TimesTableProgress {
   recentAttempts: {
     correct: boolean;
     timestamp: string;
-    answerTime?: number; // Added this property to match usage
+    answerTime?: number;
   }[];
-  averageTime?: number; // Added this property to match usage
+  averageTime?: number;
   [key: string]: any;
 }
 
 export interface Profile {
   id: string;
   name: string;
-  email?: string; // Keep this optional in the interface for frontend use
+  email?: string;
   role: UserRole;
   progress: {
     [subject: string]: UserProgress

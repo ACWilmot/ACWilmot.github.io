@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, TimesTableProgress } from '@/types/userTypes';
@@ -10,6 +9,7 @@ interface ProfileContextProps {
   profile: Profile | null;
   isLoading: boolean;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
+  updateTimesTablesProgress?: (table: number, correct: boolean) => void;
 }
 
 const ProfileContext = createContext<ProfileContextProps | undefined>(undefined);
@@ -33,6 +33,49 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setIsLoading(false);
     }
   }, [user, isAuthenticated]);
+
+  const updateTimesTablesProgress = (table: number, correct: boolean) => {
+    if (!profile) return;
+    
+    const timestamp = new Date().toISOString();
+    const timesTablesProgress = [...(profile.timesTablesProgress || [])];
+    
+    // Find the progress entry for this table
+    let tableProgress = timesTablesProgress.find(p => p.table === table);
+    
+    if (!tableProgress) {
+      // Create new entry if it doesn't exist
+      tableProgress = {
+        table,
+        attempts: 0,
+        correct: 0,
+        recentAttempts: [],
+        averageTime: 0
+      };
+      timesTablesProgress.push(tableProgress);
+    }
+    
+    // Update the progress
+    tableProgress.attempts += 1;
+    if (correct) {
+      tableProgress.correct += 1;
+    }
+    
+    // Add to recent attempts (keep most recent 10)
+    tableProgress.recentAttempts.unshift({
+      correct,
+      timestamp
+    });
+    
+    if (tableProgress.recentAttempts.length > 10) {
+      tableProgress.recentAttempts = tableProgress.recentAttempts.slice(0, 10);
+    }
+    
+    // Update the profile
+    updateProfile({
+      timesTablesProgress
+    });
+  };
 
   const updateProfile = async (updates: Partial<Profile>) => {
     console.log("Updating profile with:", updates);
@@ -84,7 +127,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const value = {
     profile,
     isLoading,
-    updateProfile
+    updateProfile,
+    updateTimesTablesProgress
   };
 
   return (

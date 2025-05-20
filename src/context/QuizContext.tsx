@@ -96,19 +96,30 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Convert database format to application format with proper type handling
-      return data.map(item => ({
-        id: item.id,
-        subject: item.subject as Subject,
-        text: item.text,
-        options: Array.isArray(item.options) ? item.options : [], // Ensure options is an array
-        correctAnswer: item.correct_answer,
-        explanation: item.explanation || '',
-        difficulty: item.difficulty as Difficulty,
-        imageUrl: item.image_url,
-        optionImages: item.option_images,
-        year: item.year,
-        timesTable: item.times_table
-      }));
+      return data.map(item => {
+        // Ensure options is correctly converted to string array
+        let optionsArray: string[] = [];
+        if (Array.isArray(item.options)) {
+          optionsArray = item.options.map(opt => String(opt));
+        } else if (typeof item.options === 'object' && item.options !== null) {
+          // Handle case where options might be an object with numeric keys
+          optionsArray = Object.values(item.options).map(opt => String(opt));
+        }
+        
+        return {
+          id: item.id,
+          subject: item.subject as Subject,
+          text: item.text,
+          options: optionsArray,
+          correctAnswer: item.correct_answer,
+          explanation: item.explanation || '',
+          difficulty: item.difficulty as Difficulty,
+          imageUrl: item.image_url,
+          optionImages: item.option_images,
+          year: item.year,
+          timesTable: item.times_table
+        };
+      });
     } catch (error) {
       console.error('Error in fetchQuestionsFromSupabase:', error);
       return null;

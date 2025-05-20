@@ -12,7 +12,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,9 +32,6 @@ const formSchema = z.object({
   confirmPassword: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
-  teacherEmail: z.string().email({
-    message: "Please enter a valid teacher email address.",
-  }).optional().or(z.literal('')),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -59,19 +55,15 @@ const RegisterPage = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      teacherEmail: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    
     const success = await register({
       name: values.name,
       email: values.email,
       password: values.password,
-      role: 'student',
-      teacherEmail: values.teacherEmail || undefined
+      role: 'parent'
     });
     
     if (success) {
@@ -89,9 +81,9 @@ const RegisterPage = () => {
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Student Registration</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
             <CardDescription className="text-center">
-              Create an account to track your progress
+              Register to track your progress and access personalized quizzes
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -155,40 +147,18 @@ const RegisterPage = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="teacherEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teacher Email (Optional)</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="Your teacher's email address" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        If provided, you'll be added to your teacher's class
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <Button type="submit" className="w-full" size="lg">
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Register
+                  Create Account
                 </Button>
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <div className="text-center text-sm text-muted-foreground mt-2">
+          <CardFooter className="flex justify-center">
+            <div className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link to="/login" className="underline text-primary hover:text-primary/90">
                 Sign in
-              </Link>
-            </div>
-            <div className="text-center text-sm text-muted-foreground">
-              Are you a teacher?{" "}
-              <Link to="/teacher/register" className="underline text-primary hover:text-primary/90">
-                Teacher registration
               </Link>
             </div>
           </CardFooter>

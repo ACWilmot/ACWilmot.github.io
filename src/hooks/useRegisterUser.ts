@@ -48,7 +48,7 @@ export const useRegisterUser = () => {
         Email: data.email,
         email: data.email,
         role: data.role,
-        // Initialize progress for students
+        // Initialize progress
         progress: {
           maths: { completed: 0, correct: 0, lastAttempted: null },
           english: { completed: 0, correct: 0, lastAttempted: null },
@@ -56,11 +56,6 @@ export const useRegisterUser = () => {
           nonVerbal: { completed: 0, correct: 0, lastAttempted: null }
         }
       };
-
-      // Add any teacher-specific fields if role is teacher
-      if (data.role === 'teacher') {
-        profileData.students = [];
-      }
 
       // Create/update the profile
       const { error: profileError } = await supabase
@@ -73,7 +68,7 @@ export const useRegisterUser = () => {
         return false;
       }
 
-      toast.success("Registration successful! Please check your email for verification.");
+      toast.success("Registration successful! Check your email for verification.");
       return true;
     } catch (error) {
       console.error('Registration error:', error);

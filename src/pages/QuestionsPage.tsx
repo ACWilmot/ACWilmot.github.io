@@ -1,306 +1,377 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
-import sampleQuestions from '@/data/sampleQuestions';
-import { Subject, Difficulty, Question } from '@/types/questionTypes';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useQuiz } from '@/context/QuizContext';
+import { Question } from '@/types/questionTypes';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import DifficultySelector from '@/components/DifficultySelector';
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 
-const QuestionsPage = () => {
-  const [activeSubject, setActiveSubject] = useState<Subject>('maths');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
-  const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const questionsPerPage = 10;
+const formSchema = z.object({
+  question: z.string().min(2, {
+    message: "Question must be at least 2 characters.",
+  }),
+  answer1: z.string().min(1, {
+    message: "Answer 1 must be at least 1 character.",
+  }),
+  answer2: z.string().min(1, {
+    message: "Answer 2 must be at least 1 character.",
+  }),
+  answer3: z.string().min(1, {
+    message: "Answer 3 must be at least 1 character.",
+  }),
+  answer4: z.string().min(1, {
+    message: "Answer 4 must be at least 1 character.",
+  }),
+  correctAnswer: z.enum(['1', '2', '3', '4']),
+  subject: z.enum(['maths', 'english', 'verbal', 'nonVerbal', 'timesTables']),
+  difficulty: z.enum(['easy', 'medium', 'hard', 'all']),
+  topic: z.string().optional(),
+  image: z.string().optional(),
+  worksheet: z.string().optional(),
+  explanation: z.string().optional(),
+  isPublished: z.boolean().default(false).optional(),
+})
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeSubject, selectedDifficulty]);
+const QuestionsPage: React.FC = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('list');
+  const { addQuestion } = useQuiz();
 
-  const toggleQuestion = (questionId: string) => {
-    setExpandedQuestions(prev => ({
-      ...prev,
-      [questionId]: !prev[questionId]
-    }));
-  };
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      question: "",
+      answer1: "",
+      answer2: "",
+      answer3: "",
+      answer4: "",
+      correctAnswer: "1",
+      subject: "maths",
+      difficulty: "medium",
+      topic: "",
+      image: "",
+      worksheet: "",
+      explanation: "",
+      isPublished: false,
+    },
+  })
 
-  const subjects = Object.keys(sampleQuestions) as Subject[];
-  
-  const filteredQuestions = useMemo(() => {
-    const questions = sampleQuestions[activeSubject];
-    if (selectedDifficulty === 'all') {
-      return questions;
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const newQuestion = {
+        question: values.question,
+        answers: [
+          values.answer1,
+          values.answer2,
+          values.answer3,
+          values.answer4,
+        ],
+        correctAnswer: parseInt(values.correctAnswer),
+        subject: values.subject,
+        difficulty: values.difficulty,
+        topic: values.topic,
+        image: values.image,
+        worksheet: values.worksheet,
+        explanation: values.explanation,
+        isPublished: values.isPublished || false,
+      };
+
+      addQuestion(newQuestion);
+      toast.success("Question added successfully!");
+      form.reset();
+      setActiveTab('list');
+    } catch (error: any) {
+      console.error("Error adding question:", error);
+      toast.error(error?.message || "Failed to add question");
     }
-    return questions.filter(q => q.difficulty === selectedDifficulty);
-  }, [activeSubject, selectedDifficulty]);
-  
-  const indexOfLastQuestion = currentPage * questionsPerPage;
-  const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-  const currentQuestionsPage = filteredQuestions.slice(
-    indexOfFirstQuestion,
-    indexOfLastQuestion
-  );
-  const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
-
-  const questionStats = useMemo(() => {
-    const stats = {
-      total: filteredQuestions.length,
-      byDifficulty: {
-        easy: 0,
-        medium: 0,
-        hard: 0,
-      }
-    };
-
-    filteredQuestions.forEach(question => {
-      if (question.difficulty) {
-        stats.byDifficulty[question.difficulty]++;
-      }
-    });
-
-    return stats;
-  }, [filteredQuestions]);
-
-  const renderPaginationLinks = () => {
-    if (totalPages <= 7) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-        <PaginationItem key={pageNum}>
-          <PaginationLink
-            onClick={() => setCurrentPage(pageNum)}
-            isActive={currentPage === pageNum}
-          >
-            {pageNum}
-          </PaginationLink>
-        </PaginationItem>
-      ));
-    }
-    
-    const pages = [];
-    
-    pages.push(
-      <PaginationItem key={1}>
-        <PaginationLink
-          onClick={() => setCurrentPage(1)}
-          isActive={currentPage === 1}
-        >
-          1
-        </PaginationLink>
-      </PaginationItem>
-    );
-    
-    let startPage = Math.max(2, currentPage - 2);
-    let endPage = Math.min(totalPages - 1, currentPage + 2);
-    
-    if (startPage > 2) {
-      pages.push(
-        <PaginationItem key="ellipsis-start">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <PaginationItem key={i}>
-          <PaginationLink
-            onClick={() => setCurrentPage(i)}
-            isActive={currentPage === i}
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    
-    if (endPage < totalPages - 1) {
-      pages.push(
-        <PaginationItem key="ellipsis-end">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-    
-    if (totalPages > 1) {
-      pages.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink
-            onClick={() => setCurrentPage(totalPages)}
-            isActive={currentPage === totalPages}
-          >
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    
-    return pages;
   };
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-12 animate-fade-in">
-        <h1 className="text-3xl font-display font-bold text-center mb-8">
-          Question Bank
-        </h1>
-        
-        <Tabs
-          defaultValue="maths"
-          value={activeSubject}
-          onValueChange={(value) => {
-            setActiveSubject(value as Subject);
-            setCurrentPage(1);
-          }}
-          className="mx-auto mb-8"
-        >
-          <TabsList className="grid grid-cols-3 w-full max-w-2xl mx-auto">
-            {subjects.map(subject => (
-              <TabsTrigger 
-                key={subject} 
-                value={subject}
-                className="capitalize"
-              >
-                {subject}
-              </TabsTrigger>
-            ))}
+      <div className="container max-w-6xl p-8">
+        <h1 className="text-3xl font-bold mb-8">Questions</h1>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="list">Question List</TabsTrigger>
+            <TabsTrigger value="add">Add Question</TabsTrigger>
           </TabsList>
-          
-          {subjects.map(subject => (
-            <TabsContent key={subject} value={subject} className="mt-6">
-              <div className="space-y-4 mb-6">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                  <div className="text-sm text-muted-foreground">
-                    Showing {indexOfFirstQuestion + 1}-{Math.min(indexOfLastQuestion, filteredQuestions.length)} of {filteredQuestions.length} questions
-                  </div>
-                  <DifficultySelector
-                    selectedDifficulty={selectedDifficulty}
-                    onChange={setSelectedDifficulty}
-                    className="md:justify-end"
-                  />
-                </div>
-                <div className="flex gap-4 text-sm">
-                  <span className="text-green-600">Easy: {questionStats.byDifficulty.easy}</span>
-                  <span className="text-yellow-600">Medium: {questionStats.byDifficulty.medium}</span>
-                  <span className="text-red-600">Hard: {questionStats.byDifficulty.hard}</span>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {currentQuestionsPage.map((question: Question) => (
-                  <Card key={question.id} className="shadow-sm">
-                    <CardContent className="pt-6">
-                      <div 
-                        className="flex justify-between cursor-pointer"
-                        onClick={() => toggleQuestion(question.id)}
-                      >
-                        <div className="pr-4 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{question.text}</h3>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              question.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                              question.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {question.difficulty || 'N/A'}
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          {expandedQuestions[question.id] ? (
-                            <ChevronDown className="h-5 w-5" />
-                          ) : (
-                            <ChevronRight className="h-5 w-5" />
-                          )}
-                        </div>
-                      </div>
-                      
-                      {expandedQuestions[question.id] && (
-                        <div className="mt-4 space-y-3">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Option</TableHead>
-                                <TableHead>Answer</TableHead>
-                                <TableHead>Correct</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {question.options.map((option, index) => (
-                                <TableRow key={index} className={option === question.correctAnswer ? "bg-green-50" : ""}>
-                                  <TableCell>{String.fromCharCode(65 + index)}</TableCell>
-                                  <TableCell>{option}</TableCell>
-                                  <TableCell>
-                                    {option === question.correctAnswer ? "✓" : ""}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                          
-                          {question.imageUrl && (
-                            <div className="py-2">
-                              <img 
-                                src={question.imageUrl} 
-                                alt={`Visual for question ${question.id}`} 
-                                className="mx-auto rounded-md max-h-48 object-contain"
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="bg-muted p-4 rounded-lg">
-                            <p className="text-sm">
-                              <span className="font-medium">Explanation: </span>
-                              {question.explanation}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+          <TabsContent value="list" className="space-y-4 mt-6">
+            {loading && <p>Loading questions...</p>}
+            {error && <p className="text-red-500">Error: {error}</p>}
+            {questions.length === 0 && !loading && (
+              <p>No questions available. Add some questions!</p>
+            )}
+            {questions.length > 0 && (
+              <ul>
+                {questions.map((question) => (
+                  <li key={question.question} className="border rounded-md p-4">
+                    {question.question}
+                  </li>
                 ))}
-              </div>
-              
-              {totalPages > 1 && (
-                <Pagination className="mt-8">
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
-                        isDisabled={currentPage === 1}
-                      />
-                    </PaginationItem>
-                    
-                    {renderPaginationLinks()}
-                    
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
-                        isDisabled={currentPage === totalPages}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              )}
-            </TabsContent>
-          ))}
+              </ul>
+            )}
+          </TabsContent>
+
+          <TabsContent value="add" className="space-y-6 mt-6">
+            <div className="container max-w-2xl mx-auto">
+              <h1 className="text-2xl font-bold mb-4">Add New Question</h1>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="question"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Question</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter the question" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="answer1"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Answer 1</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter answer 1" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="answer2"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Answer 2</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter answer 2" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="answer3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Answer 3</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter answer 3" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="answer4"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Answer 4</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter answer 4" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="correctAnswer"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Correct Answer</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select correct answer" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">Answer 1</SelectItem>
+                            <SelectItem value="2">Answer 2</SelectItem>
+                            <SelectItem value="3">Answer 3</SelectItem>
+                            <SelectItem value="4">Answer 4</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="subject"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Subject</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a subject" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="maths">Maths</SelectItem>
+                              <SelectItem value="english">English</SelectItem>
+                              <SelectItem value="verbal">Verbal Reasoning</SelectItem>
+                              <SelectItem value="nonVerbal">Non-Verbal Reasoning</SelectItem>
+                              <SelectItem value="timesTables">Times Tables</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="difficulty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Difficulty</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select difficulty" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="easy">Easy</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="hard">Hard</SelectItem>
+                              <SelectItem value="all">All</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="topic"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Topic (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter topic" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image URL (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter image URL" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="worksheet"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Worksheet (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter worksheet name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="explanation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Explanation (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter explanation"
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isPublished"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Published</FormLabel>
+                          <FormDescription>
+                            Publish this question to make it available for quizzes.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit">Add Question</Button>
+                </form>
+              </Form>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </Layout>

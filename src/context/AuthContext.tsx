@@ -7,7 +7,6 @@ import { AuthContextType } from '@/types/authTypes';
 import { fetchUserProfile } from '@/utils/profileUtils';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useProgressActions } from '@/hooks/useProgressActions';
-import { useTeacherActions } from '@/hooks/useTeacherActions';
 import { useRegisterUser } from '@/hooks/useRegisterUser';
 import { toast } from 'sonner';
 
@@ -22,7 +21,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   
   const authActions = useAuthActions(user, setUser);
   const progressActions = useProgressActions(user, setUser);
-  const teacherActions = useTeacherActions(user, setUser);
   const { register } = useRegisterUser();
 
   useEffect(() => {
@@ -167,11 +165,9 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     userRole: user?.role || null,
     user,
     login: authActions.login,
-    teacherLogin: authActions.teacherLogin,
     logout: authActions.logout,
     register,
-    ...progressActions,
-    ...teacherActions
+    ...progressActions
   };
 
   if (loading) {

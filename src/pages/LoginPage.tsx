@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from "zod";
@@ -171,12 +172,8 @@ const LoginPage = () => {
             <div className="text-center text-sm text-muted-foreground mt-2">
               Don't have an account?{" "}
               <Link to="/register" className="underline text-primary hover:text-primary/90">
-                Sign up
+                Register
               </Link>
-            </div>
-            
-            <div className="text-xs text-center text-muted-foreground">
-              Having trouble logging in? Try using a non-incognito window or clearing your cookies.
             </div>
           </CardFooter>
         </Card>

@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Book, LogIn, UserPlus, GraduationCap } from 'lucide-react';
+import { Book, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserProfile from './UserProfile';
@@ -9,7 +10,7 @@ import { DarkModeToggle } from './DarkModeToggle';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, userRole } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between bg-background/80 backdrop-blur-lg border-b shadow-sm fixed top-0 z-50">
@@ -28,9 +29,7 @@ const Header: React.FC = () => {
           {[
             { label: 'Home', path: '/' },
             { label: 'Practice', path: '/quiz' },
-            ...(isAuthenticated && userRole === 'student' ? [{ label: 'My Progress', path: '/progress' }] : []),
-            ...(isAuthenticated && userRole === 'teacher' ? [{ label: 'Dashboard', path: '/teacher/dashboard' }] : []),
-            ...(isAuthenticated ? [{ label: 'Admin', path: '/admin' }] : []),
+            ...(isAuthenticated ? [{ label: 'My Progress', path: '/progress' }] : []),
             { label: 'Questions', path: '/questions' },
             { label: 'About', path: '/about' },
           ].map((item) => (
@@ -53,10 +52,6 @@ const Header: React.FC = () => {
             <Button variant="outline" size="sm" onClick={() => navigate('/register')} className="hidden md:flex">
               <UserPlus className="h-4 w-4 mr-2" />
               <span>Register</span>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/teacher/login')} className="flex items-center gap-1.5">
-              <GraduationCap className="h-4 w-4" />
-              <span className="hidden sm:inline">Teacher</span>
             </Button>
           </div>
         )}

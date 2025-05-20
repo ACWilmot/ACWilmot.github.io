@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Question, Subject, Difficulty } from '@/types/questionTypes';
-import sampleQuestions from '@/data/sampleQuestions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 const QuestionBrowserPage = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | 'all'>('all');
@@ -19,40 +20,91 @@ const QuestionBrowserPage = () => {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const { toast } = useToast();
 
+  // Fetch questions from Supabase
   useEffect(() => {
-    // Collect all questions
-    let allQuestions: Question[] = [];
-    if (selectedSubject === 'all') {
-      Object.values(sampleQuestions).forEach(subjectQuestions => {
-        allQuestions = [...allQuestions, ...subjectQuestions];
-      });
-    } else {
-      allQuestions = [...sampleQuestions[selectedSubject as Subject]];
-    }
+    const fetchQuestions = async () => {
+      setIsLoading(true);
+      try {
+        // Start building the query
+        let query = supabase
+          .from('questions')
+          .select('*');
 
-    // Filter by difficulty
-    if (selectedDifficulty !== 'all') {
-      allQuestions = allQuestions.filter(q => q.difficulty === selectedDifficulty);
-    }
+        // Apply subject filter
+        if (selectedSubject !== 'all') {
+          query = query.eq('subject', selectedSubject);
+        }
 
-    // Filter by year
-    if (selectedYear) {
-      allQuestions = allQuestions.filter(q => q.year === selectedYear || !q.year);
-    }
+        // Apply difficulty filter
+        if (selectedDifficulty !== 'all') {
+          query = query.eq('difficulty', selectedDifficulty);
+        }
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      allQuestions = allQuestions.filter(q => 
-        q.text.toLowerCase().includes(query) || 
-        q.explanation?.toLowerCase().includes(query) ||
-        q.options.some(option => option.toLowerCase().includes(query))
-      );
-    }
+        // Apply year filter
+        if (selectedYear) {
+          query = query.eq('year', selectedYear);
+        }
 
-    setQuestions(allQuestions);
-  }, [selectedSubject, selectedDifficulty, selectedYear, searchQuery]);
+        // Apply search query filter (using text search across multiple columns)
+        if (searchQuery) {
+          query = query.or(
+            `text.ilike.%${searchQuery}%,explanation.ilike.%${searchQuery}%`
+          );
+        }
+
+        // Execute the query
+        const { data, error } = await query;
+
+        if (error) {
+          throw error;
+        }
+
+        // Count total questions in database (for display)
+        const { count, error: countError } = await supabase
+          .from('questions')
+          .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+          console.error('Error counting questions:', countError);
+        } else {
+          setTotalCount(count || 0);
+        }
+
+        // Update state with fetched questions
+        if (data) {
+          const mappedQuestions = data.map(q => ({
+            id: q.id,
+            subject: q.subject,
+            text: q.text,
+            options: q.options,
+            correctAnswer: q.correct_answer,
+            explanation: q.explanation || '',
+            difficulty: q.difficulty,
+            imageUrl: q.image_url,
+            optionImages: q.option_images,
+            year: q.year,
+            timesTable: q.times_table
+          }));
+          setQuestions(mappedQuestions);
+        }
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        toast({
+          title: "Error fetching questions",
+          description: "There was a problem loading the questions.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [selectedSubject, selectedDifficulty, selectedYear, searchQuery, toast]);
 
   const toggleQuestionExpand = (questionId: string) => {
     setExpandedQuestions(prev => ({
@@ -61,17 +113,17 @@ const QuestionBrowserPage = () => {
     }));
   };
 
-  const totalQuestions = Object.values(sampleQuestions).reduce(
-    (total, subjectQuestions) => total + subjectQuestions.length,
-    0
-  );
+  // Handle search input with debounce
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <h1 className="text-3xl font-bold mb-6">Question Browser</h1>
         <p className="text-muted-foreground mb-8">
-          Browse all {totalQuestions} questions in our database. Filter by subject, difficulty, and year.
+          Browse all {totalCount} questions in our database. Filter by subject, difficulty, and year.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -140,7 +192,7 @@ const QuestionBrowserPage = () => {
               <Input
                 placeholder="Search questions..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="w-full"
               />
               <Button variant="ghost" size="icon">
@@ -152,10 +204,14 @@ const QuestionBrowserPage = () => {
 
         <div className="mt-4">
           <h2 className="text-xl font-semibold mb-4">
-            Showing {questions.length} questions
+            {isLoading ? 'Loading questions...' : `Showing ${questions.length} questions`}
           </h2>
 
-          {questions.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : questions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-lg text-muted-foreground">No questions match your filters.</p>
             </div>
@@ -171,7 +227,7 @@ const QuestionBrowserPage = () => {
                       onClick={() => toggleQuestionExpand(question.id)}
                     >
                       <div>
-                        <div className="flex gap-2 items-center mb-1">
+                        <div className="flex gap-2 items-center flex-wrap mb-1">
                           <span className="text-xs px-2 py-1 bg-primary/10 rounded-full">
                             {question.subject.charAt(0).toUpperCase() + question.subject.slice(1)}
                           </span>

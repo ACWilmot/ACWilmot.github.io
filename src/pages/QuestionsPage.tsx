@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Question, Subject, Difficulty } from '@/types/questionTypes';
 import { v4 as uuidv4 } from 'uuid';
 import YearSelector from '@/components/YearSelector';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const QuestionsPage = () => {
   const [questionText, setQuestionText] = useState('');
@@ -15,6 +17,8 @@ const QuestionsPage = () => {
   const [subject, setSubject] = useState<Subject>('maths');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [year, setYear] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
@@ -22,46 +26,84 @@ const QuestionsPage = () => {
     setOptions(newOptions);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     // Validation
     if (!questionText.trim()) {
-      alert('Please enter a question');
+      toast({
+        title: "Missing question",
+        description: "Please enter a question",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
       return;
     }
 
     if (options.some(option => !option.trim())) {
-      alert('All options must be filled');
+      toast({
+        title: "Incomplete options",
+        description: "All options must be filled",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
       return;
     }
 
     if (!correctAnswer) {
-      alert('Please select a correct answer');
+      toast({
+        title: "Missing answer",
+        description: "Please select a correct answer",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
       return;
     }
 
-    // Create new question
-    const newQuestion: Question = {
-      id: uuidv4(),
-      subject,
-      text: questionText,
-      options,
-      correctAnswer,
-      explanation,
-      difficulty,
-      year
-    };
+    try {
+      // Save to Supabase
+      const { data, error } = await supabase
+        .from('questions')
+        .insert([
+          {
+            subject: subject,
+            text: questionText,
+            options: options,
+            correct_answer: correctAnswer,
+            explanation: explanation,
+            difficulty: difficulty,
+            year: year,
+            // user_id will be set automatically by the trigger
+          }
+        ])
+        .select();
 
-    console.log('New Question Created:', newQuestion);
+      if (error) {
+        throw error;
+      }
 
-    // Reset form
-    setQuestionText('');
-    setOptions(['', '', '', '']);
-    setCorrectAnswer('');
-    setExplanation('');
+      // Reset form
+      setQuestionText('');
+      setOptions(['', '', '', '']);
+      setCorrectAnswer('');
+      setExplanation('');
 
-    alert('Question created successfully!');
+      toast({
+        title: "Question created",
+        description: "Question has been successfully added to the database.",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error creating question:', error);
+      toast({
+        title: "Error creating question",
+        description: "There was a problem saving your question.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -166,7 +208,13 @@ const QuestionsPage = () => {
             />
           </div>
           
-          <Button type="submit" className="w-full md:w-auto">Create Question</Button>
+          <Button 
+            type="submit" 
+            className="w-full md:w-auto"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating Question...' : 'Create Question'}
+          </Button>
         </form>
       </div>
     </Layout>

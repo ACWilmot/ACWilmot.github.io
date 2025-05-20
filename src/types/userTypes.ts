@@ -24,7 +24,6 @@ export interface TimesTableProgress {
     timestamp: string;
     answerTime?: number;
   }[];
-  averageTime?: number;
   [key: string]: any;
 }
 

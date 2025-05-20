@@ -92,7 +92,7 @@ const Index = () => {
             className="relative inline-block"
           >
             <h1 className="text-5xl md:text-7xl font-bold font-display mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60">
-              11+ Exam Practice
+              SmartPrep Practice
             </h1>
             <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full blur-3xl opacity-20 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
           </motion.div>
@@ -182,21 +182,21 @@ const Index = () => {
                 />
                 <SubjectCard
                   subject="history"
-                  description="Year 4 British and world history"
+                  description="British and world history"
                   icon={<History className="h-5 w-5" />}
                   isSelected={selectedSubject === 'history'}
                   onClick={() => handleSubjectSelect('history')}
                 />
                 <SubjectCard
                   subject="geography"
-                  description="Year 4 UK and global geography"
+                  description="UK and global geography"
                   icon={<Globe className="h-5 w-5" />}
                   isSelected={selectedSubject === 'geography'}
                   onClick={() => handleSubjectSelect('geography')}
                 />
                 <SubjectCard
                   subject="religiousEd"
-                  description="Year 4 religious education"
+                  description="Religious education"
                   icon={<Church className="h-5 w-5" />}
                   isSelected={selectedSubject === 'religiousEd'}
                   onClick={() => handleSubjectSelect('religiousEd')}

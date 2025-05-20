@@ -13,6 +13,7 @@ import { QuizProvider } from './context/QuizContext';
 import Index from './pages/Index';
 import ProgressPage from './pages/ProgressPage';
 import ResultsPage from './pages/ResultsPage';
+import QuestionBrowserPage from './pages/QuestionBrowserPage';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
               <Route path="/questions" element={<QuestionsPage />} />
               <Route path="/progress" element={<ProgressPage />} />
               <Route path="/results" element={<ResultsPage />} />
+              <Route path="/browse" element={<QuestionBrowserPage />} />
             </Routes>
           </QuizProvider>
         </ProfileProvider>

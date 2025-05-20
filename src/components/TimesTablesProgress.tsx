@@ -31,7 +31,6 @@ const getDefaultTimesTablesProgress = (): TimesTableProgress[] => {
     attempts: 0,
     correct: 0,
     recentAttempts: [],
-    averageTime: 0,
     _type: "TimesTableProgress"
   }));
 };
@@ -137,8 +136,7 @@ const TimesTablesProgress: React.FC = () => {
       totalAccuracy,
       recentAccuracy,
       attempts: table.attempts,
-      recentAttempts: recentTotal,
-      averageTime: table.averageTime || 0
+      recentAttempts: recentTotal
     };
   });
 
@@ -255,14 +253,14 @@ const TimesTablesProgress: React.FC = () => {
                     />
                   </div>
 
-                  <Separator />
-
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Average Time</span>
-                      <span className="font-medium">
-                        {data.averageTime ? `${(data.averageTime / 1000).toFixed(1)}s` : "N/A"}
-                      </span>
+                  <div className="mt-6 grid grid-cols-2 gap-4 text-center">
+                    <div className="border rounded-lg p-3">
+                      <div className="text-2xl font-bold">{data.attempts}</div>
+                      <div className="text-xs text-muted-foreground">Total Questions</div>
+                    </div>
+                    <div className="border rounded-lg p-3">
+                      <div className="text-2xl font-bold">{Math.round(data.totalAccuracy / 100 * data.attempts)}</div>
+                      <div className="text-xs text-muted-foreground">Correct Answers</div>
                     </div>
                   </div>
                 </div>

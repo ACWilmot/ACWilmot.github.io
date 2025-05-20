@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
@@ -94,12 +95,12 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
       
-      // Convert database format to application format
+      // Convert database format to application format with proper type handling
       return data.map(item => ({
         id: item.id,
         subject: item.subject as Subject,
         text: item.text,
-        options: item.options,
+        options: Array.isArray(item.options) ? item.options : [], // Ensure options is an array
         correctAnswer: item.correct_answer,
         explanation: item.explanation || '',
         difficulty: item.difficulty as Difficulty,

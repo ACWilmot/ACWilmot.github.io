@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
@@ -182,7 +181,9 @@ const ProgressPage = () => {
             {profile.timesTablesProgress && (
               <div className="mt-10">
                 <h2 className="text-xl font-bold mb-4">Times Tables Progress</h2>
-                <TimesTablesProgress timesTablesProgress={profile.timesTablesProgress} />
+                <TimesTablesProgress 
+                  progress={profile.timesTablesProgress} 
+                />
               </div>
             )}
           </TabsContent>
@@ -201,7 +202,9 @@ const ProgressPage = () => {
             {profile.timesTablesProgress && (
               <div className="mt-10">
                 <h2 className="text-xl font-bold mb-4">Times Tables Progress</h2>
-                <TimesTablesProgress timesTablesProgress={profile.timesTablesProgress} />
+                <TimesTablesProgress 
+                  progress={profile.timesTablesProgress} 
+                />
               </div>
             )}
           </TabsContent>

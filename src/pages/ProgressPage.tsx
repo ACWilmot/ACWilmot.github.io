@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { useAuth } from '@/context/AuthContext';
@@ -109,15 +108,12 @@ const ProgressPage = () => {
                   <div className="space-y-8">
                     <SubjectYearProgress 
                       subject="maths"
-                      title="Mathematics"
                     />
                     <SubjectYearProgress 
                       subject="english"
-                      title="English"
                     />
                     <SubjectYearProgress 
                       subject="verbal"
-                      title="Verbal Reasoning"
                     />
                   </div>
                 </CardContent>

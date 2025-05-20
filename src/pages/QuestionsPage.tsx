@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import SubjectCard from '@/components/SubjectCard';
@@ -139,11 +138,9 @@ const QuestionsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <DifficultySelector 
                 onChange={(difficulty) => setSelectedDifficulty(difficulty)} 
-                disabled={!isPremium} 
               />
               <YearSelector 
                 onChange={(year) => setSelectedYear(year)} 
-                disabled={!isPremium} 
               />
             </div>
           </>
@@ -153,7 +150,7 @@ const QuestionsPage = () => {
           <TimesTablesSelector 
             selectedTables={selectedTimesTables}
             onChange={setSelectedTimesTables}
-            onStart={handleTimesTablesStart}
+            onStartQuiz={handleTimesTablesStart}
           />
         )}
       </div>

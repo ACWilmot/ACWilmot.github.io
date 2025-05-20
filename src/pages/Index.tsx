@@ -7,7 +7,7 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import { 
   Calculator, 
   BookOpen, 
-   моз, 
+  Brain, 
   BrainCircuit, 
   Clock, 
   Map, 

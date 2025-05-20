@@ -8,6 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper logging function for debugging
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
@@ -25,10 +26,11 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
     logStep("Stripe key verified");
 
-    // Create a Supabase client using the anon key
+    // Create a Supabase client using the service role key
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     const authHeader = req.headers.get("Authorization");
@@ -43,31 +45,40 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    
-    // Check if a Stripe customer record exists for this user
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
+    
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
-      logStep("Existing customer found", { customerId });
+      logStep("Found existing customer", { customerId });
+    } else {
+      // Create a new customer
+      const newCustomer = await stripe.customers.create({
+        email: user.email,
+        name: user.user_metadata?.name || user.email,
+        metadata: {
+          supabase_user_id: user.id
+        }
+      });
+      customerId = newCustomer.id;
+      logStep("Created new customer", { customerId });
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    
-    // Create a subscription checkout session
+    logStep("Origin retrieved", { origin });
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price_data: {
-            currency: "usd",
-            product_data: {
+            currency: "gbp",
+            product_data: { 
               name: "Premium Subscription",
-              description: "Access to all SmartPrep Practice features"
+              description: "Full access to all premium features"
             },
-            unit_amount: 1499, // $14.99
-            recurring: { interval: "month" }
+            unit_amount: 499, // £4.99
+            recurring: { interval: "month" },
           },
           quantity: 1,
         },
@@ -78,6 +89,10 @@ serve(async (req) => {
     });
     
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    
+    if (!session.url) {
+      throw new Error("No checkout URL returned from Stripe");
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

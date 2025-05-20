@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, BarChart, CreditCard } from 'lucide-react';
+import { LogOut, User, BarChart, CreditCard, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +61,10 @@ const UserProfile = () => {
         <DropdownMenuItem onClick={() => navigate('/progress')} className="cursor-pointer">
           <BarChart className="mr-2 h-4 w-4" />
           <span>My Progress</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/profile?tab=security')} className="cursor-pointer">
+          <Key className="mr-2 h-4 w-4" />
+          <span>Security</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">

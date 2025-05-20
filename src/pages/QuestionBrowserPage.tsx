@@ -1,213 +1,252 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from 'react-query';
+import { SupabaseClient } from '@supabase/supabase-js';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { MoreVertical, Pencil, Copy, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Header from '@/components/Header';
-import { Question, Difficulty, Subject } from '@/types/questionTypes';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuth } from '@/context/AuthContext';
-import { useSubscription } from '@/context/SubscriptionContext';
+import { useToast } from "@/components/ui/use-toast"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Info } from 'lucide-react';
 
-const QuestionBrowserPage: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('all');
+// Define the Question type
+export type Question = {
+  id: string;
+  subject: string;
+  text: string;
+  options: string[];
+  correctAnswer: string;
+  difficulty: string;
+  year: number | null;
+  imageUrl: string | null;
+  explanation: string;
+  timesTable: number | null;
+  optionImages: string[] | null;
+  userId: string;
+};
+
+interface QuestionBrowserPageProps {
+  supabaseClient: SupabaseClient;
+}
+
+const QuestionBrowserPage: React.FC<QuestionBrowserPageProps> = ({ supabaseClient }) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const { isSubscribed } = useSubscription();
+  const { toast } = useToast()
 
-  useEffect(() => {
-    if (isAuthenticated === false) {
-      navigate('/login');
-      return;
-    }
-
-    // Redirect non-premium users
-    if (!isSubscribed) {
-      toast.error("This feature requires a premium subscription");
-      navigate('/profile?tab=subscription');
-      return;
-    }
-    
-    fetchQuestions();
-  }, [isAuthenticated, isSubscribed, navigate]);
-
-  const fetchQuestions = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('questions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
+  // Inside the component, update the data fetching logic to correctly map database fields
+  const { data: questionsData, isLoading, error } = useQuery({
+    queryKey: ['questions'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabaseClient
+          .from('questions')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
         
-      if (error) {
-        throw error;
-      }
-      
-      if (data) {
-        // Transform the data to ensure optionImages is always a string array
-        const formattedQuestions: Question[] = data.map(q => ({
-          ...q,
-          optionImages: Array.isArray(q.optionImages) 
-            ? q.optionImages.map(img => typeof img === 'string' ? img : '') 
-            : []
+        // Map database fields to our Question type
+        const mappedQuestions: Question[] = data.map(q => ({
+          id: q.id,
+          subject: q.subject,
+          text: q.text,
+          options: Array.isArray(q.options) ? q.options : [],
+          correctAnswer: q.correct_answer, // Map correct_answer to correctAnswer
+          difficulty: q.difficulty,
+          year: q.year || null,
+          imageUrl: q.image_url || null,
+          explanation: q.explanation || '',
+          timesTable: q.times_table || null,
+          optionImages: q.option_images ? q.option_images : null, // Map option_images to optionImages
+          userId: q.user_id
         }));
         
-        setQuestions(formattedQuestions);
-        setFilteredQuestions(formattedQuestions);
+        return mappedQuestions;
+      } catch (err) {
+        console.error('Error fetching questions:', err);
+        throw err;
       }
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-      toast.error('Failed to load questions');
-    } finally {
-      setLoading(false);
+    }
+  });
+
+  const questions: Question[] = questionsData || [];
+
+  const handleEdit = (questionId: string) => {
+    navigate(`/edit-question/${questionId}`);
+  };
+
+  const handleDuplicate = async (question: Question) => {
+    try {
+      const { data, error } = await supabaseClient
+        .from('questions')
+        .insert([
+          {
+            subject: question.subject,
+            text: question.text,
+            options: question.options,
+            correct_answer: question.correctAnswer,
+            difficulty: question.difficulty,
+            year: question.year,
+            image_url: question.imageUrl,
+            explanation: question.explanation,
+            times_table: question.timesTable,
+            option_images: question.optionImages,
+            user_id: question.userId,
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error('Error duplicating question:', error);
+        toast({
+          title: "Error",
+          description: "Failed to duplicate question.",
+          variant: "destructive",
+        })
+      } else {
+        console.log('Question duplicated successfully:', data);
+        toast({
+          title: "Success",
+          description: "Question duplicated successfully.",
+        })
+      }
+    } catch (err) {
+      console.error('Unexpected error duplicating question:', err);
+      toast({
+        title: "Error",
+        description: "Unexpected error duplicating question.",
+        variant: "destructive",
+      })
     }
   };
 
-  useEffect(() => {
-    // Apply filters whenever searchQuery or activeTab changes
-    let filtered = [...questions];
-    
-    // Apply subject filter
-    if (activeTab !== 'all') {
-      filtered = filtered.filter(q => q.subject.toLowerCase() === activeTab.toLowerCase());
-    }
-    
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(q => 
-        q.text.toLowerCase().includes(query) || 
-        q.explanation?.toLowerCase().includes(query) ||
-        q.subject.toLowerCase().includes(query)
-      );
-    }
-    
-    setFilteredQuestions(filtered);
-  }, [searchQuery, activeTab, questions]);
+  const handleDelete = async (questionId: string) => {
+    try {
+      const { error } = await supabaseClient
+        .from('questions')
+        .delete()
+        .eq('id', questionId);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 container px-4 pt-24 pb-16 max-w-7xl mx-auto flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" />
-            <h2 className="text-2xl font-medium">Loading questions...</h2>
-          </div>
-        </main>
-      </div>
-    );
+      if (error) {
+        console.error('Error deleting question:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete question.",
+          variant: "destructive",
+        })
+      } else {
+        console.log('Question deleted successfully');
+        toast({
+          title: "Success",
+          description: "Question deleted successfully.",
+        })
+      }
+    } catch (err) {
+      console.error('Unexpected error deleting question:', err);
+      toast({
+        title: "Error",
+        description: "Unexpected error deleting question.",
+        variant: "destructive",
+      })
+    }
+  };
+
+  if (isLoading) {
+    return <Alert variant="default">
+      <Info className="h-4 w-4" />
+      <AlertTitle>Loading</AlertTitle>
+      <AlertDescription>
+        Fetching questions...
+      </AlertDescription>
+    </Alert>;
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    }).format(date);
-  };
+  if (error) {
+    return <Alert variant="destructive">
+      <Info className="h-4 w-4" />
+      <AlertTitle>Error</AlertTitle>
+      <AlertDescription>
+        Failed to fetch questions. Please try again.
+      </AlertDescription>
+    </Alert>;
+  }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-      
-      <main className="flex-1 container px-4 pt-24 pb-16 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Question Browser</h1>
-          <p className="text-muted-foreground">Browse and search through all available questions</p>
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-4">Question Browser</h1>
+      <div className="mb-4">
+        <Button onClick={() => navigate('/create-question')}>Create New Question</Button>
+      </div>
+      {questions.length > 0 ? (
+        <div className="rounded-md border">
+          <Table>
+            <TableCaption>A list of your questions.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Subject</TableHead>
+                <TableHead>Question Text</TableHead>
+                <TableHead>Difficulty</TableHead>
+                <TableHead>Year</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {questions.map((question) => (
+                <TableRow key={question.id}>
+                  <TableCell className="font-medium">{question.subject}</TableCell>
+                  <TableCell>{question.text.substring(0, 100)}...</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{question.difficulty}</Badge>
+                  </TableCell>
+                  <TableCell>{question.year}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleEdit(question.id)}>
+                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDuplicate(question)}>
+                          <Copy className="mr-2 h-4 w-4" /> Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDelete(question.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
-        
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-              <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full md:w-auto">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="maths">Maths</TabsTrigger>
-                <TabsTrigger value="english">English</TabsTrigger>
-                <TabsTrigger value="verbal">Verbal</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
-                <TabsTrigger value="geography">Geography</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            
-            <div className="w-full md:w-auto">
-              <Input
-                placeholder="Search questions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full md:w-[300px]"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-4">
-            {filteredQuestions.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <p className="text-muted-foreground">No questions found. Try adjusting your search criteria.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredQuestions.map((question) => (
-                <Card key={question.id} className="overflow-hidden transition-shadow hover:shadow-md">
-                  <CardHeader className="bg-muted/30">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-medium">
-                            {question.subject}
-                          </span>
-                          <span className="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded-full font-medium">
-                            {question.difficulty}
-                          </span>
-                          {question.year && (
-                            <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
-                              Year {question.year}
-                            </span>
-                          )}
-                        </div>
-                        <CardTitle className="text-base">{question.text}</CardTitle>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-4">
-                    <div className="mb-4">
-                      <Label className="text-sm font-medium text-muted-foreground mb-2 block">Options:</Label>
-                      <ul className="space-y-1.5 ml-5 list-disc text-sm">
-                        {question.options.map((option, i) => (
-                          <li key={i} className={option === question.correctAnswer ? "font-medium text-green-600 dark:text-green-500" : ""}>
-                            {option}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    {question.explanation && (
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground mb-2 block">Explanation:</Label>
-                        <p className="text-sm">{question.explanation}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </div>
-      </main>
+      ) : (
+        <p>No questions found.</p>
+      )}
     </div>
   );
 };

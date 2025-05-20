@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Question, Subject, Difficulty } from '@/types/questionTypes';
 import { v4 as uuidv4 } from 'uuid';
+import YearSelector from '@/components/YearSelector';
 
 const QuestionsPage = () => {
   const [questionText, setQuestionText] = useState('');
@@ -13,6 +14,7 @@ const QuestionsPage = () => {
   const [explanation, setExplanation] = useState('');
   const [subject, setSubject] = useState<Subject>('maths');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
+  const [year, setYear] = useState<number | null>(null);
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
@@ -47,7 +49,8 @@ const QuestionsPage = () => {
       options,
       correctAnswer,
       explanation,
-      difficulty
+      difficulty,
+      year
     };
 
     console.log('New Question Created:', newQuestion);
@@ -153,6 +156,14 @@ const QuestionsPage = () => {
                 </select>
               </label>
             </div>
+          </div>
+          
+          <div className="mb-4">
+            <label className="block mb-2">Year Group</label>
+            <YearSelector 
+              selectedYear={year}
+              onChange={setYear}
+            />
           </div>
           
           <Button type="submit" className="w-full md:w-auto">Create Question</Button>

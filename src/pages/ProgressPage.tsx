@@ -1,10 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, BarChart2, RefreshCcw } from 'lucide-react';
@@ -12,14 +12,22 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import TimesTablesProgress from '@/components/TimesTablesProgress';
+import SubjectYearProgress from '@/components/SubjectYearProgress';
 
 interface DifficultyProgress {
   easy: { completed: number; correct: number; accuracy: number };
   medium: { completed: number; correct: number; accuracy: number };
   hard: { completed: number; correct: number; accuracy: number };
   all: { completed: number; correct: number; accuracy: number };
+}
+
+interface YearProgressData {
+  all: DifficultyProgress;
+  "3": DifficultyProgress;
+  "4": DifficultyProgress;
+  "5": DifficultyProgress;
+  "6": DifficultyProgress;
 }
 
 const ProgressPage = () => {
@@ -36,7 +44,7 @@ const ProgressPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("subjects");
-  const [subjectDifficultyProgress, setSubjectDifficultyProgress] = useState<Record<string, DifficultyProgress>>({});
+  const [subjectYearProgress, setSubjectYearProgress] = useState<Record<string, YearProgressData>>({});
 
   console.log("ProgressPage rendering with auth status:", isAuthenticated);
   console.log("ProgressPage rendering with user:", user);
@@ -59,53 +67,144 @@ const ProgressPage = () => {
       } else {
         setError(null);
         
-        // Calculate difficulty stats for each subject
-        // This is mocked data since we don't have actual difficulty data stored
-        // In a real app, you would fetch this from your database
+        // Calculate year progress stats for each subject
+        // This is mocked data since we don't have actual year data stored
         const subjects = Object.keys(profile.progress).filter(subject => subject !== 'timesTables');
-        const mockDifficultyProgress: Record<string, DifficultyProgress> = {};
+        const mockYearProgress: Record<string, YearProgressData> = {};
         
         subjects.forEach(subject => {
           const subjectData = profile.progress[subject];
           if (!subjectData) return;
           
           const total = subjectData.completed || 0;
+          const totalCorrect = subjectData.correct || 0;
           
-          // Mock distribution of questions by difficulty
-          // In a real app, you would get actual data
-          mockDifficultyProgress[subject] = {
-            easy: {
-              completed: Math.floor(total * 0.4), // 40% of questions are easy
-              correct: Math.floor((subjectData.correct || 0) * 0.45), // slightly better performance on easy questions
-              accuracy: 0
+          // Create mock progress data for each year
+          mockYearProgress[subject] = {
+            "all": {
+              easy: {
+                completed: Math.floor(total * 0.4), // 40% of questions are easy
+                correct: Math.floor(totalCorrect * 0.45), // slightly better performance on easy questions
+                accuracy: 0
+              },
+              medium: {
+                completed: Math.floor(total * 0.4), // 40% of questions are medium
+                correct: Math.floor(totalCorrect * 0.4), // average performance on medium questions
+                accuracy: 0
+              },
+              hard: {
+                completed: Math.floor(total * 0.2), // 20% of questions are hard
+                correct: Math.floor(totalCorrect * 0.15), // worse performance on hard questions
+                accuracy: 0
+              },
+              all: {
+                completed: total,
+                correct: totalCorrect,
+                accuracy: 0
+              }
             },
-            medium: {
-              completed: Math.floor(total * 0.4), // 40% of questions are medium
-              correct: Math.floor((subjectData.correct || 0) * 0.4), // average performance on medium questions
-              accuracy: 0
+            "3": {
+              easy: {
+                completed: Math.floor(total * 0.25 * 0.5), // 25% of questions from year 3, 50% are easy
+                correct: Math.floor(totalCorrect * 0.25 * 0.6), // 60% accuracy on year 3 easy
+                accuracy: 0
+              },
+              medium: {
+                completed: Math.floor(total * 0.25 * 0.4), // 25% of questions from year 3, 40% are medium
+                correct: Math.floor(totalCorrect * 0.25 * 0.5), // 50% accuracy on year 3 medium
+                accuracy: 0
+              },
+              hard: {
+                completed: Math.floor(total * 0.25 * 0.1), // 25% of questions from year 3, 10% are hard
+                correct: Math.floor(totalCorrect * 0.25 * 0.3), // 30% accuracy on year 3 hard
+                accuracy: 0
+              },
+              all: {
+                completed: Math.floor(total * 0.25),
+                correct: Math.floor(totalCorrect * 0.25),
+                accuracy: 0
+              }
             },
-            hard: {
-              completed: Math.floor(total * 0.2), // 20% of questions are hard
-              correct: Math.floor((subjectData.correct || 0) * 0.15), // worse performance on hard questions
-              accuracy: 0
+            "4": {
+              easy: {
+                completed: Math.floor(total * 0.3 * 0.4), // 30% of questions from year 4, 40% are easy
+                correct: Math.floor(totalCorrect * 0.3 * 0.5), // 50% accuracy on year 4 easy
+                accuracy: 0
+              },
+              medium: {
+                completed: Math.floor(total * 0.3 * 0.4), // 30% of questions from year 4, 40% are medium
+                correct: Math.floor(totalCorrect * 0.3 * 0.4), // 40% accuracy on year 4 medium
+                accuracy: 0
+              },
+              hard: {
+                completed: Math.floor(total * 0.3 * 0.2), // 30% of questions from year 4, 20% are hard
+                correct: Math.floor(totalCorrect * 0.3 * 0.3), // 30% accuracy on year 4 hard
+                accuracy: 0
+              },
+              all: {
+                completed: Math.floor(total * 0.3),
+                correct: Math.floor(totalCorrect * 0.3),
+                accuracy: 0
+              }
             },
-            all: {
-              completed: total,
-              correct: subjectData.correct || 0,
-              accuracy: 0
+            "5": {
+              easy: {
+                completed: Math.floor(total * 0.25 * 0.3), // 25% of questions from year 5, 30% are easy
+                correct: Math.floor(totalCorrect * 0.25 * 0.45), // 45% accuracy on year 5 easy
+                accuracy: 0
+              },
+              medium: {
+                completed: Math.floor(total * 0.25 * 0.5), // 25% of questions from year 5, 50% are medium
+                correct: Math.floor(totalCorrect * 0.25 * 0.4), // 40% accuracy on year 5 medium
+                accuracy: 0
+              },
+              hard: {
+                completed: Math.floor(total * 0.25 * 0.2), // 25% of questions from year 5, 20% are hard
+                correct: Math.floor(totalCorrect * 0.25 * 0.2), // 20% accuracy on year 5 hard
+                accuracy: 0
+              },
+              all: {
+                completed: Math.floor(total * 0.25),
+                correct: Math.floor(totalCorrect * 0.25),
+                accuracy: 0
+              }
+            },
+            "6": {
+              easy: {
+                completed: Math.floor(total * 0.2 * 0.2), // 20% of questions from year 6, 20% are easy
+                correct: Math.floor(totalCorrect * 0.2 * 0.4), // 40% accuracy on year 6 easy
+                accuracy: 0
+              },
+              medium: {
+                completed: Math.floor(total * 0.2 * 0.5), // 20% of questions from year 6, 50% are medium
+                correct: Math.floor(totalCorrect * 0.2 * 0.35), // 35% accuracy on year 6 medium
+                accuracy: 0
+              },
+              hard: {
+                completed: Math.floor(total * 0.2 * 0.3), // 20% of questions from year 6, 30% are hard
+                correct: Math.floor(totalCorrect * 0.2 * 0.25), // 25% accuracy on year 6 hard
+                accuracy: 0
+              },
+              all: {
+                completed: Math.floor(total * 0.2),
+                correct: Math.floor(totalCorrect * 0.2),
+                accuracy: 0
+              }
             }
           };
-          
-          // Calculate accuracy percentages
-          Object.keys(mockDifficultyProgress[subject]).forEach(difficulty => {
-            const diffData = mockDifficultyProgress[subject][difficulty as keyof DifficultyProgress];
-            diffData.accuracy = diffData.completed > 0 
-              ? Math.round((diffData.correct / diffData.completed) * 100)
-              : 0;
+
+          // Calculate accuracy for each year progress
+          Object.keys(mockYearProgress[subject]).forEach(year => {
+            Object.keys(mockYearProgress[subject][year as keyof YearProgressData]).forEach(difficulty => {
+              const diffData = mockYearProgress[subject][year as keyof YearProgressData][difficulty as keyof DifficultyProgress];
+              diffData.accuracy = diffData.completed > 0
+                ? Math.round((diffData.correct / diffData.completed) * 100)
+                : 0;
+            });
           });
         });
         
-        setSubjectDifficultyProgress(mockDifficultyProgress);
+        setSubjectYearProgress(mockYearProgress);
       }
     }
   }, [isAuthenticated, navigate, profile, profileLoading]);
@@ -181,17 +280,6 @@ const ProgressPage = () => {
                   console.error(`Missing data for subject: ${subject}`);
                   return null;
                 }
-                
-                const accuracy = subjectData.completed > 0 
-                  ? Math.round((subjectData.correct / subjectData.completed) * 100) 
-                  : 0;
-                
-                const difficultyData = subjectDifficultyProgress[subject] || {
-                  easy: { accuracy: 0, completed: 0, correct: 0 },
-                  medium: { accuracy: 0, completed: 0, correct: 0 },
-                  hard: { accuracy: 0, completed: 0, correct: 0 },
-                  all: { accuracy: 0, completed: 0, correct: 0 }
-                };
                   
                 return (
                   <Card key={subject} className="overflow-hidden">
@@ -202,71 +290,10 @@ const ProgressPage = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Overall Accuracy</span>
-                            <span>{accuracy}%</span>
-                          </div>
-                          <Progress value={accuracy} className="h-2" />
-                        </div>
-                        
-                        <Separator className="my-3" />
-                        
-                        <div className="text-sm font-medium mb-2">Accuracy by Difficulty</div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Easy</span>
-                            <span>{difficultyData.easy.accuracy}%</span>
-                          </div>
-                          <Progress 
-                            value={difficultyData.easy.accuracy} 
-                            className="h-2 bg-emerald-100 dark:bg-emerald-950" 
-                          />
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {difficultyData.easy.correct} / {difficultyData.easy.completed} correct
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Medium</span>
-                            <span>{difficultyData.medium.accuracy}%</span>
-                          </div>
-                          <Progress 
-                            value={difficultyData.medium.accuracy} 
-                            className="h-2 bg-amber-100 dark:bg-amber-950" 
-                          />
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {difficultyData.medium.correct} / {difficultyData.medium.completed} correct
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Hard</span>
-                            <span>{difficultyData.hard.accuracy}%</span>
-                          </div>
-                          <Progress 
-                            value={difficultyData.hard.accuracy} 
-                            className="h-2 bg-rose-100 dark:bg-rose-950" 
-                          />
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {difficultyData.hard.correct} / {difficultyData.hard.completed} correct
-                          </div>
-                        </div>
-
-                      <div className="mt-6 grid grid-cols-2 gap-4 text-center">
-                        <div className="border rounded-lg p-3">
-                          <div className="text-2xl font-bold">{subjectData.completed}</div>
-                          <div className="text-xs text-muted-foreground">Total Questions</div>
-                        </div>
-                        <div className="border rounded-lg p-3">
-                          <div className="text-2xl font-bold">{subjectData.correct}</div>
-                          <div className="text-xs text-muted-foreground">Correct Answers</div>
-                        </div>
-                      </div>
+                      <SubjectYearProgress 
+                        subject={subject} 
+                        yearProgress={subjectYearProgress[subject]} 
+                      />
 
                       <div className="mt-4 flex items-center gap-2">
                         <Button 
@@ -298,7 +325,6 @@ const ProgressPage = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </div>
                       </div>
                     </CardContent>
                   </Card>

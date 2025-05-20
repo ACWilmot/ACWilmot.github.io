@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
@@ -113,7 +114,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       }
       
-      setQuestions(selectedQuestions);
+      setQuestions(selectedQuestions as Question[]);
       setSelectedSubject(subject);
       setCurrentQuestionIndex(0);
       setScore(0);

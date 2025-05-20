@@ -80,7 +80,7 @@ const QuestionBrowserPage = () => {
 
         // Update state with fetched questions
         if (data) {
-          const mappedQuestions = data.map(q => ({
+          const mappedQuestions: Question[] = data.map(q => ({
             id: q.id,
             subject: q.subject as Subject, 
             text: q.text,
@@ -89,7 +89,7 @@ const QuestionBrowserPage = () => {
             explanation: q.explanation || '',
             difficulty: q.difficulty as Difficulty,
             imageUrl: q.image_url,
-            optionImages: q.option_images,
+            optionImages: Array.isArray(q.option_images) ? q.option_images : [],
             year: q.year,
             timesTable: q.times_table
           }));
@@ -178,7 +178,7 @@ const QuestionBrowserPage = () => {
         }
         
         if (data) {
-          const mappedQuestions = data.map(q => ({
+          const mappedQuestions: Question[] = data.map(q => ({
             id: q.id,
             subject: q.subject as Subject,
             text: q.text,
@@ -187,7 +187,7 @@ const QuestionBrowserPage = () => {
             explanation: q.explanation || '',
             difficulty: q.difficulty as Difficulty,
             imageUrl: q.image_url,
-            optionImages: q.option_images,
+            optionImages: Array.isArray(q.option_images) ? q.option_images : [],
             year: q.year,
             timesTable: q.times_table
           }));

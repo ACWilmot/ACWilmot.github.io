@@ -33,12 +33,12 @@ export const uploadQuestionBatch = async (
         id: question.id,
         subject: question.subject,
         text: question.text,
-        options: question.options, // Options should be an array of strings
+        options: question.options.map(opt => String(opt)), // Ensure all options are strings
         correct_answer: question.correctAnswer,
         explanation: question.explanation,
         difficulty: question.difficulty,
-        image_url: question.imageUrl,
-        option_images: question.optionImages || null,
+        image_url: question.imageUrl || null,
+        option_images: Array.isArray(question.optionImages) ? question.optionImages : null,
         year: question.year || null,
         times_table: question.timesTable || null
       }));

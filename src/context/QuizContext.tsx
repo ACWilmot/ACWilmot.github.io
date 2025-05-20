@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
@@ -106,6 +105,16 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
           optionsArray = Object.values(item.options).map(opt => String(opt));
         }
         
+        // Process optionImages if available
+        let optionImagesArray: string[] = [];
+        if (item.option_images) {
+          if (Array.isArray(item.option_images)) {
+            optionImagesArray = item.option_images.map(img => String(img));
+          } else if (typeof item.option_images === 'object' && item.option_images !== null) {
+            optionImagesArray = Object.values(item.option_images).map(img => String(img));
+          }
+        }
+        
         return {
           id: item.id,
           subject: item.subject as Subject,
@@ -115,7 +124,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
           explanation: item.explanation || '',
           difficulty: item.difficulty as Difficulty,
           imageUrl: item.image_url,
-          optionImages: item.option_images,
+          optionImages: optionImagesArray,
           year: item.year,
           timesTable: item.times_table
         };

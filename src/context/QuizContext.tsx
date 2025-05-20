@@ -4,8 +4,6 @@ import { Question, Difficulty, Subject } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useProfile } from './ProfileContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 interface QuizContextType {
   questions: Question[];
@@ -58,156 +56,70 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { updateProgress } = useProgressActions(null, null);
   const { profile, updateTimesTablesProgress } = useProfile();
 
-  const fetchQuestionsFromSupabase = async (subject: Subject, difficulty: Difficulty | 'all', year: number | null, limit: number) => {
-    try {
-      let query = supabase
-        .from('questions')
-        .select('*');
-        
-      // Apply subject filter if not 'all'
-      if (subject !== 'all') {
-        query = query.eq('subject', subject);
-      }
-      
-      // Apply difficulty filter if not 'all'
-      if (difficulty !== 'all') {
-        query = query.eq('difficulty', difficulty);
-      }
-      
-      // Apply year filter if specified
-      if (year !== null) {
-        query = query.eq('year', year);
-      }
-      
-      // Limit results and order by creation date (newest first)
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .limit(limit);
-        
-      if (error) {
-        console.error('Error fetching questions:', error);
-        throw error;
-      }
-      
-      if (!data || data.length === 0) {
-        console.log('No questions found in database, falling back to sample questions');
-        return null;
-      }
-      
-      // Convert database format to application format with proper type handling
-      return data.map(item => {
-        // Ensure options is correctly converted to string array
-        let optionsArray: string[] = [];
-        if (Array.isArray(item.options)) {
-          optionsArray = item.options.map(opt => String(opt));
-        } else if (typeof item.options === 'object' && item.options !== null) {
-          // Handle case where options might be an object with numeric keys
-          optionsArray = Object.values(item.options).map(opt => String(opt));
-        }
-        
-        // Process optionImages if available
-        let optionImagesArray: string[] = [];
-        if (item.option_images) {
-          if (Array.isArray(item.option_images)) {
-            optionImagesArray = item.option_images.map(img => String(img));
-          } else if (typeof item.option_images === 'object' && item.option_images !== null) {
-            optionImagesArray = Object.values(item.option_images).map(img => String(img));
-          }
-        }
-        
-        return {
-          id: item.id,
-          subject: item.subject as Subject,
-          text: item.text,
-          options: optionsArray,
-          correctAnswer: item.correct_answer,
-          explanation: item.explanation || '',
-          difficulty: item.difficulty as Difficulty,
-          imageUrl: item.image_url,
-          optionImages: optionImagesArray,
-          year: item.year,
-          timesTable: item.times_table
-        };
-      });
-    } catch (error) {
-      console.error('Error in fetchQuestionsFromSupabase:', error);
-      return null;
-    }
-  };
-
-  const startQuiz = async (subject: Subject) => {
+  const startQuiz = (subject: Subject) => {
     setIsLoading(true);
     
     setStartTime(Date.now());
     setEndTime(null);
     
-    try {
+    setTimeout(() => {
+      let selectedQuestions: Question[] = [];
+      
       if (subject === 'timesTables') {
-        const timesTablesQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
-        setQuestions(timesTablesQuestions);
-      } else {
-        // Try to fetch questions from Supabase first
-        const supabaseQuestions = await fetchQuestionsFromSupabase(
-          subject, 
-          selectedDifficulty, 
-          selectedYear,
-          questionCount
-        );
+        selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
+        console.log("Generated times tables questions:", selectedQuestions);
+      } else if (subject === 'all') {
+        let subjectQuestions: Question[] = [];
+        Object.values(sampleQuestions).forEach(questions => {
+          subjectQuestions = [...subjectQuestions, ...questions];
+        });
         
-        if (supabaseQuestions && supabaseQuestions.length > 0) {
-          // Use Supabase questions if available
-          setQuestions(supabaseQuestions);
-          console.log("Using questions from Supabase:", supabaseQuestions);
-        } else {
-          // Fall back to sample questions if no Supabase questions available
-          let subjectQuestions: Question[] = [];
+        // Filter by difficulty and year if selected
+        let filteredQuestions = selectedDifficulty === 'all' 
+          ? subjectQuestions 
+          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
           
-          if (subject === 'all') {
-            Object.values(sampleQuestions).forEach(questions => {
-              subjectQuestions = [...subjectQuestions, ...questions];
-            });
-          } else {
-            subjectQuestions = [...sampleQuestions[subject]];
-          }
-          
-          // Filter by difficulty and year
-          let filteredQuestions = selectedDifficulty === 'all' 
-            ? subjectQuestions 
-            : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
-            
-          if (selectedYear) {
-            filteredQuestions = filteredQuestions.filter(q => 
-              !q.year || q.year === selectedYear
-            );
-          }
-          
-          // Shuffle questions
-          for (let i = filteredQuestions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
-          }
-          
-          // Select limited number of questions
-          const selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
-          setQuestions(selectedQuestions);
-          console.log("Using fallback sample questions:", selectedQuestions);
-          
-          if (filteredQuestions.length === 0) {
-            toast.warning("No questions found matching your criteria. Try adjusting your filters.");
-          }
+        if (selectedYear) {
+          filteredQuestions = filteredQuestions.filter(q => 
+            !q.year || q.year === selectedYear
+          );
         }
+        
+        for (let i = filteredQuestions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
+        }
+        
+        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
+      } else {
+        const subjectQuestions = [...sampleQuestions[subject]];
+        
+        // Filter by difficulty and year if selected
+        let filteredQuestions = selectedDifficulty === 'all' 
+          ? subjectQuestions 
+          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
+          
+        if (selectedYear) {
+          filteredQuestions = filteredQuestions.filter(q => 
+            !q.year || q.year === selectedYear
+          );
+        }
+        
+        for (let i = filteredQuestions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
+        }
+        
+        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       }
       
+      setQuestions(selectedQuestions);
       setSelectedSubject(subject);
       setCurrentQuestionIndex(0);
       setScore(0);
       setUserAnswers({});
-    } catch (error) {
-      console.error("Error starting quiz:", error);
-      toast.error("There was an error starting the quiz. Please try again.");
-    } finally {
       setIsLoading(false);
-    }
+    }, 800);
   };
 
   const answerQuestion = (questionId: string, answer: string) => {

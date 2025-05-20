@@ -56,11 +56,7 @@ const generateDemoData = (): TimesTableProgress[] => {
   });
 };
 
-interface TimesTablesProgressProps {
-  timesTablesProgress?: TimesTableProgress[];
-}
-
-const TimesTablesProgress: React.FC<TimesTablesProgressProps> = ({ timesTablesProgress: externalProgress }) => {
+const TimesTablesProgress: React.FC = () => {
   const navigate = useNavigate();
   const { profile, updateProfile, isLoading } = useProfile();
   const { resetSubjectProgress } = useProgressActions(profile, updateProfile);
@@ -69,9 +65,8 @@ const TimesTablesProgress: React.FC<TimesTablesProgressProps> = ({ timesTablesPr
   
   console.log("TimesTablesProgress rendering with profile data:", profile);
   console.log("Profile loading state:", isLoading);
-  console.log("External progress data:", externalProgress);
   
-  const timesTablesProgress = externalProgress || profile?.timesTablesProgress || getDefaultTimesTablesProgress();
+  const timesTablesProgress = profile?.timesTablesProgress || getDefaultTimesTablesProgress();
   
   console.log("Using times tables progress:", timesTablesProgress);
 

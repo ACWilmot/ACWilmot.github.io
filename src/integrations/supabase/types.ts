@@ -192,54 +192,6 @@ export type Database = {
         }
         Relationships: []
       }
-      questions: {
-        Row: {
-          correct_answer: string
-          created_at: string
-          difficulty: string
-          explanation: string | null
-          id: string
-          image_url: string | null
-          option_images: Json | null
-          options: Json
-          subject: string
-          text: string
-          times_table: number | null
-          user_id: string | null
-          year: number | null
-        }
-        Insert: {
-          correct_answer: string
-          created_at?: string
-          difficulty: string
-          explanation?: string | null
-          id?: string
-          image_url?: string | null
-          option_images?: Json | null
-          options: Json
-          subject: string
-          text: string
-          times_table?: number | null
-          user_id?: string | null
-          year?: number | null
-        }
-        Update: {
-          correct_answer?: string
-          created_at?: string
-          difficulty?: string
-          explanation?: string | null
-          id?: string
-          image_url?: string | null
-          option_images?: Json | null
-          options?: Json
-          subject?: string
-          text?: string
-          times_table?: number | null
-          user_id?: string | null
-          year?: number | null
-        }
-        Relationships: []
-      }
       worksheet_uploads: {
         Row: {
           class_id: string | null

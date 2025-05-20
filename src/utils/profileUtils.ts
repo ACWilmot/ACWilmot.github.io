@@ -35,7 +35,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
         const backupProfile: Profile = {
           id: userId,
           name: userMetadata.name || userData.user.email?.split('@')[0] || 'User',
-          role: (userMetadata.role as 'student' | 'teacher') || 'student',
+          role: 'parent',
           progress: { ...resetSubjects },
           timesTablesProgress: getDefaultTimesTablesProgress(),
           email: userData.user.email
@@ -75,7 +75,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
         const newProfile: Profile = {
           id: userId,
           name: userMetadata.name || userData.user.email?.split('@')[0] || 'User',
-          role: (userMetadata.role as 'student' | 'teacher') || 'student',
+          role: 'parent',
           progress: { ...resetSubjects },
           timesTablesProgress: getDefaultTimesTablesProgress(),
           email: userData.user.email
@@ -129,9 +129,8 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       const profile: Profile = {
         id: data.id,
         name: data.name || '',
-        role: (data.role as 'student' | 'teacher') || 'student',
-        progress: progressData,
-        students: data.students || []
+        role: 'parent',
+        progress: progressData
       };
       
       // Process times tables progress if it exists
@@ -190,7 +189,7 @@ export async function fetchUserProfile(userId: string): Promise<Profile | null> 
       const fallbackProfile: Profile = {
         id: userId,
         name: userMetadata.name || userData.user.email?.split('@')[0] || 'User',
-        role: (userMetadata.role as 'student' | 'teacher') || 'student',
+        role: 'parent',
         progress: { ...resetSubjects },
         timesTablesProgress: getDefaultTimesTablesProgress(),
         email: userData.user.email

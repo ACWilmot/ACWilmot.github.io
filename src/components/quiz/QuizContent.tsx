@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -86,6 +87,11 @@ const QuizContent: React.FC<QuizContentProps> = ({
     }
   };
 
+  const handleStartWorksheet = (worksheetId: string) => {
+    console.log("Starting worksheet:", worksheetId);
+    // Implementation for starting worksheet would go here
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <Header />
@@ -107,20 +113,17 @@ const QuizContent: React.FC<QuizContentProps> = ({
             />
           </div>
           
-          <WorksheetOptions 
-            currentQuestion={currentQuestionIndex + 1}
-            totalQuestions={questions.length}
-            showWorksheetOption={showWorksheetOption}
-            setShowWorksheetOption={setShowWorksheetOption}
-            questions={questions}
-            subject={selectedSubject}
-            difficulty={selectedDifficulty}
-          />
+          {selectedSubject && (
+            <WorksheetOptions 
+              subject={selectedSubject}
+              onStartWorksheet={handleStartWorksheet}
+            />
+          )}
         </div>
         
         <AnimatePresence mode="wait">
           <QuestionCard
-            key={currentQuestion.id}
+            key={currentQuestion?.id}
             question={currentQuestion}
             userAnswer={userAnswer}
             onAnswer={handleAnswer}

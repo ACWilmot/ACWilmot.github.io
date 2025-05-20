@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,12 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Search, ChevronDown, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, Loader2, Upload, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Question, Subject, Difficulty } from '@/types/questionTypes';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { uploadQuestionBatch, getAllLocalQuestions } from '@/utils/questionUploadUtils';
+import { Progress } from '@/components/ui/progress';
 
 const QuestionBrowserPage = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | 'all'>('all');
@@ -22,6 +23,8 @@ const QuestionBrowserPage = () => {
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
 
   // Fetch questions from Supabase
@@ -118,13 +121,128 @@ const QuestionBrowserPage = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Handle uploading all questions to Supabase
+  const handleUploadAllQuestions = async () => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    try {
+      // Get all questions from local data files
+      const allQuestions = getAllLocalQuestions();
+      
+      toast({
+        title: "Starting upload",
+        description: `Preparing to upload ${allQuestions.length} questions to the database...`,
+      });
+      
+      // Upload questions in batches with progress tracking
+      const result = await uploadQuestionBatch(
+        allQuestions,
+        (current, total) => {
+          const progressPercent = Math.round((current / total) * 100);
+          setUploadProgress(progressPercent);
+        }
+      );
+      
+      // Show result toast
+      toast({
+        title: result.success ? "Upload Complete" : "Upload Finished with Errors",
+        description: result.message,
+        variant: result.success ? "default" : "destructive",
+      });
+      
+      // Refresh the questions list
+      if (result.uploaded > 0) {
+        setIsLoading(true);
+        // Re-fetch questions to update the list
+        const query = supabase.from('questions').select('*');
+        // Apply existing filters if any
+        if (selectedSubject !== 'all') {
+          query.eq('subject', selectedSubject);
+        }
+        if (selectedDifficulty !== 'all') {
+          query.eq('difficulty', selectedDifficulty);
+        }
+        if (selectedYear) {
+          query.eq('year', selectedYear);
+        }
+        if (searchQuery) {
+          query.or(`text.ilike.%${searchQuery}%,explanation.ilike.%${searchQuery}%`);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          const mappedQuestions = data.map(q => ({
+            id: q.id,
+            subject: q.subject as Subject,
+            text: q.text,
+            options: Array.isArray(q.options) ? q.options : [],
+            correctAnswer: q.correct_answer,
+            explanation: q.explanation || '',
+            difficulty: q.difficulty as Difficulty,
+            imageUrl: q.image_url,
+            optionImages: q.option_images,
+            year: q.year,
+            timesTable: q.times_table
+          }));
+          setQuestions(mappedQuestions);
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading questions:', error);
+      toast({
+        title: "Upload Failed",
+        description: `An error occurred during upload: ${(error as Error).message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <h1 className="text-3xl font-bold mb-6">Question Browser</h1>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <h1 className="text-3xl font-bold">Question Browser</h1>
+          <Button 
+            onClick={handleUploadAllQuestions} 
+            disabled={isUploading} 
+            className="mt-4 md:mt-0"
+            variant="outline"
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Database className="mr-2 h-4 w-4" />
+                Upload All Questions
+              </>
+            )}
+          </Button>
+        </div>
+        
         <p className="text-muted-foreground mb-8">
           Browse all {totalCount} questions in our database. Filter by subject, difficulty, and year.
         </p>
+
+        {isUploading && (
+          <div className="mb-8">
+            <p className="text-sm font-medium mb-2">Upload Progress</p>
+            <Progress value={uploadProgress} className="h-2" />
+            <p className="text-xs text-muted-foreground mt-1 text-right">{uploadProgress}% Complete</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div>

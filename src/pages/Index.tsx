@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,9 +11,11 @@ import {
   History,
   Globe,
   Church,
+  Lock,
 } from 'lucide-react';
 import { Slider } from "@/components/ui/slider"
 import { useAuth } from '@/context/AuthContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import { Layout } from '@/components/Layout';
 import SubjectCard from '@/components/SubjectCard';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import { Subject } from '@/types/questionTypes';
 const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { isSubscribed } = useSubscription();
   const {
     startQuiz,
     selectedSubject,
@@ -43,9 +45,18 @@ const Index = () => {
 
   React.useEffect(() => {
     setSelectedSubject('all');
-  }, [setSelectedSubject]);
+    
+    // For free users, limit to 10 questions
+    if (!isSubscribed) {
+      setQuestionCount(10);
+    }
+  }, [setSelectedSubject, isSubscribed, setQuestionCount]);
 
   const handleSubjectSelect = (subject: Subject) => {
+    if (subject !== 'all' && !isSubscribed) {
+      navigate('/profile?tab=subscription');
+      return;
+    }
     setSelectedSubject(subject);
   };
 
@@ -60,6 +71,11 @@ const Index = () => {
   };
 
   const handleSliderChange = (value: number[]) => {
+    if (!isSubscribed) {
+      // Free users are limited to 10 questions
+      return;
+    }
+    
     const questionCounts = [5, 10, 20, 30, 50, 100];
     const index = Math.min(
       Math.floor((value[0] / 100) * questionCounts.length),
@@ -148,58 +164,66 @@ const Index = () => {
                   isSelected={selectedSubject === 'all'}
                   onClick={() => handleSubjectSelect('all')}
                 />
+                
+                {/* Premium Subject Cards - Grey out for free users */}
                 <SubjectCard
                   subject="maths"
-                  description="Numbers, shapes, and problem solving"
-                  icon={<Calculator className="h-5 w-5" />}
+                  description={!isSubscribed ? "Premium required" : "Numbers, shapes, and problem solving"}
+                  icon={!isSubscribed ? <Lock className="h-5 w-5" /> : <Calculator className="h-5 w-5" />}
                   isSelected={selectedSubject === 'maths'}
                   onClick={() => handleSubjectSelect('maths')}
+                  className={!isSubscribed ? "opacity-50" : ""}
                 />
                 <SubjectCard
                   subject="english"
-                  description="Vocabulary, grammar, and comprehension"
-                  icon={<BookOpen className="h-5 w-5" />}
+                  description={!isSubscribed ? "Premium required" : "Vocabulary, grammar, and comprehension"}
+                  icon={!isSubscribed ? <Lock className="h-5 w-5" /> : <BookOpen className="h-5 w-5" />}
                   isSelected={selectedSubject === 'english'}
                   onClick={() => handleSubjectSelect('english')}
+                  className={!isSubscribed ? "opacity-50" : ""}
                 />
                 <SubjectCard
                   subject="verbal"
-                  description="Word problems and logic puzzles"
-                  icon={<BookText className="h-5 w-5" />}
+                  description={!isSubscribed ? "Premium required" : "Word problems and logic puzzles"}
+                  icon={!isSubscribed ? <Lock className="h-5 w-5" /> : <BookText className="h-5 w-5" />}
                   isSelected={selectedSubject === 'verbal'}
                   onClick={() => handleSubjectSelect('verbal')}
+                  className={!isSubscribed ? "opacity-50" : ""}
                 />
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                 <SubjectCard
                   subject="timesTables"
-                  description="Practice multiplication tables"
-                  icon={<Table2 className="h-5 w-5" />}
+                  description={!isSubscribed ? "Premium required" : "Practice multiplication tables"}
+                  icon={!isSubscribed ? <Lock className="h-5 w-5" /> : <Table2 className="h-5 w-5" />}
                   isSelected={selectedSubject === 'timesTables'}
                   onClick={() => handleSubjectSelect('timesTables')}
-                  className="bg-primary/5"
+                  className={!isSubscribed ? "opacity-50" : "bg-primary/5"}
                 />
                 <SubjectCard
                   subject="history"
-                  description="British and world history"
-                  icon={<History className="h-5 w-5" />}
+                  description={!isSubscribed ? "Premium required" : "British and world history"}
+                  icon={!isSubscribed ? <Lock className="h-5 w-5" /> : <History className="h-5 w-5" />}
                   isSelected={selectedSubject === 'history'}
                   onClick={() => handleSubjectSelect('history')}
+                  className={!isSubscribed ? "opacity-50" : ""}
                 />
                 <SubjectCard
                   subject="geography"
-                  description="UK and global geography"
-                  icon={<Globe className="h-5 w-5" />}
+                  description={!isSubscribed ? "Premium required" : "UK and global geography"}
+                  icon={!isSubscribed ? <Lock className="h-5 w-5" /> : <Globe className="h-5 w-5" />}
                   isSelected={selectedSubject === 'geography'}
                   onClick={() => handleSubjectSelect('geography')}
+                  className={!isSubscribed ? "opacity-50" : ""}
                 />
                 <SubjectCard
                   subject="religiousEd"
-                  description="Religious education"
-                  icon={<Church className="h-5 w-5" />}
+                  description={!isSubscribed ? "Premium required" : "Religious education"}
+                  icon={!isSubscribed ? <Lock className="h-5 w-5" /> : <Church className="h-5 w-5" />}
                   isSelected={selectedSubject === 'religiousEd'}
                   onClick={() => handleSubjectSelect('religiousEd')}
+                  className={!isSubscribed ? "opacity-50" : ""}
                 />
               </div>
             </div>
@@ -214,18 +238,24 @@ const Index = () => {
                 <>
                   <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
                   <div className="flex justify-center mb-6">
-                    <DifficultySelector 
-                      selectedDifficulty={selectedDifficulty}
-                      onChange={setSelectedDifficulty}
-                    />
+                    {/* Grey out for free users but keep it visible */}
+                    <div className={!isSubscribed ? "opacity-50 pointer-events-none w-full" : ""}>
+                      <DifficultySelector 
+                        selectedDifficulty={selectedDifficulty}
+                        onChange={setSelectedDifficulty}
+                      />
+                    </div>
                   </div>
                   
                   <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select year level</h2>
                   <div className="flex justify-center mb-8">
-                    <YearSelector
-                      selectedYear={selectedYear}
-                      onChange={setSelectedYear}
-                    />
+                    {/* Grey out for free users but keep it visible */}
+                    <div className={!isSubscribed ? "opacity-50 pointer-events-none w-full" : ""}>
+                      <YearSelector
+                        selectedYear={selectedYear}
+                        onChange={setSelectedYear}
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -233,24 +263,30 @@ const Index = () => {
               {selectedSubject === 'timesTables' && (
                 <div className="mb-8">
                   <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select times tables</h2>
-                  <TimesTablesSelector
-                    selectedTables={selectedTimesTables}
-                    onChange={setSelectedTimesTables}
-                    className="mb-6"
-                  />
+                  {/* Grey out for free users but keep it visible */}
+                  <div className={!isSubscribed ? "opacity-50 pointer-events-none" : ""}>
+                    <TimesTablesSelector
+                      selectedTables={selectedTimesTables}
+                      onChange={setSelectedTimesTables}
+                      className="mb-6"
+                    />
+                  </div>
                 </div>
               )}
               
               <div className="glass p-6 rounded-xl mb-6 flex flex-col items-center">
                 <h3 className="text-lg font-medium mb-4">Number of questions</h3>
                 <div className="w-full max-w-md mb-6">
-                  <Slider
-                    defaultValue={[getSliderValue()]}
-                    max={100}
-                    step={20}
-                    onValueChange={handleSliderChange}
-                    className="w-full"
-                  />
+                  {/* Grey out for free users but keep it visible */}
+                  <div className={!isSubscribed ? "opacity-50 pointer-events-none" : ""}>
+                    <Slider
+                      defaultValue={[getSliderValue()]}
+                      max={100}
+                      step={20}
+                      onValueChange={handleSliderChange}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-between w-full max-w-md text-sm text-muted-foreground mb-2">
                   <span>5</span>
@@ -262,6 +298,11 @@ const Index = () => {
                 </div>
                 <p className="mt-4 text-sm text-center">
                   You selected {questionCount} questions
+                  {!isSubscribed && (
+                    <span className="block text-xs text-muted-foreground mt-1">
+                      (Free accounts are limited to 10 questions)
+                    </span>
+                  )}
                 </p>
               </div>
 
@@ -276,6 +317,19 @@ const Index = () => {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
+              
+              {!isSubscribed && (
+                <div className="mt-4 text-center">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/profile?tab=subscription')}
+                    className="text-xs"
+                  >
+                    Unlock Premium Features
+                  </Button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

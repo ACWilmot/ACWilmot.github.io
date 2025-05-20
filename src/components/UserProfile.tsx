@@ -10,11 +10,14 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, BarChart } from 'lucide-react';
+import { LogOut, User, BarChart, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSubscription } from '@/context/SubscriptionContext';
+import { Badge } from '@/components/ui/badge';
 
 const UserProfile = () => {
   const { user, logout } = useAuth();
+  const { isSubscribed } = useSubscription();
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -39,6 +42,9 @@ const UserProfile = () => {
             </AvatarFallback>
           </Avatar>
           <span className="text-sm font-medium hidden md:block">{user.name}</span>
+          {isSubscribed && (
+            <Badge className="ml-1 text-xs py-0 h-5" variant="secondary">Premium</Badge>
+          )}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -47,6 +53,10 @@ const UserProfile = () => {
         <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/profile?tab=subscription')} className="cursor-pointer">
+          <CreditCard className="mr-2 h-4 w-4" />
+          <span>Subscription</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/progress')} className="cursor-pointer">
           <BarChart className="mr-2 h-4 w-4" />

@@ -1,369 +1,188 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Check, X, RotateCcw, Home } from 'lucide-react';
-import Header from '@/components/Header';
+
+import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
+import { useSubscription } from '@/context/SubscriptionContext';
+import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { toast } from "sonner";
-import WorksheetList from '@/components/WorksheetList';
-import { useProgressActions } from '@/hooks/useProgressActions';
-import { useProfile } from '@/context/ProfileContext';
-import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart, Clock, Home, RotateCcw, Award, ArrowUpRight } from 'lucide-react';
+import { formatTime } from '@/utils/timeUtils';
 
 const ResultsPage = () => {
-  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { profile } = useProfile();
+  const { isSubscribed } = useSubscription();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const {
     questions,
     userAnswers,
+    score,
+    startTime,
+    endTime,
     selectedSubject,
+    selectedDifficulty,
     resetQuiz,
-    getResults,
-    startQuiz
+    getResults
   } = useQuiz();
   
-  const { updateProgress, updateTimesTablesProgress } = useProgressActions(profile, null);
-  
-  const [progressUpdated, setProgressUpdated] = useState(false);
+  const { percentage, totalQuestions, answeredQuestions, timeTaken } = getResults();
   
   useEffect(() => {
     if (!isAuthenticated) {
-      toast.error("Please sign in to access your results");
       navigate('/login');
       return;
     }
     
-    if (!selectedSubject) {
+    // If no quiz data, redirect back to home
+    if (questions.length === 0) {
       navigate('/');
+      return;
     }
-  }, [selectedSubject, navigate, isAuthenticated]);
+  }, [isAuthenticated, navigate, questions.length]);
   
-  const { score, totalQuestions, percentage } = getResults();
-  
-  useEffect(() => {
-    const updateUserProgress = async () => {
-      if (!isAuthenticated || !selectedSubject || questions.length === 0 || progressUpdated || totalQuestions === 0) {
-        return;
-      }
-      
-      try {
-        // Handle times tables progress separately
-        if (selectedSubject === 'timesTables') {
-          console.log("Updating times tables progress with", questions.length, "questions");
-          
-          // Make sure we have the questions and answers
-          if (questions.length > 0 && Object.keys(userAnswers).length > 0) {
-            console.log("Times tables questions to update:", questions.map(q => ({
-              id: q.id,
-              timesTable: q.timesTable,
-              userAnswer: userAnswers[q.id],
-              correctAnswer: q.correctAnswer
-            })));
-            
-            // Direct update to Supabase for times tables progress
-            if (profile && profile.id) {
-              try {
-                // Get current times tables progress
-                const currentProgress = profile.timesTablesProgress || 
-                  Array.from({ length: 12 }, (_, i) => ({
-                    table: i + 1,
-                    attempts: 0,
-                    correct: 0,
-                    recentAttempts: []
-                  }));
-                
-                // Process each question
-                questions.forEach(question => {
-                  if (!question.timesTable || question.subject !== 'timesTables') {
-                    return;
-                  }
-                  
-                  const tableIndex = currentProgress.findIndex(t => t.table === question.timesTable);
-                  if (tableIndex === -1) {
-                    return;
-                  }
-                  
-                  const tableProgress = currentProgress[tableIndex];
-                  const userAnswer = userAnswers[question.id];
-                  const wasCorrect = userAnswer === question.correctAnswer;
-                  
-                  // Update statistics
-                  tableProgress.attempts += 1;
-                  if (wasCorrect) {
-                    tableProgress.correct += 1;
-                  }
-                  
-                  // Add to recent attempts
-                  tableProgress.recentAttempts = [
-                    {
-                      correct: wasCorrect,
-                      timestamp: new Date().toISOString()
-                    },
-                    ...(tableProgress.recentAttempts || []).slice(0, 9)
-                  ];
-                  
-                  // Update in array
-                  currentProgress[tableIndex] = tableProgress;
-                });
-                
-                // Convert to JSON-compatible format
-                const jsonCompatibleData = currentProgress.map(item => ({
-                  table: item.table,
-                  attempts: item.attempts,
-                  correct: item.correct,
-                  recentAttempts: item.recentAttempts.map(attempt => ({
-                    correct: attempt.correct,
-                    timestamp: attempt.timestamp
-                  }))
-                }));
-                
-                console.log("Saving times tables progress directly to Supabase:", jsonCompatibleData);
-                
-                // Save to Supabase
-                const { error } = await supabase
-                  .from('profiles')
-                  .update({ timesTablesProgress: jsonCompatibleData })
-                  .eq('id', profile.id);
-                  
-                if (error) {
-                  console.error("Error saving times tables progress to Supabase:", error);
-                  toast.error("Failed to save your progress");
-                } else {
-                  console.log("Times tables progress saved successfully to Supabase");
-                  toast.success("Your progress has been saved");
-                }
-              } catch (error) {
-                console.error("Error processing times tables progress:", error);
-                toast.error("Failed to save your progress");
-              }
-            } else {
-              // Fallback to the hook method if direct update fails
-              await updateTimesTablesProgress(questions, userAnswers);
-            }
-            
-            console.log("Times tables progress update completed");
-          } else {
-            console.error("Missing questions or answers for times tables progress update");
-          }
-        } else {
-          // Regular progress update for other subjects
-          console.log(`Updating progress for ${selectedSubject}: completed=${totalQuestions}, correct=${score}`);
-          await updateProgress(selectedSubject, totalQuestions, score);
-        }
-        setProgressUpdated(true);
-      } catch (error) {
-        console.error('Error updating progress:', error);
-      }
-    };
-    
-    updateUserProgress();
-  }, [isAuthenticated, selectedSubject, questions, progressUpdated, updateProgress, updateTimesTablesProgress, score, totalQuestions, userAnswers, profile]);
-  
-  const getGrade = () => {
-    if (percentage >= 90) return { text: 'Excellent', color: 'text-green-500' };
-    if (percentage >= 80) return { text: 'Great', color: 'text-green-500' };
-    if (percentage >= 70) return { text: 'Good', color: 'text-blue-500' };
-    if (percentage >= 60) return { text: 'Satisfactory', color: 'text-blue-500' };
-    if (percentage >= 50) return { text: 'Needs Improvement', color: 'text-amber-500' };
-    return { text: 'More Practice Needed', color: 'text-red-500' };
+  const getGrade = (percentage: number) => {
+    if (percentage >= 90) return 'A*';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 70) return 'B';
+    if (percentage >= 60) return 'C';
+    if (percentage >= 50) return 'D';
+    return 'E';
   };
   
   const handleTryAgain = () => {
-    if (selectedSubject) {
-      startQuiz(selectedSubject);
-      navigate('/quiz');
-    }
-  };
-  
-  const handleGoHome = () => {
     resetQuiz();
     navigate('/');
   };
 
-  const grade = getGrade();
-
-  const answeredQuestions = questions.filter(question => userAnswers[question.id]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
       
-      <main className="pt-32 pb-16 px-6 max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <motion.h1 
-            className="text-4xl font-display font-bold mb-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Your Results
-          </motion.h1>
-          <motion.p 
-            className="text-lg text-muted-foreground"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            {selectedSubject?.charAt(0).toUpperCase() + selectedSubject?.slice(1)} practice assessment
-          </motion.p>
-        </motion.div>
-        
-        <div className="max-w-3xl mx-auto grid gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="glass rounded-2xl p-8 text-center"
-          >
-            <div className="mb-6">
-              <span className={`text-xl font-medium ${grade.color}`}>
-                {grade.text}
-              </span>
-            </div>
-            
-            <div className="flex justify-center mb-8">
-              <div className="relative w-40 h-40">
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  <circle
-                    className="text-secondary"
-                    strokeWidth="8"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="50"
-                    cy="50"
-                  />
-                  <circle
-                    className="text-primary"
-                    strokeWidth="8"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="50"
-                    cy="50"
-                    strokeDasharray={`${percentage * 2.51} 251.2`}
-                    strokeDashoffset="0"
-                    strokeLinecap="round"
-                    transform="rotate(-90 50 50)"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-display font-bold">
-                    {Math.round(percentage)}%
-                  </span>
+      <main className="flex-1 container px-4 pt-32 pb-16 max-w-5xl mx-auto">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl md:text-4xl font-display">Quiz Results</CardTitle>
+            <CardDescription>
+              {selectedSubject && <span className="capitalize">{selectedSubject}</span>}
+              {selectedDifficulty && selectedDifficulty !== 'all' && <span> • {selectedDifficulty} difficulty</span>}
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-8">
+            <div className="flex flex-col md:flex-row justify-around gap-4 md:gap-8">
+              <div className="text-center">
+                <div className="bg-primary/10 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                  <Award className="h-8 w-8 text-primary" />
                 </div>
+                <p className="text-muted-foreground text-sm mb-1">Grade</p>
+                <p className="text-2xl font-display font-bold">{getGrade(percentage)}</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-primary/10 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                  <BarChart className="h-8 w-8 text-primary" />
+                </div>
+                <p className="text-muted-foreground text-sm mb-1">Score</p>
+                <p className="text-2xl font-display font-bold">{score}/{totalQuestions}</p>
+                <p className="text-sm text-muted-foreground">
+                  {percentage.toFixed(0)}% correct
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-primary/10 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                  <Clock className="h-8 w-8 text-primary" />
+                </div>
+                <p className="text-muted-foreground text-sm mb-1">Time</p>
+                <p className="text-2xl font-display font-bold">{formatTime(timeTaken || 0)}</p>
               </div>
             </div>
             
-            <div className="flex justify-center gap-8 text-center">
-              <div>
-                <p className="text-3xl font-display font-bold">{score}</p>
-                <p className="text-sm text-muted-foreground">Correct</p>
+            <Card className="overflow-hidden">
+              <div className="p-4 bg-muted flex justify-between items-center">
+                <p className="font-medium">Question Summary</p>
+                <p className="text-sm text-muted-foreground">{answeredQuestions}/{totalQuestions} answered</p>
               </div>
-              <div>
-                <p className="text-3xl font-display font-bold">{totalQuestions - score}</p>
-                <p className="text-sm text-muted-foreground">Incorrect</p>
-              </div>
-              <div>
-                <p className="text-3xl font-display font-bold">{totalQuestions}</p>
-                <p className="text-sm text-muted-foreground">Total</p>
-              </div>
-            </div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <WorksheetList subject={selectedSubject} limit={3} />
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <h2 className="text-xl font-display font-semibold mb-4">
-              Question Breakdown {answeredQuestions.length > 0 ? `(${answeredQuestions.length} answered)` : ''}
-            </h2>
-            {answeredQuestions.length > 0 ? (
-              <div className="space-y-3">
-                {answeredQuestions.map((question) => {
-                  const isCorrect = userAnswers[question.id] === question.correctAnswer;
+              <div className="max-h-64 overflow-y-auto">
+                {questions.map((question, index) => {
+                  const userAnswer = userAnswers[question.id];
+                  const isCorrect = userAnswer === question.correctAnswer;
+                  const isAnswered = userAnswer !== undefined;
                   
                   return (
-                    <Card key={question.id} className="flex items-center p-4">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 flex-shrink-0 ${
-                        isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                    <div key={question.id} className={`p-4 flex items-start gap-3 border-b ${
+                      !isAnswered ? 'bg-muted/30' : isCorrect ? 'bg-green-50' : 'bg-red-50'
+                    }`}>
+                      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
+                        !isAnswered ? 'bg-muted text-muted-foreground' : 
+                          isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                       }`}>
-                        {isCorrect ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <X className="h-4 w-4" />
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium line-clamp-2 mb-1">
+                          {question.text}
+                        </p>
+                        {isAnswered && (
+                          <div className="text-xs space-y-1">
+                            <p>Your answer: <span className={isCorrect ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                              {userAnswer}
+                            </span></p>
+                            {!isCorrect && <p className="text-green-600">
+                              Correct answer: <span className="font-medium">{question.correctAnswer}</span>
+                            </p>}
+                          </div>
+                        )}
+                        {!isAnswered && (
+                          <p className="text-xs text-muted-foreground">Not answered</p>
                         )}
                       </div>
-                      
-                      <div className="flex-grow">
-                        <p className="text-sm font-medium line-clamp-1">{question.text}</p>
-                        <div className="flex text-xs text-muted-foreground">
-                          <span>Your answer: </span>
-                          <span className={isCorrect ? 'text-green-600 ml-1' : 'text-red-600 ml-1'}>
-                            {userAnswers[question.id]}
-                          </span>
-                          {!isCorrect && (
-                            <>
-                              <span className="mx-1">•</span>
-                              <span>Correct: </span>
-                              <span className="text-green-600 ml-1">{question.correctAnswer}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
+                    </div>
                   );
                 })}
               </div>
-            ) : (
-              <div className="text-center p-6 border rounded-lg bg-background">
-                <p className="text-muted-foreground">No questions answered yet</p>
-              </div>
-            )}
-          </motion.div>
+            </Card>
+          </CardContent>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex flex-col sm:flex-row justify-center gap-4 mt-8"
-          >
+          <CardFooter className="flex flex-col md:flex-row gap-3">
             <Button 
               variant="outline" 
-              onClick={handleGoHome}
-              className="flex items-center gap-2"
+              className="w-full md:w-auto"
+              onClick={() => navigate('/')}
             >
-              <Home className="h-4 w-4" />
-              Return Home
+              <Home className="mr-2 h-4 w-4" />
+              Home
             </Button>
-            
             <Button 
+              variant="outline" 
+              className="w-full md:w-auto"
               onClick={handleTryAgain}
-              className="flex items-center gap-2"
             >
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw className="mr-2 h-4 w-4" />
               Try Again
             </Button>
-          </motion.div>
-        </div>
+            {isSubscribed ? (
+              <Button 
+                className="w-full md:w-auto"
+                onClick={() => navigate('/progress')}
+              >
+                <BarChart className="mr-2 h-4 w-4" />
+                View Progress
+              </Button>
+            ) : (
+              <Button 
+                className="w-full md:w-auto"
+                onClick={() => navigate('/profile?tab=subscription')}
+              >
+                <ArrowUpRight className="mr-2 h-4 w-4" />
+                Upgrade to Premium
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
       </main>
     </div>
   );

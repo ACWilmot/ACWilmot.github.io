@@ -1,221 +1,163 @@
 
 import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Question, Subject, Difficulty } from '@/types/questionTypes';
-import { v4 as uuidv4 } from 'uuid';
+import SubjectCard from '@/components/SubjectCard';
+import DifficultySelector from '@/components/DifficultySelector';
 import YearSelector from '@/components/YearSelector';
-import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuiz } from '@/context/QuizContext';
+import { useNavigate } from 'react-router-dom';
+import TimesTablesSelector from '@/components/TimesTablesSelector';
+import { useSubscription } from '@/context/SubscriptionContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const QuestionsPage = () => {
-  const [questionText, setQuestionText] = useState('');
-  const [options, setOptions] = useState<string[]>(['', '', '', '']);
-  const [correctAnswer, setCorrectAnswer] = useState('');
-  const [explanation, setExplanation] = useState('');
-  const [subject, setSubject] = useState<Subject>('maths');
-  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
-  const [year, setYear] = useState<number | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const {
+    setSelectedSubject, 
+    setSelectedDifficulty, 
+    setSelectedYear, 
+    startQuiz, 
+    setSelectedTimesTables,
+    selectedDifficulty, 
+    selectedYear,
+    selectedTimesTables
+  } = useQuiz();
+  
+  const [showTimesTables, setShowTimesTables] = useState(false);
+  const navigate = useNavigate();
+  const { subscriptionTier, isLoading } = useSubscription();
+  const isPremium = subscriptionTier === 'premium';
 
-  const handleOptionChange = (index: number, value: string) => {
-    const newOptions = [...options];
-    newOptions[index] = value;
-    setOptions(newOptions);
+  const handleSubjectSelect = (subject: string) => {
+    if (!isPremium && subject !== 'all') {
+      // Free users can only access the combined test
+      return;
+    }
+    
+    if (subject === 'timesTables') {
+      setShowTimesTables(true);
+    } else {
+      setShowTimesTables(false);
+      setSelectedSubject(subject);
+      startQuiz(subject);
+      navigate('/quiz');
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Validation
-    if (!questionText.trim()) {
-      toast({
-        title: "Missing question",
-        description: "Please enter a question",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (options.some(option => !option.trim())) {
-      toast({
-        title: "Incomplete options",
-        description: "All options must be filled",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!correctAnswer) {
-      toast({
-        title: "Missing answer",
-        description: "Please select a correct answer",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      // Save to Supabase
-      const { data, error } = await supabase
-        .from('questions')
-        .insert([
-          {
-            subject: subject,
-            text: questionText,
-            options: options,
-            correct_answer: correctAnswer,
-            explanation: explanation,
-            difficulty: difficulty,
-            year: year,
-            // user_id will be set automatically by the trigger
-          }
-        ])
-        .select();
-
-      if (error) {
-        throw error;
-      }
-
-      // Reset form
-      setQuestionText('');
-      setOptions(['', '', '', '']);
-      setCorrectAnswer('');
-      setExplanation('');
-
-      toast({
-        title: "Question created",
-        description: "Question has been successfully added to the database.",
-        variant: "default"
-      });
-    } catch (error) {
-      console.error('Error creating question:', error);
-      toast({
-        title: "Error creating question",
-        description: "There was a problem saving your question.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleTimesTablesStart = () => {
+    setSelectedSubject('timesTables');
+    startQuiz('timesTables');
+    navigate('/quiz');
   };
 
   return (
     <Layout>
-      <div className="container mx-auto max-w-4xl px-4 py-10">
-        <h1 className="text-3xl font-bold mb-6">Create a New Question</h1>
+      <div className="container mx-auto px-4 pt-32 pb-16 max-w-5xl">
+        <h1 className="text-3xl font-bold mb-2">Practice Tests</h1>
+        <p className="text-muted-foreground mb-8">
+          Select a subject to start practicing
+        </p>
+
+        {!isPremium && (
+          <Alert className="mb-8 bg-muted/50">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Free Account Limitations</AlertTitle>
+            <AlertDescription className="flex flex-col gap-2">
+              <p>Free accounts can only access the combined test with 10 questions.</p>
+              <Button 
+                variant="outline" 
+                className="w-fit" 
+                onClick={() => navigate('/profile?tab=subscription')}
+              >
+                Upgrade to Premium
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block mb-2">
-              Question
-              <Textarea 
-                value={questionText}
-                onChange={(e) => setQuestionText(e.target.value)}
-                placeholder="Enter your question here"
-                className="mt-1 w-full"
-                rows={3}
+        {!showTimesTables && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <SubjectCard 
+                title="Combined Test" 
+                description="Mixed subjects for practice" 
+                onClick={() => handleSubjectSelect('all')}
+                isPremium={false}
               />
-            </label>
-          </div>
-          
-          <div>
-            <label className="block mb-2">Options</label>
-            <div className="space-y-2">
-              {options.map((option, index) => (
-                <div key={index} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="correctAnswer"
-                    value={option}
-                    checked={correctAnswer === option}
-                    onChange={() => setCorrectAnswer(option)}
-                    className="mr-2"
-                    disabled={!option.trim()}
-                  />
-                  <input
-                    type="text"
-                    value={option}
-                    onChange={(e) => handleOptionChange(index, e.target.value)}
-                    placeholder={`Option ${index + 1}`}
-                    className="flex-1 px-3 py-2 border rounded"
-                  />
-                </div>
-              ))}
-            </div>
-            <p className="text-sm text-gray-500 mt-2">Select the radio button for the correct answer</p>
-          </div>
-          
-          <div>
-            <label className="block mb-2">
-              Explanation
-              <Textarea
-                value={explanation}
-                onChange={(e) => setExplanation(e.target.value)}
-                placeholder="Explain why the correct answer is correct"
-                className="mt-1 w-full"
-                rows={3}
+              <SubjectCard 
+                title="Maths" 
+                description="Number, algebra, geometry" 
+                onClick={() => handleSubjectSelect('maths')}
+                isPremium={true}
+                locked={!isPremium}
               />
-            </label>
-          </div>
-          
-          <div className="flex flex-wrap gap-6">
-            <div>
-              <label className="block mb-2">
-                Subject
-                <select
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value as Subject)}
-                  className="mt-1 block w-full px-3 py-2 border rounded"
-                >
-                  <option value="maths">Maths</option>
-                  <option value="english">English</option>
-                  <option value="verbal">Verbal</option>
-                  <option value="history">History</option>
-                  <option value="geography">Geography</option>
-                  <option value="religiousEd">Religious Ed</option>
-                </select>
-              </label>
+              <SubjectCard 
+                title="English" 
+                description="Reading, writing, grammar" 
+                onClick={() => handleSubjectSelect('english')} 
+                isPremium={true}
+                locked={!isPremium}
+              />
+              <SubjectCard 
+                title="Verbal Reasoning" 
+                description="Logic, pattern recognition" 
+                onClick={() => handleSubjectSelect('verbal')} 
+                isPremium={true}
+                locked={!isPremium}
+              />
+              <SubjectCard 
+                title="Times Tables" 
+                description="Practice multiplication tables" 
+                onClick={() => handleSubjectSelect('timesTables')} 
+                isPremium={true}
+                locked={!isPremium}
+              />
+              <SubjectCard 
+                title="History" 
+                description="Key historical events" 
+                onClick={() => handleSubjectSelect('history')} 
+                isPremium={true}
+                locked={!isPremium}
+              />
+              <SubjectCard 
+                title="Geography" 
+                description="Maps, countries, climate" 
+                onClick={() => handleSubjectSelect('geography')} 
+                isPremium={true}
+                locked={!isPremium}
+              />
+              <SubjectCard 
+                title="Religious Education" 
+                description="Different faiths and beliefs" 
+                onClick={() => handleSubjectSelect('religiousEd')} 
+                isPremium={true}
+                locked={!isPremium}
+              />
             </div>
-            
-            <div>
-              <label className="block mb-2">
-                Difficulty
-                <select
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                  className="mt-1 block w-full px-3 py-2 border rounded"
-                >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </label>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <DifficultySelector 
+                onChange={setSelectedDifficulty} 
+                value={selectedDifficulty}
+                disabled={!isPremium} 
+              />
+              <YearSelector 
+                onChange={setSelectedYear} 
+                value={selectedYear}
+                disabled={!isPremium} 
+              />
             </div>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block mb-2">Year Group</label>
-            <YearSelector 
-              selectedYear={year}
-              onChange={setYear}
-            />
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full md:w-auto"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Creating Question...' : 'Create Question'}
-          </Button>
-        </form>
+          </>
+        )}
+
+        {showTimesTables && (
+          <TimesTablesSelector 
+            selectedTables={selectedTimesTables}
+            onSelectTables={setSelectedTimesTables}
+            onStart={handleTimesTablesStart}
+          />
+        )}
       </div>
     </Layout>
   );

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
@@ -14,6 +13,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TimesTablesProgress from '@/components/TimesTablesProgress';
 import SubjectYearProgress from '@/components/SubjectYearProgress';
+import { useSubscription } from '@/context/SubscriptionContext';
+import { Layout } from '@/components/Layout';
 
 interface DifficultyProgress {
   easy: { completed: number; correct: number; accuracy: number };
@@ -234,6 +235,61 @@ const ProgressPage = () => {
           <Button onClick={() => navigate('/login')}>Return to Login</Button>
         </main>
       </div>
+    );
+  }
+
+  const { subscriptionTier } = useSubscription();
+  const isPremium = subscriptionTier === 'premium';
+
+  if (!isPremium) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-background flex flex-col">
+          <main className="flex-1 container px-4 pt-32 pb-16 max-w-5xl mx-auto">
+            <div className="mb-8 flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => navigate('/')}
+                className="h-9 w-9 rounded-full"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              
+              <h1 className="text-3xl font-bold">My Progress</h1>
+            </div>
+            
+            <Card className="mb-8">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-muted-foreground" />
+                  <CardTitle>Premium Feature</CardTitle>
+                </div>
+                <CardDescription>
+                  Progress tracking is only available for premium users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="py-12 flex flex-col items-center justify-center">
+                  <div className="mb-6 text-center max-w-md">
+                    <Crown className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Upgrade to Premium</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Get full access to progress tracking, individual subject tests, and more with a premium subscription.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/profile?tab=subscription')} 
+                      className="w-full"
+                    >
+                      View Subscription Options
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
+      </Layout>
     );
   }
 

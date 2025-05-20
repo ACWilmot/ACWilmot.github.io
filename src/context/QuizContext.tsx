@@ -1,10 +1,10 @@
-
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useProfile } from './ProfileContext';
+import { useSubscription } from './SubscriptionContext';
 
 interface QuizContextType {
   questions: Question[];
@@ -56,6 +56,15 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [endTime, setEndTime] = useState<number | null>(null);
   const { updateProgress } = useProgressActions(null, null);
   const { profile, updateTimesTablesProgress } = useProfile();
+  const { subscriptionTier } = useSubscription();
+  const isPremium = subscriptionTier === 'premium';
+
+  useEffect(() => {
+    // Limit question count for free users
+    if (!isPremium && questionCount > 10) {
+      setQuestionCount(10);
+    }
+  }, [subscriptionTier, isPremium]);
 
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
@@ -66,56 +75,48 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTimeout(() => {
       let selectedQuestions: Question[] = [];
       
-      if (subject === 'timesTables') {
-        selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
-        console.log("Generated times tables questions:", selectedQuestions);
-      } else if (subject === 'all') {
+      // For non-premium users, force 'all' subject and limit to 10 questions
+      const effectiveSubject = isPremium ? subject : 'all';
+      const effectiveQuestionCount = isPremium ? questionCount : Math.min(10, questionCount);
+      
+      if (effectiveSubject === 'timesTables' && isPremium) {
+        selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, effectiveQuestionCount);
+      } else {
         let subjectQuestions: Question[] = [];
         Object.values(sampleQuestions).forEach(questions => {
           subjectQuestions = [...subjectQuestions, ...questions];
         });
         
-        // Filter by difficulty and year if selected
-        let filteredQuestions = selectedDifficulty === 'all' 
-          ? subjectQuestions 
-          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
+        // Apply filters based on subscription
+        let filteredQuestions = subjectQuestions;
+        
+        if (isPremium) {
+          if (effectiveSubject !== 'all') {
+            filteredQuestions = sampleQuestions[effectiveSubject] || [];
+          }
           
-        if (selectedYear) {
-          filteredQuestions = filteredQuestions.filter(q => 
-            !q.year || q.year === selectedYear
-          );
+          if (selectedDifficulty !== 'all') {
+            filteredQuestions = filteredQuestions.filter(q => q.difficulty === selectedDifficulty);
+          }
+          
+          if (selectedYear) {
+            filteredQuestions = filteredQuestions.filter(q => 
+              !q.year || q.year === selectedYear
+            );
+          }
         }
         
+        // Shuffle questions
         for (let i = filteredQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
         }
         
-        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
-      } else {
-        const subjectQuestions = [...sampleQuestions[subject]];
-        
-        // Filter by difficulty and year if selected
-        let filteredQuestions = selectedDifficulty === 'all' 
-          ? subjectQuestions 
-          : subjectQuestions.filter(q => q.difficulty === selectedDifficulty);
-          
-        if (selectedYear) {
-          filteredQuestions = filteredQuestions.filter(q => 
-            !q.year || q.year === selectedYear
-          );
-        }
-        
-        for (let i = filteredQuestions.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
-        }
-        
-        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
+        selectedQuestions = filteredQuestions.slice(0, Math.min(effectiveQuestionCount, filteredQuestions.length));
       }
       
       setQuestions(selectedQuestions as Question[]);
-      setSelectedSubject(subject);
+      setSelectedSubject(isPremium ? subject : 'all');
       setCurrentQuestionIndex(0);
       setScore(0);
       setUserAnswers({});

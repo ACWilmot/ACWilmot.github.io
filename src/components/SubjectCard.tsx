@@ -1,47 +1,57 @@
 
 import React from 'react';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Subject } from '@/types/questionTypes';
 
 interface SubjectCardProps {
-  subject: Subject;
+  title: string;
   description: string;
-  icon: React.ReactNode;
-  isSelected: boolean;
   onClick: () => void;
   className?: string;
+  isPremium?: boolean;
+  locked?: boolean;
 }
 
-const SubjectCard: React.FC<SubjectCardProps> = ({
-  subject,
-  description,
-  icon,
-  isSelected,
-  onClick,
-  className
-}) => {
+const SubjectCard = ({ 
+  title, 
+  description, 
+  onClick, 
+  className,
+  isPremium = false,
+  locked = false
+}: SubjectCardProps) => {
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "p-4 rounded-xl border border-border transition-all duration-200 flex flex-col items-start text-left h-full",
-        isSelected
-          ? "bg-primary/5 border-primary"
-          : "hover:bg-primary/5 hover:border-primary/40",
-        className // Added className to the cn function
-      )}
-    >
-      <div className={cn(
-        "p-2 rounded-md mb-3",
-        isSelected
-          ? "bg-primary/10 text-primary"
-          : "bg-muted text-muted-foreground"
-      )}>
-        {icon}
-      </div>
-      <h3 className="font-medium mb-1 capitalize">{subject}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </button>
+    <Card className={cn(
+      "overflow-hidden transition-all hover:shadow-md border", 
+      className,
+      locked ? "opacity-75" : "",
+      isPremium ? "bg-gradient-to-b from-background to-background/95" : ""
+    )}>
+      <CardContent className="p-6">
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h3 className="font-semibold text-lg mb-1 flex items-center gap-1.5">
+              {title}
+              {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+            </h3>
+            <p className="text-muted-foreground text-sm">{description}</p>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="px-6 py-4 bg-muted/30 border-t flex justify-between">
+        <Button 
+          variant={isPremium && !locked ? "default" : "outline"}
+          size="sm" 
+          onClick={onClick}
+          disabled={locked}
+          className={isPremium && !locked ? "text-primary-foreground" : ""}
+        >
+          Start Test
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

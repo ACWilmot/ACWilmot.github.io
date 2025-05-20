@@ -1,5 +1,37 @@
 
-export type UserRole = 'parent';
+export type UserRole = 'student' | 'teacher';
+
+export interface Student {
+  id: string;
+  name: string;
+  email?: string; // Keep this optional in the interface for frontend use
+  progress: {
+    [subject: string]: {
+      completed: number;
+      correct: number;
+      lastAttempted: string | null;
+    }
+  };
+}
+
+export interface Class {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  teacher_id: string;
+}
+
+export interface ClassWithStudentCount extends Class {
+  student_count: number;
+}
+
+export interface ClassEnrollment {
+  id: string;
+  class_id: string;
+  student_id: string;
+  enrolled_at: string;
+}
 
 export type UserProgress = {
   completed: number;
@@ -22,21 +54,22 @@ export interface TimesTableProgress {
   recentAttempts: {
     correct: boolean;
     timestamp: string;
-    answerTime?: number;
+    answerTime?: number; // Added this property to match usage
   }[];
-  averageTime?: number;
+  averageTime?: number; // Added this property to match usage
   [key: string]: any;
 }
 
 export interface Profile {
   id: string;
   name: string;
-  email?: string;
+  email?: string; // Keep this optional in the interface for frontend use
   role: UserRole;
   progress: {
     [subject: string]: UserProgress
   };
   timesTablesProgress?: TimesTableProgress[];
+  students?: string[];
 }
 
 export interface RegisterData {
@@ -44,4 +77,5 @@ export interface RegisterData {
   email: string;
   password: string;
   role: UserRole;
+  teacherEmail?: string;
 }

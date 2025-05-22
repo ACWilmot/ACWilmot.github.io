@@ -6,7 +6,6 @@ import QuestionCard from '@/components/QuestionCard';
 import QuizTimer from '@/components/QuizTimer';
 import QuizHeader from '@/components/quiz/QuizHeader';
 import QuizControls from '@/components/quiz/QuizControls';
-import WorksheetOptions from '@/components/quiz/WorksheetOptions';
 import QuizProgress from '@/components/quiz/QuizProgress';
 import SoundEffects from '@/utils/soundEffects';
 import { Question, Subject } from '@/types/questionTypes';
@@ -47,7 +46,6 @@ const QuizContent: React.FC<QuizContentProps> = ({
 }) => {
   const navigate = useNavigate();
   const [showExplanation, setShowExplanation] = useState(false);
-  const [showWorksheetOption, setShowWorksheetOption] = useState(false);
   
   const currentQuestion = questions[currentQuestionIndex];
   const userAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;
@@ -99,11 +97,6 @@ const QuizContent: React.FC<QuizContentProps> = ({
     }
   };
 
-  const handleStartWorksheet = (worksheetId: string) => {
-    console.log("Starting worksheet:", worksheetId);
-    // Implementation for starting worksheet would go here
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <Header />
@@ -126,13 +119,6 @@ const QuizContent: React.FC<QuizContentProps> = ({
               className="md:ml-4"
             />
           </div>
-          
-          {selectedSubject && (
-            <WorksheetOptions 
-              subject={selectedSubject}
-              onStartWorksheet={handleStartWorksheet}
-            />
-          )}
         </div>
         
         <AnimatePresence mode="wait">

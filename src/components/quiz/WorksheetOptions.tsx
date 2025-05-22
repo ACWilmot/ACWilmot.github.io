@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Plus } from 'lucide-react';
-import WorksheetUploader from '@/components/WorksheetUploader';
 import { Subject } from '@/types/questionTypes';
 
 const WorksheetOptions: React.FC<{
@@ -44,12 +43,8 @@ const WorksheetOptions: React.FC<{
   ].filter(ws => ws.subject === subject || subject === 'all');
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="practice">Practice Worksheets</TabsTrigger>
-        <TabsTrigger value="upload">Upload Worksheet</TabsTrigger>
-      </TabsList>
-      <TabsContent value="practice" className="space-y-4 mt-6">
+    <div className="w-full">
+      <div className="space-y-4 mt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {demoWorksheets.length > 0 ? (
             demoWorksheets.map(worksheet => (
@@ -71,22 +66,11 @@ const WorksheetOptions: React.FC<{
           ) : (
             <div className="col-span-2 text-center py-8">
               <p className="text-muted-foreground">No worksheets available for this subject yet.</p>
-              <Button 
-                variant="outline" 
-                className="mt-2" 
-                onClick={() => setActiveTab('upload')}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Upload a worksheet
-              </Button>
             </div>
           )}
         </div>
-      </TabsContent>
-      <TabsContent value="upload" className="mt-6">
-        <WorksheetUploader />
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   );
 };
 

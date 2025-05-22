@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,8 +13,16 @@ import {
   Globe,
   Church,
   Lock,
+  Timer,
 } from 'lucide-react';
 import { Slider } from "@/components/ui/slider"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { Layout } from '@/components/Layout';
@@ -41,6 +50,8 @@ const Index = () => {
     setSelectedYear,
     selectedTimesTables,
     setSelectedTimesTables,
+    setTimeLimit,
+    timeLimit,
   } = useQuiz();
 
   React.useEffect(() => {
@@ -82,6 +93,15 @@ const Index = () => {
       questionCounts.length - 1
     );
     setQuestionCount(questionCounts[index]);
+  };
+
+  const handleTimeLimitChange = (value: string) => {
+    const minutes = parseInt(value);
+    if (minutes === 0) {
+      setTimeLimit(null);
+    } else {
+      setTimeLimit(minutes * 60); // Convert to seconds
+    }
   };
 
   const getSliderValue = () => {
@@ -306,6 +326,49 @@ const Index = () => {
                   {!isSubscribed && (
                     <span className="block text-xs text-muted-foreground mt-1">
                       (Free accounts are limited to 10 questions)
+                    </span>
+                  )}
+                </p>
+              </div>
+              
+              {/* Time limit selector */}
+              <div className="glass p-6 rounded-xl mb-6 flex flex-col items-center">
+                <div className="flex items-center gap-2 mb-4">
+                  <Timer className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-medium">Time limit</h3>
+                </div>
+                
+                <div className="w-full max-w-md mb-2">
+                  <div className={!isSubscribed ? "opacity-50 pointer-events-none" : ""}>
+                    <Select 
+                      value={timeLimit ? String(timeLimit / 60) : "0"}
+                      onValueChange={handleTimeLimitChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select time limit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">No time limit</SelectItem>
+                        <SelectItem value="5">5 minutes</SelectItem>
+                        <SelectItem value="10">10 minutes</SelectItem>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="20">20 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="45">45 minutes</SelectItem>
+                        <SelectItem value="60">1 hour</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-center text-muted-foreground">
+                  {timeLimit 
+                    ? `Test will end automatically after ${timeLimit/60} ${timeLimit/60 === 1 ? 'minute' : 'minutes'}`
+                    : "No time limit - take as long as you need"
+                  }
+                  {!isSubscribed && (
+                    <span className="block text-xs text-muted-foreground mt-1">
+                      (Premium feature)
                     </span>
                   )}
                 </p>

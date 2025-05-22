@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import QuestionCard from '@/components/QuestionCard';
@@ -20,6 +20,8 @@ interface QuizContentProps {
   selectedDifficulty: string;
   questionCount: number;
   startTime: number | null;
+  timeLimit: number | null;
+  remainingTime: number | null;
   answerQuestion: (questionId: string, answer: string) => void;
   goToNextQuestion: () => void;
   goToPreviousQuestion: () => void;
@@ -35,6 +37,8 @@ const QuizContent: React.FC<QuizContentProps> = ({
   selectedDifficulty,
   questionCount,
   startTime,
+  timeLimit,
+  remainingTime,
   answerQuestion,
   goToNextQuestion,
   goToPreviousQuestion,
@@ -48,6 +52,14 @@ const QuizContent: React.FC<QuizContentProps> = ({
   const currentQuestion = questions[currentQuestionIndex];
   const userAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+  useEffect(() => {
+    // When time runs out, redirect to results
+    if (timeLimit && remainingTime === 0) {
+      SoundEffects.playQuizComplete();
+      navigate('/results');
+    }
+  }, [remainingTime, timeLimit, navigate]);
 
   const handleAnswer = (answer: string) => {
     if (currentQuestion) {
@@ -108,7 +120,9 @@ const QuizContent: React.FC<QuizContentProps> = ({
             />
             
             <QuizTimer 
-              startTime={startTime} 
+              startTime={startTime}
+              timeLimit={timeLimit}
+              remainingTime={remainingTime} 
               className="md:ml-4"
             />
           </div>

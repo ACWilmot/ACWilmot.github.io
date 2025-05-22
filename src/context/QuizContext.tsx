@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
 import { Question, Difficulty, Subject } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
@@ -18,11 +19,14 @@ interface QuizContextType {
   selectedTimesTables: number[];
   startTime: number | null;
   endTime: number | null;
+  timeLimit: number | null; // Time limit in seconds
+  remainingTime: number | null; // Remaining time in seconds
   setQuestionCount: (count: number) => void;
   setSelectedSubject: (subject: Subject | null) => void;
   setSelectedDifficulty: (difficulty: Difficulty | 'all') => void;
   setSelectedYear: (year: number | null) => void;
   setSelectedTimesTables: (tables: number[]) => void;
+  setTimeLimit: (seconds: number | null) => void; // Set time limit
   startQuiz: (subject: Subject) => void;
   answerQuestion: (questionId: string, answer: string) => void;
   goToNextQuestion: () => void;
@@ -54,8 +58,35 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
+  const [timeLimit, setTimeLimit] = useState<number | null>(null);
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const { updateProgress } = useProgressActions(null, null);
   const { profile, updateTimesTablesProgress } = useProfile();
+
+  // Effect to handle timer countdown
+  useEffect(() => {
+    let timer: number | undefined;
+    
+    if (startTime && timeLimit && !endTime) {
+      const calculateRemainingTime = () => {
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = Math.max(0, timeLimit - elapsedTime);
+        setRemainingTime(remaining);
+        
+        if (remaining <= 0) {
+          clearInterval(timer);
+          endQuiz();
+        }
+      };
+      
+      calculateRemainingTime();
+      timer = window.setInterval(calculateRemainingTime, 1000);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [startTime, timeLimit, endTime]);
 
   // Helper function to determine if year selector should be shown for the current subject
   const shouldShowYearSelector = (subject: Subject | null): boolean => {
@@ -129,6 +160,11 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setScore(0);
       setUserAnswers({});
       setIsLoading(false);
+      
+      // Set remaining time based on time limit
+      if (timeLimit) {
+        setRemainingTime(timeLimit);
+      }
     }, 800);
   };
 
@@ -190,6 +226,8 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedSubject(null);
     setStartTime(null);
     setEndTime(null);
+    setTimeLimit(null);
+    setRemainingTime(null);
   };
   
   const endQuiz = () => {
@@ -231,11 +269,14 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectedTimesTables,
         startTime,
         endTime,
+        timeLimit,
+        remainingTime,
         setQuestionCount,
         setSelectedSubject,
         setSelectedDifficulty,
         setSelectedYear,
         setSelectedTimesTables,
+        setTimeLimit,
         startQuiz,
         answerQuestion,
         goToNextQuestion,

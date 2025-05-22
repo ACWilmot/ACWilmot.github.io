@@ -21,6 +21,8 @@ const QuizPage = () => {
     isLoading,
     questionCount,
     startTime,
+    timeLimit,
+    remainingTime,
     answerQuestion,
     goToNextQuestion,
     goToPreviousQuestion,
@@ -72,6 +74,8 @@ const QuizPage = () => {
       selectedDifficulty={selectedDifficulty}
       questionCount={questionCount}
       startTime={startTime}
+      timeLimit={timeLimit}
+      remainingTime={remainingTime}
       answerQuestion={answerQuestion}
       goToNextQuestion={goToNextQuestion}
       goToPreviousQuestion={goToPreviousQuestion}

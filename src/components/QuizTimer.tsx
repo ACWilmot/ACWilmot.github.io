@@ -27,6 +27,16 @@ const QuizTimer: React.FC<QuizTimerProps> = ({ startTime, timeLimit, remainingTi
   
   // Show countdown timer if time limit is set
   if (timeLimit && remainingTime !== null) {
+    // Format differently if less than 60 seconds left
+    if (remainingTime < 60) {
+      return (
+        <div className={`flex items-center gap-1.5 text-sm font-medium ${remainingTime < 30 ? 'text-red-500' : ''} ${className || ''}`}>
+          <Timer className={`h-4 w-4 ${remainingTime < 30 ? 'text-red-500' : 'text-muted-foreground'}`} />
+          <span>{remainingTime} seconds</span>
+        </div>
+      );
+    }
+    
     const minutes = Math.floor(remainingTime / 60);
     const seconds = remainingTime % 60;
     const formattedCountdown = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;

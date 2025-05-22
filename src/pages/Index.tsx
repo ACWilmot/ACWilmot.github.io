@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -96,7 +95,7 @@ const Index = () => {
   };
 
   const handleTimeLimitChange = (value: string) => {
-    const minutes = parseInt(value);
+    const minutes = parseFloat(value);
     if (minutes === 0) {
       setTimeLimit(null);
     } else {
@@ -349,6 +348,9 @@ const Index = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="0">No time limit</SelectItem>
+                        <SelectItem value="0.5">30 seconds</SelectItem>
+                        <SelectItem value="1">1 minute</SelectItem>
+                        <SelectItem value="2">2 minutes</SelectItem>
                         <SelectItem value="5">5 minutes</SelectItem>
                         <SelectItem value="10">10 minutes</SelectItem>
                         <SelectItem value="15">15 minutes</SelectItem>
@@ -363,7 +365,9 @@ const Index = () => {
                 
                 <p className="text-sm text-center text-muted-foreground">
                   {timeLimit 
-                    ? `Test will end automatically after ${timeLimit/60} ${timeLimit/60 === 1 ? 'minute' : 'minutes'}`
+                    ? timeLimit < 60 
+                      ? `Test will end automatically after ${timeLimit} seconds`
+                      : `Test will end automatically after ${timeLimit/60} ${timeLimit/60 === 1 ? 'minute' : 'minutes'}`
                     : "No time limit - take as long as you need"
                   }
                   {!isSubscribed && (

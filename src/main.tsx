@@ -1,8 +1,12 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
 import './index.css';
+
+// Create a client
+const queryClient = new QueryClient();
 
 // Create root only when document is ready
 const renderApp = () => {
@@ -11,7 +15,9 @@ const renderApp = () => {
   if (rootElement) {
     createRoot(rootElement).render(
       <React.StrictMode>
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
       </React.StrictMode>
     );
   } else {

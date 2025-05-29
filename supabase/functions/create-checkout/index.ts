@@ -71,15 +71,15 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     logStep("Origin retrieved", { origin });
 
-    // Define pricing for different tiers - using USD to match existing subscriptions
+    // Define pricing for different tiers - using GBP
     const tierPricing = {
       premium: {
-        amount: 499, // $4.99
+        amount: 399, // £3.99
         name: "Premium Subscription",
         description: "Full access to all premium features"
       },
       tutor: {
-        amount: 1999, // $19.99
+        amount: 1599, // £15.99
         name: "Tutor Subscription", 
         description: "Premium features plus student management tools"
       }
@@ -103,7 +103,7 @@ serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: "gbp",
             product_data: { 
               name: pricing.name,
               description: pricing.description

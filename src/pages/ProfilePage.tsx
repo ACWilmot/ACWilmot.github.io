@@ -243,7 +243,7 @@ const ProfilePage = () => {
                       <span>Free Plan</span>
                       {!isSubscribed && <Badge variant="default">Current</Badge>}
                     </CardTitle>
-                    <div className="text-3xl font-bold">$0.00<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                    <div className="text-3xl font-bold">£0.00<span className="text-base font-normal text-muted-foreground">/month</span></div>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="mb-6 text-muted-foreground">Basic access to practice questions with limitations.</p>
@@ -278,7 +278,7 @@ const ProfilePage = () => {
                       <span>Premium Plan</span>
                       {isSubscribed && subscriptionTier === 'premium' && <Badge variant="default">Current</Badge>}
                     </CardTitle>
-                    <div className="text-3xl font-bold">$4.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                    <div className="text-3xl font-bold">£3.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="mb-6 text-muted-foreground">Full access to all features and premium content.</p>
@@ -357,7 +357,7 @@ const ProfilePage = () => {
                       <span>Tutor Plan</span>
                       {isSubscribed && subscriptionTier === 'tutor' && <Badge variant="default">Current</Badge>}
                     </CardTitle>
-                    <div className="text-3xl font-bold">$19.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                    <div className="text-3xl font-bold">£15.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="mb-6 text-muted-foreground">Perfect for tutors managing multiple students.</p>
@@ -449,7 +449,7 @@ const ProfilePage = () => {
                       <div>
                         <Label className="text-sm text-muted-foreground">Price</Label>
                         <p className="font-medium">
-                          {subscriptionTier === 'tutor' ? '$19.99/month' : '$4.99/month'}
+                          {subscriptionTier === 'tutor' ? '£15.99/month' : '£3.99/month'}
                         </p>
                       </div>
                     </div>

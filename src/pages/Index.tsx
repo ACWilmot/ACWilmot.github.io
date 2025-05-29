@@ -36,7 +36,7 @@ import { Subject } from '@/types/questionTypes';
 const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { isSubscribed } = useSubscription();
+  const { isSubscribed, isTutor } = useSubscription();
   const {
     startQuiz,
     selectedSubject,
@@ -391,14 +391,22 @@ const Index = () => {
               </div>
               
               {!isSubscribed && (
-                <div className="mt-4 text-center">
+                <div className="mt-4 text-center space-y-2">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/profile?tab=subscription')}
+                    className="text-xs mr-2"
+                  >
+                    Unlock Premium Features (£9.99/month)
+                  </Button>
                   <Button 
                     variant="outline"
                     size="sm"
                     onClick={() => navigate('/profile?tab=subscription')}
                     className="text-xs"
                   >
-                    Unlock Premium Features
+                    Become a Tutor (£19.99/month)
                   </Button>
                 </div>
               )}

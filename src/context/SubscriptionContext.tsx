@@ -19,8 +19,9 @@ interface SubscriptionContextType {
   subscriptionTier: string | null;
   subscriptionEnd: string | null;
   isLoading: boolean;
+  isTutor: boolean;
   checkSubscription: () => Promise<void>;
-  createCheckoutSession: () => Promise<void>;
+  createCheckoutSession: (tier?: 'premium' | 'tutor') => Promise<void>;
   openCustomerPortal: () => Promise<void>;
   isCheckoutLoading: boolean;
   isPortalLoading: boolean;
@@ -97,7 +98,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   // Function to create checkout session
-  const createCheckoutSession = async (): Promise<void> => {
+  const createCheckoutSession = async (tier: 'premium' | 'tutor' = 'premium'): Promise<void> => {
     if (!isAuthenticated) {
       toast.error("You must be logged in to subscribe");
       return;
@@ -105,9 +106,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     try {
       setState(prev => ({ ...prev, isCheckoutLoading: true }));
-      console.log("Creating checkout session...");
+      console.log("Creating checkout session for tier:", tier);
 
-      const { data, error } = await supabase.functions.invoke('create-checkout');
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { tier }
+      });
 
       if (error) {
         console.error("Error creating checkout session:", error);
@@ -170,6 +173,8 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const isTutor = state.subscriptionTier === 'tutor';
+
   return (
     <SubscriptionContext.Provider 
       value={{
@@ -177,6 +182,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         subscriptionTier: state.subscriptionTier,
         subscriptionEnd: state.subscriptionEnd,
         isLoading: state.isLoading,
+        isTutor,
         checkSubscription,
         createCheckoutSession,
         openCustomerPortal,

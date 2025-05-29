@@ -4,13 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { Book, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { useStudent } from '@/context/StudentContext';
 import UserProfile from './UserProfile';
 import DonateButton from './DonateButton';
 import { DarkModeToggle } from './DarkModeToggle';
+import StudentSelector from './StudentSelector';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { selectedStudentId, setSelectedStudentId } = useStudent();
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between bg-background/80 backdrop-blur-lg border-b shadow-sm fixed top-0 z-50">
@@ -38,23 +41,32 @@ const Header: React.FC = () => {
         </div>
       </nav>
 
-      <div className="flex items-center gap-2">
-        <DarkModeToggle />
-        <DonateButton />
-        {isAuthenticated ? (
-          <UserProfile />
-        ) : (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="hidden sm:flex">
-              <LogIn className="h-4 w-4 mr-2" />
-              <span>Sign In</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate('/register')} className="hidden md:flex">
-              <UserPlus className="h-4 w-4 mr-2" />
-              <span>Register</span>
-            </Button>
-          </div>
+      <div className="flex items-center gap-4">
+        {isAuthenticated && user?.role === 'tutor' && (
+          <StudentSelector
+            selectedStudentId={selectedStudentId}
+            onStudentChange={setSelectedStudentId}
+          />
         )}
+        
+        <div className="flex items-center gap-2">
+          <DarkModeToggle />
+          <DonateButton />
+          {isAuthenticated ? (
+            <UserProfile />
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="hidden sm:flex">
+                <LogIn className="h-4 w-4 mr-2" />
+                <span>Sign In</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/register')} className="hidden md:flex">
+                <UserPlus className="h-4 w-4 mr-2" />
+                <span>Register</span>
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

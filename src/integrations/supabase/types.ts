@@ -240,6 +240,68 @@ export type Database = {
         }
         Relationships: []
       }
+      student_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      student_progress: {
+        Row: {
+          created_at: string
+          id: string
+          progress: Json
+          student_profile_id: string
+          subject: string
+          times_tables_progress: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          progress?: Json
+          student_profile_id: string
+          subject: string
+          times_tables_progress?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          progress?: Json
+          student_profile_id?: string
+          subject?: string
+          times_tables_progress?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_progress_student_profile_id_fkey"
+            columns: ["student_profile_id"]
+            isOneToOne: false
+            referencedRelation: "student_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscribers: {
         Row: {
           created_at: string

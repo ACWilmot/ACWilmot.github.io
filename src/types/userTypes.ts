@@ -1,5 +1,5 @@
 
-export type UserRole = 'parent';
+export type UserRole = 'parent' | 'tutor';
 
 export type UserProgress = {
   completed: number;
@@ -27,6 +27,24 @@ export interface TimesTableProgress {
   [key: string]: any;
 }
 
+export interface StudentProfile {
+  id: string;
+  tutor_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudentProgress {
+  id: string;
+  student_profile_id: string;
+  subject: string;
+  progress: UserProgress;
+  times_tables_progress?: TimesTableProgress[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Profile {
   id: string;
   name: string;
@@ -36,6 +54,7 @@ export interface Profile {
     [subject: string]: UserProgress
   };
   timesTablesProgress?: TimesTableProgress[];
+  students?: StudentProfile[]; // For tutors
 }
 
 export interface RegisterData {

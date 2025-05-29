@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 
 const UserProfile = () => {
   const { user, logout } = useAuth();
-  const { isSubscribed } = useSubscription();
+  const { isSubscribed, isTutor } = useSubscription();
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -32,6 +32,14 @@ const UserProfile = () => {
     navigate('/login');
   };
 
+  const getBadgeText = () => {
+    if (isTutor) return 'Tutor';
+    if (isSubscribed) return 'Premium';
+    return null;
+  };
+
+  const badgeText = getBadgeText();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,8 +50,13 @@ const UserProfile = () => {
             </AvatarFallback>
           </Avatar>
           <span className="text-sm font-medium hidden md:block">{user.name}</span>
-          {isSubscribed && (
-            <Badge className="ml-1 text-xs py-0 h-5" variant="secondary">Premium</Badge>
+          {badgeText && (
+            <Badge 
+              className="ml-1 text-xs py-0 h-5" 
+              variant={isTutor ? "default" : "secondary"}
+            >
+              {badgeText}
+            </Badge>
           )}
         </button>
       </DropdownMenuTrigger>

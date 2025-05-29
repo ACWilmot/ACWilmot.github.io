@@ -110,6 +110,16 @@ const ProfilePage = () => {
       .toUpperCase();
   };
 
+  // Handle premium subscription checkout
+  const handlePremiumCheckout = async () => {
+    await createCheckoutSession();
+  };
+
+  // Handle tutor subscription checkout  
+  const handleTutorCheckout = async () => {
+    await createCheckoutSession('tutor');
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -226,7 +236,7 @@ const ProfilePage = () => {
             </TabsContent>
             
             <TabsContent value="subscription" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Free Plan Card */}
                 <Card className={`overflow-hidden ${!isSubscribed ? 'ring-2 ring-primary' : ''}`}>
                   <CardHeader className="bg-muted/30">
@@ -251,35 +261,23 @@ const ProfilePage = () => {
                         <Check className="h-4 w-4 mr-2 text-green-500 mt-1" />
                         <span>Basic results summary</span>
                       </li>
-                      <li className="flex items-start opacity-50">
-                        <span className="h-4 w-4 mr-2 flex items-center justify-center text-muted-foreground">-</span>
-                        <span>Individual subject selection</span>
-                      </li>
-                      <li className="flex items-start opacity-50">
-                        <span className="h-4 w-4 mr-2 flex items-center justify-center text-muted-foreground">-</span>
-                        <span>Progress tracking</span>
-                      </li>
-                      <li className="flex items-start opacity-50">
-                        <span className="h-4 w-4 mr-2 flex items-center justify-center text-muted-foreground">-</span>
-                        <span>Difficulty level selection</span>
-                      </li>
                     </ul>
                   </CardContent>
                   <CardFooter>
                     {isSubscribed ? (
-                      <Button variant="outline" className="w-full" disabled>Current Plan</Button>
+                      <Button variant="outline" className="w-full" disabled>Free Features</Button>
                     ) : (
-                      <Button variant="outline" className="w-full" disabled>Free Access</Button>
+                      <Button variant="outline" className="w-full" disabled>Current Plan</Button>
                     )}
                   </CardFooter>
                 </Card>
 
                 {/* Premium Plan Card */}
-                <Card className={`overflow-hidden ${isSubscribed ? 'ring-2 ring-primary' : ''}`}>
+                <Card className={`overflow-hidden ${isSubscribed && subscriptionTier === 'premium' ? 'ring-2 ring-primary' : ''}`}>
                   <CardHeader className="bg-primary/10">
                     <CardTitle className="flex justify-between items-center">
                       <span>Premium Plan</span>
-                      {isSubscribed && <Badge variant="default">Current</Badge>}
+                      {isSubscribed && subscriptionTier === 'premium' && <Badge variant="default">Current</Badge>}
                     </CardTitle>
                     <div className="text-3xl font-bold">£4.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
                   </CardHeader>
@@ -313,7 +311,7 @@ const ProfilePage = () => {
                     </ul>
                   </CardContent>
                   <CardFooter>
-                    {isSubscribed ? (
+                    {isSubscribed && subscriptionTier === 'premium' ? (
                       <Button 
                         className="w-full"
                         onClick={openCustomerPortal}
@@ -334,7 +332,82 @@ const ProfilePage = () => {
                     ) : (
                       <Button 
                         className="w-full"
-                        onClick={createCheckoutSession}
+                        onClick={handlePremiumCheckout}
+                        disabled={isCheckoutLoading}
+                      >
+                        {isCheckoutLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            Subscribe Now
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+
+                {/* Tutor Plan Card */}
+                <Card className={`overflow-hidden ${isSubscribed && subscriptionTier === 'tutor' ? 'ring-2 ring-primary' : ''}`}>
+                  <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10">
+                    <CardTitle className="flex justify-between items-center">
+                      <span>Tutor Plan</span>
+                      {isSubscribed && subscriptionTier === 'tutor' && <Badge variant="default">Current</Badge>}
+                    </CardTitle>
+                    <div className="text-3xl font-bold">£19.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <p className="mb-6 text-muted-foreground">Perfect for tutors managing multiple students.</p>
+                    <ul className="space-y-2">
+                      <li className="flex items-start">
+                        <Check className="h-4 w-4 mr-2 text-green-500 mt-1" />
+                        <span>All premium features</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-4 w-4 mr-2 text-green-500 mt-1" />
+                        <span>Create student sub-profiles</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-4 w-4 mr-2 text-green-500 mt-1" />
+                        <span>Switch between student accounts</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-4 w-4 mr-2 text-green-500 mt-1" />
+                        <span>Track individual student progress</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-4 w-4 mr-2 text-green-500 mt-1" />
+                        <span>Unlimited students</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    {isSubscribed && subscriptionTier === 'tutor' ? (
+                      <Button 
+                        className="w-full"
+                        onClick={openCustomerPortal}
+                        disabled={isPortalLoading}
+                      >
+                        {isPortalLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Opening Portal...
+                          </>
+                        ) : (
+                          <>
+                            <Settings2 className="h-4 w-4 mr-2" />
+                            Manage Subscription
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="w-full"
+                        onClick={handleTutorCheckout}
                         disabled={isCheckoutLoading}
                       >
                         {isCheckoutLoading ? (
@@ -368,7 +441,7 @@ const ProfilePage = () => {
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Plan</Label>
-                        <p className="font-medium">{subscriptionTier}</p>
+                        <p className="font-medium capitalize">{subscriptionTier}</p>
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Next billing date</Label>
@@ -376,7 +449,9 @@ const ProfilePage = () => {
                       </div>
                       <div>
                         <Label className="text-sm text-muted-foreground">Price</Label>
-                        <p className="font-medium">£4.99/month</p>
+                        <p className="font-medium">
+                          {subscriptionTier === 'tutor' ? '£19.99/month' : '£4.99/month'}
+                        </p>
                       </div>
                     </div>
                   </CardContent>

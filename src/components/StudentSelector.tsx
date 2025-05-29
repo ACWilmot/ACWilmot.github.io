@@ -58,6 +58,14 @@ const StudentSelector: React.FC<StudentSelectorProps> = ({
     }
   };
 
+  const handleValueChange = (value: string) => {
+    if (value === 'my-progress') {
+      onStudentChange(null);
+    } else {
+      onStudentChange(value);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-2">
@@ -68,18 +76,19 @@ const StudentSelector: React.FC<StudentSelectorProps> = ({
   }
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const selectValue = selectedStudentId || 'my-progress';
 
   return (
     <div className="flex items-center gap-2">
       <User className="h-4 w-4 text-muted-foreground" />
-      <Select value={selectedStudentId || ''} onValueChange={onStudentChange}>
+      <Select value={selectValue} onValueChange={handleValueChange}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select student">
             {selectedStudent ? selectedStudent.name : 'My Progress'}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">My Progress</SelectItem>
+          <SelectItem value="my-progress">My Progress</SelectItem>
           {students.map((student) => (
             <SelectItem key={student.id} value={student.id}>
               {student.name}

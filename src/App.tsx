@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import QuestionsPage from './pages/QuestionsPage';
+import StudentsPage from './pages/StudentsPage';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { StudentProvider } from './context/StudentContext';
@@ -34,6 +35,7 @@ function App() {
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/questions" element={<QuestionsPage />} />
+                  <Route path="/students" element={<StudentsPage />} />
                   <Route path="/progress" element={<ProgressPage />} />
                   <Route path="/results" element={<ResultsPage />} />
                   <Route path="/browse" element={<QuestionBrowserPage supabaseClient={supabase} />} />

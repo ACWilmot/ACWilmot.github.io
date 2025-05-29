@@ -5,6 +5,7 @@ import { Book, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useStudent } from '@/context/StudentContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import UserProfile from './UserProfile';
 import DonateButton from './DonateButton';
 import { DarkModeToggle } from './DarkModeToggle';
@@ -13,6 +14,7 @@ import StudentSelector from './StudentSelector';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const { isTutor } = useSubscription();
   const { selectedStudentId, setSelectedStudentId } = useStudent();
 
   return (
@@ -31,8 +33,8 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-1">
           {[
             { label: 'Home', path: '/' },
-            // Removed 'Practice' link
             ...(isAuthenticated ? [{ label: 'My Progress', path: '/progress' }] : []),
+            ...(isAuthenticated && isTutor ? [{ label: 'Students', path: '/students' }] : []),
             { label: 'Questions', path: '/questions' },
             { label: 'About', path: '/about' },
           ].map((item) => (
@@ -42,7 +44,7 @@ const Header: React.FC = () => {
       </nav>
 
       <div className="flex items-center gap-4">
-        {isAuthenticated && user?.role === 'tutor' && (
+        {isAuthenticated && isTutor && (
           <StudentSelector
             selectedStudentId={selectedStudentId}
             onStudentChange={setSelectedStudentId}

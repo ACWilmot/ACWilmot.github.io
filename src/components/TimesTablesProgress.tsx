@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import { TimesTableProgress } from '@/types/userTypes';
 import { useProfile } from '@/context/ProfileContext';
+import { useStudent } from '@/context/StudentContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useProgressActions } from '@/hooks/useProgressActions';
@@ -58,18 +59,35 @@ const generateDemoData = (): TimesTableProgress[] => {
 const TimesTablesProgress: React.FC = () => {
   const navigate = useNavigate();
   const { profile, updateProfile, isLoading } = useProfile();
+  const { selectedStudentId, selectedStudent, studentProgress } = useStudent();
   const { resetSubjectProgress } = useProgressActions(profile, updateProfile);
   const [demoMode, setDemoMode] = useState(false);
   const [isLoadingDemo, setIsLoadingDemo] = useState(false);
   
   console.log("TimesTablesProgress rendering with profile data:", profile);
+  console.log("TimesTablesProgress rendering with student data:", selectedStudent, studentProgress);
   console.log("Profile loading state:", isLoading);
   
-  const timesTablesProgress = profile?.timesTablesProgress || getDefaultTimesTablesProgress();
+  // Get the appropriate times tables progress based on whether a student is selected
+  const getTimesTablesProgress = (): TimesTableProgress[] => {
+    if (selectedStudentId && studentProgress?.timesTables) {
+      console.log("Using student times tables progress:", studentProgress.timesTables.times_tables_progress);
+      return studentProgress.timesTables.times_tables_progress || getDefaultTimesTablesProgress();
+    }
+    console.log("Using tutor times tables progress:", profile?.timesTablesProgress);
+    return profile?.timesTablesProgress || getDefaultTimesTablesProgress();
+  };
+  
+  const timesTablesProgress = getTimesTablesProgress();
   
   console.log("Using times tables progress:", timesTablesProgress);
 
   const loadDemoData = async () => {
+    if (selectedStudentId) {
+      toast.error("Cannot load demo data for student accounts");
+      return;
+    }
+
     if (!profile) {
       toast.error("Please log in to load demo data");
       return;
@@ -123,6 +141,20 @@ const TimesTablesProgress: React.FC = () => {
     }
   };
 
+  const clearTimesTablesProgress = () => {
+    if (selectedStudentId) {
+      toast.error("Cannot clear progress for student accounts from this interface");
+      return;
+    }
+
+    if (!profile) {
+      toast.error("Please log in to reset progress");
+      return;
+    }
+    
+    resetSubjectProgress('timesTables');
+  };
+
   const progressData = timesTablesProgress.map(table => {
     const totalAccuracy = table.attempts > 0 ? Math.round((table.correct / table.attempts) * 100) : 0;
     
@@ -145,37 +177,45 @@ const TimesTablesProgress: React.FC = () => {
   console.log("Has any attempts:", hasAnyAttempts);
   console.log("Progress data processed:", progressData);
 
-  const clearTimesTablesProgress = () => {
-    if (!profile) {
-      toast.error("Please log in to reset progress");
-      return;
-    }
-    
-    resetSubjectProgress('timesTables');
-  };
-
   if (isLoading) {
     return <div className="mt-6 p-4 text-center">Loading times tables progress...</div>;
   }
 
+  const getPageTitle = () => {
+    if (selectedStudent) {
+      return `${selectedStudent.name}'s Times Tables Progress`;
+    }
+    return "Times Tables Progress";
+  };
+
+  const getPageDescription = () => {
+    if (selectedStudent) {
+      return `Track ${selectedStudent.name}'s times tables performance`;
+    }
+    return "Track your times tables performance";
+  };
+
   return (
     <div className="mt-6">
       <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-2">
-        <h2 className="text-2xl font-display font-bold">Times Tables Progress</h2>
+        <div>
+          <h2 className="text-2xl font-display font-bold">{getPageTitle()}</h2>
+          <p className="text-sm text-muted-foreground">{getPageDescription()}</p>
+        </div>
         <div className="flex gap-2">
-          {!hasAnyAttempts && (
+          {!hasAnyAttempts && !selectedStudentId && (
             <Button 
               onClick={loadDemoData}
               variant="outline"
               className="flex items-center gap-1.5"
-              disabled={isLoading}
+              disabled={isLoadingDemo}
             >
               <BarChart2 className="h-4 w-4" />
-              {isLoading ? "Loading..." : "Load Demo Data"}
+              {isLoadingDemo ? "Loading..." : "Load Demo Data"}
             </Button>
           )}
           
-          {hasAnyAttempts && (
+          {hasAnyAttempts && !selectedStudentId && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -271,7 +311,10 @@ const TimesTablesProgress: React.FC = () => {
       ) : (
         <Alert className="bg-muted/50">
           <AlertDescription>
-            {demoMode ? "Loading demo data..." : "You haven't practiced any times tables yet. Start a practice session to track your progress!"}
+            {selectedStudent 
+              ? `${selectedStudent.name} hasn't practiced any times tables yet. Start a practice session to track their progress!`
+              : (demoMode ? "Loading demo data..." : "You haven't practiced any times tables yet. Start a practice session to track your progress!")
+            }
           </AlertDescription>
         </Alert>
       )}

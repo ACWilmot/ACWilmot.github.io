@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, User, Trash2, AlertCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Navigate } from 'react-router-dom';
+import EditableStudentName from '@/components/EditableStudentName';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -123,6 +124,14 @@ const StudentsPage: React.FC = () => {
     }
   };
 
+  const handleStudentNameUpdate = (studentId: string, newName: string) => {
+    setStudents(students.map(student => 
+      student.id === studentId 
+        ? { ...student, name: newName }
+        : student
+    ));
+  };
+
   if (isLoading) {
     return (
       <Layout>
@@ -193,12 +202,16 @@ const StudentsPage: React.FC = () => {
                 {students.map((student) => (
                   <div
                     key={student.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
+                    className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <User className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <h3 className="font-medium">{student.name}</h3>
+                        <EditableStudentName
+                          studentId={student.id}
+                          currentName={student.name}
+                          onNameUpdate={(newName) => handleStudentNameUpdate(student.id, newName)}
+                        />
                         <p className="text-sm text-muted-foreground">
                           Created {new Date(student.created_at).toLocaleDateString()}
                         </p>

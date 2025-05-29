@@ -25,10 +25,33 @@ const StudentSelector: React.FC<StudentSelectorProps> = ({
   const { user } = useAuth();
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [tutorName, setTutorName] = useState<string>('');
 
   useEffect(() => {
     fetchStudents();
+    fetchTutorName();
   }, [user]);
+
+  const fetchTutorName = async () => {
+    if (!user?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching tutor name:', error);
+        return;
+      }
+
+      setTutorName(data?.name || user.email || 'My Progress');
+    } catch (error) {
+      console.error('Error fetching tutor name:', error);
+    }
+  };
 
   const fetchStudents = async () => {
     if (!user?.id) {
@@ -59,7 +82,7 @@ const StudentSelector: React.FC<StudentSelectorProps> = ({
   };
 
   const handleValueChange = (value: string) => {
-    if (value === 'my-progress') {
+    if (value === 'tutor-progress') {
       onStudentChange(null);
     } else {
       onStudentChange(value);
@@ -76,7 +99,7 @@ const StudentSelector: React.FC<StudentSelectorProps> = ({
   }
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
-  const selectValue = selectedStudentId || 'my-progress';
+  const selectValue = selectedStudentId || 'tutor-progress';
 
   return (
     <div className="flex items-center gap-2">
@@ -84,11 +107,13 @@ const StudentSelector: React.FC<StudentSelectorProps> = ({
       <Select value={selectValue} onValueChange={handleValueChange}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select student">
-            {selectedStudent ? selectedStudent.name : 'My Progress'}
+            {selectedStudent ? selectedStudent.name : <span className="font-bold">{tutorName}</span>}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="my-progress">My Progress</SelectItem>
+          <SelectItem value="tutor-progress">
+            <span className="font-bold">{tutorName}</span>
+          </SelectItem>
           {students.map((student) => (
             <SelectItem key={student.id} value={student.id}>
               {student.name}

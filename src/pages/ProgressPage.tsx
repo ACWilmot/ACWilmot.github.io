@@ -1,7 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { useStudent } from '@/context/StudentContext';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +36,7 @@ const ProgressPage = () => {
   const { isAuthenticated, user } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { isSubscribed } = useSubscription();
+  const { selectedStudentId, selectedStudent, studentProgress, isLoadingStudentProgress } = useStudent();
   const { resetSubjectProgress } = useProgressActions(profile, updateProfile => {
     if (profile && updateProfile) {
       return updateProfile;
@@ -50,7 +53,32 @@ const ProgressPage = () => {
   console.log("ProgressPage rendering with auth status:", isAuthenticated);
   console.log("ProgressPage rendering with user:", user);
   console.log("ProgressPage rendering with profile:", profile);
-  console.log("Profile loading state:", profileLoading);
+  console.log("Selected student:", selectedStudent);
+  console.log("Student progress:", studentProgress);
+
+  // Get the appropriate progress data based on whether a student is selected
+  const getProgressData = () => {
+    if (selectedStudentId && studentProgress) {
+      // Convert student progress to the format expected by the UI
+      const convertedProgress: Record<string, any> = {};
+      Object.keys(studentProgress).forEach(subject => {
+        const subjectData = studentProgress[subject];
+        convertedProgress[subject] = subjectData.progress;
+      });
+      return convertedProgress;
+    }
+    return profile?.progress || {};
+  };
+
+  const getTimesTablesProgress = () => {
+    if (selectedStudentId && studentProgress?.timesTables) {
+      return studentProgress.timesTables.times_tables_progress || [];
+    }
+    return profile?.timesTablesProgress || [];
+  };
+
+  const progressData = getProgressData();
+  const timesTablesProgressData = getTimesTablesProgress();
 
   // Redirect if not authenticated or not subscribed
   useEffect(() => {
@@ -67,7 +95,7 @@ const ProgressPage = () => {
     }
 
     // Ensure profile loading is complete
-    if (!profileLoading) {
+    if (!profileLoading && !isLoadingStudentProgress) {
       setLoading(false);
       if (!profile) {
         setError("Failed to load user profile data. Please try logging in again.");
@@ -75,12 +103,11 @@ const ProgressPage = () => {
         setError(null);
         
         // Calculate year progress stats for each subject
-        // This is mocked data since we don't have actual year data stored
-        const subjects = Object.keys(profile.progress).filter(subject => subject !== 'timesTables');
+        const subjects = Object.keys(progressData).filter(subject => subject !== 'timesTables');
         const mockYearProgress: Record<string, YearProgressData> = {};
         
         subjects.forEach(subject => {
-          const subjectData = profile.progress[subject];
+          const subjectData = progressData[subject];
           if (!subjectData) return;
           
           const total = subjectData.completed || 0;
@@ -90,18 +117,18 @@ const ProgressPage = () => {
           mockYearProgress[subject] = {
             "all": {
               easy: {
-                completed: Math.floor(total * 0.4), // 40% of questions are easy
-                correct: Math.floor(totalCorrect * 0.45), // slightly better performance on easy questions
+                completed: Math.floor(total * 0.4),
+                correct: Math.floor(totalCorrect * 0.45),
                 accuracy: 0
               },
               medium: {
-                completed: Math.floor(total * 0.4), // 40% of questions are medium
-                correct: Math.floor(totalCorrect * 0.4), // average performance on medium questions
+                completed: Math.floor(total * 0.4),
+                correct: Math.floor(totalCorrect * 0.4),
                 accuracy: 0
               },
               hard: {
-                completed: Math.floor(total * 0.2), // 20% of questions are hard
-                correct: Math.floor(totalCorrect * 0.15), // worse performance on hard questions
+                completed: Math.floor(total * 0.2),
+                correct: Math.floor(totalCorrect * 0.15),
                 accuracy: 0
               },
               all: {
@@ -112,18 +139,18 @@ const ProgressPage = () => {
             },
             "3": {
               easy: {
-                completed: Math.floor(total * 0.25 * 0.5), // 25% of questions from year 3, 50% are easy
-                correct: Math.floor(totalCorrect * 0.25 * 0.6), // 60% accuracy on year 3 easy
+                completed: Math.floor(total * 0.25 * 0.5),
+                correct: Math.floor(totalCorrect * 0.25 * 0.6),
                 accuracy: 0
               },
               medium: {
-                completed: Math.floor(total * 0.25 * 0.4), // 25% of questions from year 3, 40% are medium
-                correct: Math.floor(totalCorrect * 0.25 * 0.5), // 50% accuracy on year 3 medium
+                completed: Math.floor(total * 0.25 * 0.4),
+                correct: Math.floor(totalCorrect * 0.25 * 0.5),
                 accuracy: 0
               },
               hard: {
-                completed: Math.floor(total * 0.25 * 0.1), // 25% of questions from year 3, 10% are hard
-                correct: Math.floor(totalCorrect * 0.25 * 0.3), // 30% accuracy on year 3 hard
+                completed: Math.floor(total * 0.25 * 0.1),
+                correct: Math.floor(totalCorrect * 0.25 * 0.3),
                 accuracy: 0
               },
               all: {
@@ -134,18 +161,18 @@ const ProgressPage = () => {
             },
             "4": {
               easy: {
-                completed: Math.floor(total * 0.3 * 0.4), // 30% of questions from year 4, 40% are easy
-                correct: Math.floor(totalCorrect * 0.3 * 0.5), // 50% accuracy on year 4 easy
+                completed: Math.floor(total * 0.3 * 0.4),
+                correct: Math.floor(totalCorrect * 0.3 * 0.5),
                 accuracy: 0
               },
               medium: {
-                completed: Math.floor(total * 0.3 * 0.4), // 30% of questions from year 4, 40% are medium
-                correct: Math.floor(totalCorrect * 0.3 * 0.4), // 40% accuracy on year 4 medium
+                completed: Math.floor(total * 0.3 * 0.4),
+                correct: Math.floor(totalCorrect * 0.3 * 0.4),
                 accuracy: 0
               },
               hard: {
-                completed: Math.floor(total * 0.3 * 0.2), // 30% of questions from year 4, 20% are hard
-                correct: Math.floor(totalCorrect * 0.3 * 0.3), // 30% accuracy on year 4 hard
+                completed: Math.floor(total * 0.3 * 0.2),
+                correct: Math.floor(totalCorrect * 0.3 * 0.3),
                 accuracy: 0
               },
               all: {
@@ -156,18 +183,18 @@ const ProgressPage = () => {
             },
             "5": {
               easy: {
-                completed: Math.floor(total * 0.25 * 0.3), // 25% of questions from year 5, 30% are easy
-                correct: Math.floor(totalCorrect * 0.25 * 0.45), // 45% accuracy on year 5 easy
+                completed: Math.floor(total * 0.25 * 0.3),
+                correct: Math.floor(totalCorrect * 0.25 * 0.45),
                 accuracy: 0
               },
               medium: {
-                completed: Math.floor(total * 0.25 * 0.5), // 25% of questions from year 5, 50% are medium
-                correct: Math.floor(totalCorrect * 0.25 * 0.4), // 40% accuracy on year 5 medium
+                completed: Math.floor(total * 0.25 * 0.5),
+                correct: Math.floor(totalCorrect * 0.25 * 0.4),
                 accuracy: 0
               },
               hard: {
-                completed: Math.floor(total * 0.25 * 0.2), // 25% of questions from year 5, 20% are hard
-                correct: Math.floor(totalCorrect * 0.25 * 0.2), // 20% accuracy on year 5 hard
+                completed: Math.floor(total * 0.25 * 0.2),
+                correct: Math.floor(totalCorrect * 0.25 * 0.2),
                 accuracy: 0
               },
               all: {
@@ -178,18 +205,18 @@ const ProgressPage = () => {
             },
             "6": {
               easy: {
-                completed: Math.floor(total * 0.2 * 0.2), // 20% of questions from year 6, 20% are easy
-                correct: Math.floor(totalCorrect * 0.2 * 0.4), // 40% accuracy on year 6 easy
+                completed: Math.floor(total * 0.2 * 0.2),
+                correct: Math.floor(totalCorrect * 0.2 * 0.4),
                 accuracy: 0
               },
               medium: {
-                completed: Math.floor(total * 0.2 * 0.5), // 20% of questions from year 6, 50% are medium
-                correct: Math.floor(totalCorrect * 0.2 * 0.35), // 35% accuracy on year 6 medium
+                completed: Math.floor(total * 0.2 * 0.5),
+                correct: Math.floor(totalCorrect * 0.2 * 0.35),
                 accuracy: 0
               },
               hard: {
-                completed: Math.floor(total * 0.2 * 0.3), // 20% of questions from year 6, 30% are hard
-                correct: Math.floor(totalCorrect * 0.2 * 0.25), // 25% accuracy on year 6 hard
+                completed: Math.floor(total * 0.2 * 0.3),
+                correct: Math.floor(totalCorrect * 0.2 * 0.25),
                 accuracy: 0
               },
               all: {
@@ -214,9 +241,9 @@ const ProgressPage = () => {
         setSubjectYearProgress(mockYearProgress);
       }
     }
-  }, [isAuthenticated, isSubscribed, navigate, profile, profileLoading]);
+  }, [isAuthenticated, isSubscribed, navigate, profile, profileLoading, selectedStudentId, studentProgress, isLoadingStudentProgress, progressData]);
 
-  if (loading || profileLoading) {
+  if (loading || profileLoading || (selectedStudentId && isLoadingStudentProgress)) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
@@ -245,7 +272,14 @@ const ProgressPage = () => {
   }
 
   // Include all subjects except timesTables in the subjects array
-  const subjects = Object.keys(profile.progress).filter(subject => subject !== 'timesTables');
+  const subjects = Object.keys(progressData).filter(subject => subject !== 'timesTables');
+
+  const getPageTitle = () => {
+    if (selectedStudent) {
+      return `${selectedStudent.name}'s Progress`;
+    }
+    return "My Progress";
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -265,10 +299,13 @@ const ProgressPage = () => {
           <div>
             <h1 className="text-3xl font-display font-bold flex items-center gap-2">
               <BarChart2 className="h-6 w-6 text-primary" />
-              My Progress
+              {getPageTitle()}
             </h1>
             <p className="text-muted-foreground">
-              Track your cumulative performance across different subjects
+              {selectedStudent 
+                ? `Track ${selectedStudent.name}'s performance across different subjects`
+                : "Track your cumulative performance across different subjects"
+              }
             </p>
           </div>
         </div>
@@ -296,7 +333,7 @@ const ProgressPage = () => {
             <TabsContent value="subjects" className="mt-6">
               <div className="grid md:grid-cols-2 gap-6">
                 {subjects.map(subject => {
-                  const subjectData = profile.progress[subject];
+                  const subjectData = progressData[subject];
                   if (!subjectData) {
                     console.error(`Missing data for subject: ${subject}`);
                     return null;
@@ -325,27 +362,29 @@ const ProgressPage = () => {
                             Practice {subject}
                           </Button>
                           
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                                <RefreshCcw className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Reset {subject} progress?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This will reset your cumulative progress for {subject}. All completed quizzes and statistics for this subject will be erased.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => resetSubjectProgress(subject)}>
-                                  Reset
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          {!selectedStudentId && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                  <RefreshCcw className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Reset {subject} progress?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will reset your cumulative progress for {subject}. All completed quizzes and statistics for this subject will be erased.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => resetSubjectProgress(subject)}>
+                                    Reset
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

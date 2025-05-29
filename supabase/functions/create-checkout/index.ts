@@ -90,12 +90,20 @@ serve(async (req) => {
 
     logStep("Creating checkout session", { tier, pricing });
 
-    const session = await stripe.checkout.sessions.create({
+    // Check if customer has existing active subscriptions
+    const existingSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+      limit: 1
+    });
+
+    let checkoutMode = "subscription";
+    let sessionConfig: any = {
       customer: customerId,
       line_items: [
         {
           price_data: {
-            currency: "usd", // Keep consistent with existing subscriptions
+            currency: "usd",
             product_data: { 
               name: pricing.name,
               description: pricing.description
@@ -106,10 +114,23 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      mode: "subscription",
+      mode: checkoutMode,
       success_url: `${origin}/profile?checkoutSuccess=true&tab=subscription`,
       cancel_url: `${origin}/profile?checkoutCanceled=true&tab=subscription`,
-    });
+    };
+
+    // If customer has existing subscription, we need to handle upgrade/downgrade
+    if (existingSubscriptions.data.length > 0) {
+      logStep("Customer has existing subscription, creating upgrade session");
+      // For subscription changes, Stripe will handle the proration automatically
+      sessionConfig.subscription_data = {
+        metadata: {
+          previous_subscription: existingSubscriptions.data[0].id
+        }
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
     
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
     

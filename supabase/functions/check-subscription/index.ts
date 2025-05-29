@@ -89,9 +89,22 @@ serve(async (req) => {
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
-      // Determine subscription tier - for now we only have "Premium"
-      subscriptionTier = "Premium";
-      logStep("Determined subscription tier", { subscriptionTier });
+      // Determine subscription tier based on price amount
+      const priceId = subscription.items.data[0].price.id;
+      const unitAmount = subscription.items.data[0].price.unit_amount || 0;
+      
+      logStep("Analyzing subscription price", { priceId, unitAmount });
+      
+      // Map price amounts to tiers (amounts are in cents)
+      if (unitAmount >= 1999) {
+        subscriptionTier = "tutor"; // $19.99 or higher
+      } else if (unitAmount >= 499) {
+        subscriptionTier = "premium"; // $4.99 to $19.98
+      } else {
+        subscriptionTier = "basic"; // Less than $4.99
+      }
+      
+      logStep("Determined subscription tier", { unitAmount, subscriptionTier });
     } else {
       logStep("No active subscription found");
     }

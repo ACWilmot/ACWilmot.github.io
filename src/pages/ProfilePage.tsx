@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -112,7 +111,7 @@ const ProfilePage = () => {
 
   // Handle premium subscription checkout
   const handlePremiumCheckout = async () => {
-    await createCheckoutSession();
+    await createCheckoutSession('premium');
   };
 
   // Handle tutor subscription checkout  
@@ -244,7 +243,7 @@ const ProfilePage = () => {
                       <span>Free Plan</span>
                       {!isSubscribed && <Badge variant="default">Current</Badge>}
                     </CardTitle>
-                    <div className="text-3xl font-bold">£0.00<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                    <div className="text-3xl font-bold">$0.00<span className="text-base font-normal text-muted-foreground">/month</span></div>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="mb-6 text-muted-foreground">Basic access to practice questions with limitations.</p>
@@ -279,7 +278,7 @@ const ProfilePage = () => {
                       <span>Premium Plan</span>
                       {isSubscribed && subscriptionTier === 'premium' && <Badge variant="default">Current</Badge>}
                     </CardTitle>
-                    <div className="text-3xl font-bold">£4.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                    <div className="text-3xl font-bold">$4.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="mb-6 text-muted-foreground">Full access to all features and premium content.</p>
@@ -343,7 +342,7 @@ const ProfilePage = () => {
                         ) : (
                           <>
                             <CreditCard className="h-4 w-4 mr-2" />
-                            Subscribe Now
+                            {isSubscribed ? 'Switch to Premium' : 'Subscribe Now'}
                           </>
                         )}
                       </Button>
@@ -358,7 +357,7 @@ const ProfilePage = () => {
                       <span>Tutor Plan</span>
                       {isSubscribed && subscriptionTier === 'tutor' && <Badge variant="default">Current</Badge>}
                     </CardTitle>
-                    <div className="text-3xl font-bold">£19.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                    <div className="text-3xl font-bold">$19.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="mb-6 text-muted-foreground">Perfect for tutors managing multiple students.</p>
@@ -418,7 +417,7 @@ const ProfilePage = () => {
                         ) : (
                           <>
                             <CreditCard className="h-4 w-4 mr-2" />
-                            Subscribe Now
+                            {isSubscribed ? 'Upgrade to Tutor' : 'Subscribe Now'}
                           </>
                         )}
                       </Button>
@@ -450,7 +449,7 @@ const ProfilePage = () => {
                       <div>
                         <Label className="text-sm text-muted-foreground">Price</Label>
                         <p className="font-medium">
-                          {subscriptionTier === 'tutor' ? '£19.99/month' : '£4.99/month'}
+                          {subscriptionTier === 'tutor' ? '$19.99/month' : '$4.99/month'}
                         </p>
                       </div>
                     </div>

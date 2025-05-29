@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { StudentProfile, StudentProgress, UserProgress } from '@/types/userTypes';
+import { StudentProfile, StudentProgress, UserProgress, TimesTableProgress } from '@/types/userTypes';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -76,7 +75,9 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         progressBySubject[progress.subject] = {
           ...progress,
           progress: progress.progress as UserProgress,
-          times_tables_progress: progress.times_tables_progress || undefined
+          times_tables_progress: Array.isArray(progress.times_tables_progress) 
+            ? progress.times_tables_progress as TimesTableProgress[]
+            : undefined
         };
       });
 

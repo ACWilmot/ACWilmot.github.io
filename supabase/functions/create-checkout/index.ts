@@ -44,6 +44,10 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Parse request body to get tier
+    const { tier = 'premium' } = await req.json();
+    logStep("Tier requested", { tier });
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
@@ -67,25 +71,44 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     logStep("Origin retrieved", { origin });
 
+    // Define pricing for different tiers - using USD to match existing subscriptions
+    const tierPricing = {
+      premium: {
+        amount: 499, // $4.99
+        name: "Premium Subscription",
+        description: "Full access to all premium features"
+      },
+      tutor: {
+        amount: 1999, // $19.99
+        name: "Tutor Subscription", 
+        description: "Premium features plus student management tools"
+      }
+    };
+
+    const pricing = tierPricing[tier as keyof typeof tierPricing];
+    if (!pricing) throw new Error(`Invalid tier: ${tier}`);
+
+    logStep("Creating checkout session", { tier, pricing });
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
           price_data: {
-            currency: "gbp",
+            currency: "usd", // Keep consistent with existing subscriptions
             product_data: { 
-              name: "Premium Subscription",
-              description: "Full access to all premium features"
+              name: pricing.name,
+              description: pricing.description
             },
-            unit_amount: 499, // £4.99
+            unit_amount: pricing.amount,
             recurring: { interval: "month" },
           },
           quantity: 1,
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/profile?checkoutSuccess=true`,
-      cancel_url: `${origin}/profile?checkoutCanceled=true`,
+      success_url: `${origin}/profile?checkoutSuccess=true&tab=subscription`,
+      cancel_url: `${origin}/profile?checkoutCanceled=true&tab=subscription`,
     });
     
     logStep("Checkout session created", { sessionId: session.id, url: session.url });

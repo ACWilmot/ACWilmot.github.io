@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Question, Subject, Difficulty } from '@/types/questionTypes';
+import { Question, Subject, Difficulty, VerbalType } from '@/types/questionTypes';
 import { v4 as uuidv4 } from 'uuid';
 import YearSelector from '@/components/YearSelector';
+import VerbalTypesSelector from '@/components/VerbalTypesSelector';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,6 +18,7 @@ const QuestionsPage = () => {
   const [subject, setSubject] = useState<Subject>('maths');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [year, setYear] = useState<number | null>(null);
+  const [verbalType, setVerbalType] = useState<VerbalType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -24,6 +26,14 @@ const QuestionsPage = () => {
     const newOptions = [...options];
     newOptions[index] = value;
     setOptions(newOptions);
+  };
+
+  const handleSubjectChange = (newSubject: Subject) => {
+    setSubject(newSubject);
+    // Reset verbal type when switching away from verbal
+    if (newSubject !== 'verbal') {
+      setVerbalType(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,22 +71,34 @@ const QuestionsPage = () => {
       return;
     }
 
+    // Validate verbal type selection for verbal questions
+    if (subject === 'verbal' && !verbalType) {
+      toast({
+        title: "Missing verbal type",
+        description: "Please select a verbal reasoning type",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      // Prepare the data for submission
+      const questionData = {
+        subject: subject,
+        text: questionText,
+        options: options,
+        correct_answer: correctAnswer,
+        explanation: explanation,
+        difficulty: difficulty,
+        year: year,
+        verbal_type: subject === 'verbal' ? verbalType : null,
+      };
+
       // Save to Supabase
       const { data, error } = await supabase
         .from('questions')
-        .insert([
-          {
-            subject: subject,
-            text: questionText,
-            options: options,
-            correct_answer: correctAnswer,
-            explanation: explanation,
-            difficulty: difficulty,
-            year: year,
-            // user_id will be set automatically by the trigger
-          }
-        ])
+        .insert([questionData])
         .select();
 
       if (error) {
@@ -88,6 +110,7 @@ const QuestionsPage = () => {
       setOptions(['', '', '', '']);
       setCorrectAnswer('');
       setExplanation('');
+      setVerbalType(null);
 
       toast({
         title: "Question created",
@@ -171,7 +194,7 @@ const QuestionsPage = () => {
                 Subject
                 <select
                   value={subject}
-                  onChange={(e) => setSubject(e.target.value as Subject)}
+                  onChange={(e) => handleSubjectChange(e.target.value as Subject)}
                   className="mt-1 block w-full px-3 py-2 border rounded"
                 >
                   <option value="maths">Maths</option>
@@ -207,6 +230,46 @@ const QuestionsPage = () => {
               onChange={setYear}
             />
           </div>
+
+          {subject === 'verbal' && (
+            <div className="mb-4">
+              <label className="block mb-2">Verbal Reasoning Type</label>
+              <div className="p-4 border rounded-lg">
+                <select
+                  value={verbalType || ''}
+                  onChange={(e) => setVerbalType(e.target.value as VerbalType || null)}
+                  className="w-full px-3 py-2 border rounded"
+                  required={subject === 'verbal'}
+                >
+                  <option value="">Select a verbal reasoning type...</option>
+                  <option value="insertLetter">Insert a Letter</option>
+                  <option value="twoOddOnes">Two Odd Ones Out</option>
+                  <option value="relatedWords">Related Words</option>
+                  <option value="closestMeaning">Closest Meaning</option>
+                  <option value="hiddenWord">Hidden Word</option>
+                  <option value="missingWord">Missing Word</option>
+                  <option value="lettersNumbers">Letters for Numbers</option>
+                  <option value="moveLetter">Move a Letter</option>
+                  <option value="letterSeries">Letter Series</option>
+                  <option value="wordConnections">Word Connections</option>
+                  <option value="numberSeries">Number Series</option>
+                  <option value="compoundWords">Compound Words</option>
+                  <option value="makeWord">Make a Word</option>
+                  <option value="letterConnections">Letter Connections</option>
+                  <option value="readingInfo">Reading Information</option>
+                  <option value="oppositeMeaning">Opposite Meaning</option>
+                  <option value="completeSum">Complete the Sum</option>
+                  <option value="relatedNumbers">Related Numbers</option>
+                  <option value="wordNumberCodes">Word-Number Codes</option>
+                  <option value="completeWord">Complete the Word</option>
+                  <option value="sameMeaning">Same Meaning</option>
+                </select>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Select the specific type of verbal reasoning question
+                </p>
+              </div>
+            </div>
+          )}
           
           <Button 
             type="submit" 

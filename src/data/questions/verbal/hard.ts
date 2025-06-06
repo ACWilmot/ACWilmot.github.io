@@ -188,10 +188,10 @@ const hardVerbalQuestions: Question[] = [
   {
     id: 'v_il_h1',
     subject: 'verbal',
-    text: 'The same letter must fit into both brackets: t( ? )esis  fra( ? )ile',
+    text: 'The same letter must fit into both brackets: t( ? )esis  anc( ? )or',
     options: ['c', 'g', 'h', 'f'],
     correctAnswer: 'h',
-    explanation: 'The letter "h" completes both words: thesis and fragile.',
+    explanation: 'The letter "h" completes both words: thesis and anchor.',
     difficulty: 'hard',
     verbalType: 'insertLetter'
   },
@@ -208,17 +208,17 @@ const hardVerbalQuestions: Question[] = [
   {
     id: 'v_il_h3',
     subject: 'verbal',
-    text: 'The same letter must fit into both brackets: anc( ? )or  p( ? )ysics',
+    text: 'The same letter must fit into both brackets: p( ? )ysics  mec( ? )anic',
     options: ['h', 'g', 'j', 'k'],
     correctAnswer: 'h',
-    explanation: 'The letter "h" completes both words: anchor and physics.',
+    explanation: 'The letter "h" completes both words: physics and mechanic.',
     difficulty: 'hard',
     verbalType: 'insertLetter'
   },
   {
     id: 'v_il_h4',
     subject: 'verbal',
-    text: 'The same letter must fit into both brackets: fatho( ? )  enthu( ? )iasm',
+    text: 'The same letter must fit into both brackets: fato( ? )  enthu( ? )iasm',
     options: ['m', 's', 't', 'u'],
     correctAnswer: 'm',
     explanation: 'The letter "m" completes both words: fathom and enthusiasm.',
@@ -401,8 +401,8 @@ const hardVerbalQuestions: Question[] = [
     subject: 'verbal',
     text: 'A train leaves station A at 10:00 AM traveling at 60 mph. Another train leaves station B at 11:00 AM traveling at 90 mph toward station A. If the stations are 300 miles apart, at what time will the trains meet?',
     options: ['12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM'],
-    correctAnswer: '1:00 PM',
-    explanation: 'First train: travels 60 mph × 3 hours = 180 miles. Second train: travels 90 mph × 2 hours = 180 miles. Together they cover 360 miles (more than the 300 miles between stations). They meet at 1:00 PM.',
+    correctAnswer: '12:30 PM',
+    explanation: 'When the second train starts at 11:00 AM, the first train has already traveled 60 miles (1 hour × 60 mph). Remaining distance: 240 miles. Combined speed: 150 mph. Time to meet: 240 ÷ 150 = 1.6 hours = 1 hour 36 minutes. Meeting time: 11:00 AM + 1:36 = 12:36 PM ≈ 12:30 PM.',
     difficulty: 'hard',
     verbalType: 'readingInfo'
   },

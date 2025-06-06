@@ -268,10 +268,10 @@ const mediumVerbalQuestions: Question[] = [
   {
     id: 'v_il_m2',
     subject: 'verbal',
-    text: 'The same letter must fit into both brackets: wr( ? )te  br( ? )ve',
+    text: 'The same letter must fit into both brackets: tr( ? )ck  bl( ? )ck',
     options: ['i', 'a', 'o', 'u'],
-    correctAnswer: 'i',
-    explanation: 'The letter "i" completes both words: write and brive.',
+    correctAnswer: 'a',
+    explanation: 'The letter "a" completes both words: track and black.',
     difficulty: 'medium',
     verbalType: 'insertLetter'
   },

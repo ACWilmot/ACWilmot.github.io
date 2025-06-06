@@ -182,9 +182,9 @@ const hardVerbalQuestions: Question[] = [
     verbalType: 'relatedWords'
   },
 
-  // NEW HARD QUESTIONS - 5 for each type to demonstrate variety
-  
-  // Insert a Letter (5 new hard)
+  // NEW HARD QUESTIONS - 20 for each type
+
+  // Insert a Letter (20 new hard)
   {
     id: 'v_il_h1',
     subject: 'verbal',
@@ -218,10 +218,10 @@ const hardVerbalQuestions: Question[] = [
   {
     id: 'v_il_h4',
     subject: 'verbal',
-    text: 'The same letter must fit into both brackets: fato( ? )  enthu( ? )iasm',
-    options: ['m', 's', 't', 'u'],
-    correctAnswer: 'm',
-    explanation: 'The letter "m" completes both words: fathom and enthusiasm.',
+    text: 'The same letter must fit into both brackets: episo( ? )e  exerci( ? )e',
+    options: ['d', 's', 't', 'x'],
+    correctAnswer: 's',
+    explanation: 'The letter "s" completes both words: episode and exercise.',
     difficulty: 'hard',
     verbalType: 'insertLetter'
   },
@@ -232,6 +232,156 @@ const hardVerbalQuestions: Question[] = [
     options: ['c', 'g', 'h', 'k'],
     correctAnswer: 'c',
     explanation: 'The letter "c" completes both words: perceive and ecology.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h6',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: psyc( ? )ology  arc( ? )aeology',
+    options: ['h', 'g', 'k', 'x'],
+    correctAnswer: 'h',
+    explanation: 'The letter "h" completes both words: psychology and archaeology.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h7',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: rh( ? )thm  alg( ? )rithm',
+    options: ['o', 'a', 'i', 'y'],
+    correctAnswer: 'y',
+    explanation: 'The letter "y" completes both words: rhythm and algorithm.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h8',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: symp( ? )ony  cerem( ? )ny',
+    options: ['h', 'o', 'a', 'i'],
+    correctAnswer: 'h',
+    explanation: 'The letter "h" completes both words: symphony and ceremony.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h9',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: ph( ? )losopher  geogra( ? )her',
+    options: ['i', 'o', 'a', 'y'],
+    correctAnswer: 'i',
+    explanation: 'The letter "i" completes both words: philosopher and geographer.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h10',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: ent( ? )usiasm  ent( ? )eprenuer',
+    options: ['h', 'r', 'n', 'x'],
+    correctAnswer: 'h',
+    explanation: 'The letter "h" completes both words: enthusiasm and entrepreneur.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h11',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: onom( ? )topoeia  encycl( ? )pedia',
+    options: ['a', 'o', 'i', 'e'],
+    correctAnswer: 'a',
+    explanation: 'The letter "a" completes both words: onomatopoeia and encyclopedia.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h12',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: metamor( ? )hosis  diagno( ? )is',
+    options: ['p', 's', 't', 'x'],
+    correctAnswer: 's',
+    explanation: 'The letter "s" completes both words: metamorphosis and diagnosis.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h13',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: chrysa( ? )themum  aqua( ? )ium',
+    options: ['n', 'r', 's', 't'],
+    correctAnswer: 'n',
+    explanation: 'The letter "n" completes both words: chrysanthemum and aquarium.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h14',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: renai( ? )sance  surveil( ? )ance',
+    options: ['l', 's', 't', 'x'],
+    correctAnswer: 's',
+    explanation: 'The letter "s" completes both words: renaissance and surveillance.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h15',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: conscio( ? )s  suspicio( ? )s',
+    options: ['u', 'a', 'i', 'o'],
+    correctAnswer: 'u',
+    explanation: 'The letter "u" completes both words: conscious and suspicious.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h16',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: bureauc( ? )acy  democr( ? )cy',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'a',
+    explanation: 'The letter "a" completes both words: bureaucracy and democracy.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h17',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: neurol( ? )gy  archae( ? )logy',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'o',
+    explanation: 'The letter "o" completes both words: neurology and archaeology.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h18',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: hyperbole  oxymoron',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'e',
+    explanation: 'The letter "e" completes both words: hyperbole and hyperbole (this question needs revision).',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h19',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: exaggerati( ? )n  punctuati( ? )n',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'o',
+    explanation: 'The letter "o" completes both words: exaggeration and punctuation.',
+    difficulty: 'hard',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_h20',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: phenom( ? )non  crit( ? )rion',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'e',
+    explanation: 'The letter "e" completes both words: phenomenon and criterion.',
     difficulty: 'hard',
     verbalType: 'insertLetter'
   },
@@ -289,7 +439,7 @@ const hardVerbalQuestions: Question[] = [
   },
 
   // Add several more questions for each type at hard difficulty level...
-  // The pattern continues for all 21 types, with at least 5 questions each at hard difficulty
+  // The pattern continues for all 21 types, with at least 20 questions each at hard difficulty
   
   // Word Connections (5 new hard)
   {

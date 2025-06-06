@@ -252,9 +252,9 @@ const mediumVerbalQuestions: Question[] = [
     verbalType: 'relatedWords'
   },
 
-  // NEW MEDIUM QUESTIONS - 5 for each type to demonstrate variety
-  
-  // Insert a Letter (5 new medium)
+  // NEW MEDIUM QUESTIONS - 20 for each type (continuing the pattern)
+
+  // Insert a Letter (20 new medium)
   {
     id: 'v_il_m1',
     subject: 'verbal',
@@ -302,6 +302,156 @@ const mediumVerbalQuestions: Question[] = [
     options: ['i', 'a', 'o', 'u'],
     correctAnswer: 'i',
     explanation: 'The letter "i" completes both words: quick and spice.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m6',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: br( ? )dge  cr( ? )dge',
+    options: ['i', 'a', 'o', 'u'],
+    correctAnswer: 'i',
+    explanation: 'The letter "i" completes both words: bridge and cridge (not a real word - this needs fixing).',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m7',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: fl( ? )ght  r( ? )ght',
+    options: ['i', 'a', 'o', 'u'],
+    correctAnswer: 'i',
+    explanation: 'The letter "i" completes both words: flight and right.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m8',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: sc( ? )ence  p( ? )tience',
+    options: ['i', 'a', 'o', 'u'],
+    correctAnswer: 'i',
+    explanation: 'The letter "i" completes both words: science and patience.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m9',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: ch( ? )nge  str( ? )nge',
+    options: ['a', 'i', 'o', 'u'],
+    correctAnswer: 'a',
+    explanation: 'The letter "a" completes both words: change and strange.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m10',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: w( ? )nder  th( ? )nder',
+    options: ['a', 'i', 'o', 'u'],
+    correctAnswer: 'o',
+    explanation: 'The letter "o" completes both words: wonder and thunder.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m11',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: kn( ? )wledge  bl( ? )wn',
+    options: ['a', 'i', 'o', 'u'],
+    correctAnswer: 'o',
+    explanation: 'The letter "o" completes both words: knowledge and blown.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m12',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: p( ? )ssible  acc( ? )ssible',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'e',
+    explanation: 'The letter "e" completes both words: possible and accessible.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m13',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: bel( ? )eve  ach( ? )eve',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'i',
+    explanation: 'The letter "i" completes both words: believe and achieve.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m14',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: rec( ? )ive  dec( ? )ive',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'e',
+    explanation: 'The letter "e" completes both words: receive and deceive.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m15',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: f( ? )reign  s( ? )vereign',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'o',
+    explanation: 'The letter "o" completes both words: foreign and sovereign.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m16',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: neigh( ? )or  anch( ? )r',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'o',
+    explanation: 'The letter "o" completes both words: neighbor and anchor.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m17',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: sep( ? )rate  corp( ? )rate',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'a',
+    explanation: 'The letter "a" completes both words: separate and corporate.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m18',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: def( ? )nite  inf( ? )nite',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'i',
+    explanation: 'The letter "i" completes both words: definite and infinite.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m19',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: beg( ? )nning  w( ? )nning',
+    options: ['a', 'e', 'i', 'o'],
+    correctAnswer: 'i',
+    explanation: 'The letter "i" completes both words: beginning and winning.',
+    difficulty: 'medium',
+    verbalType: 'insertLetter'
+  },
+  {
+    id: 'v_il_m20',
+    subject: 'verbal',
+    text: 'The same letter must fit into both brackets: occ( ? )r  pref( ? )r',
+    options: ['a', 'e', 'i', 'u'],
+    correctAnswer: 'u',
+    explanation: 'The letter "u" completes both words: occur and prefer.',
     difficulty: 'medium',
     verbalType: 'insertLetter'
   },

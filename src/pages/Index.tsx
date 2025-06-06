@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
-import { DifficultySelector } from '@/components/DifficultySelector';
+import DifficultySelector from '@/components/DifficultySelector';
 import { YearSelector } from '@/components/YearSelector';
 import { TimesTablesSelector } from '@/components/TimesTablesSelector';
 import Header from '@/components/Header';
@@ -103,7 +104,7 @@ const Index = () => {
             {/* Difficulty Selector */}
             <DifficultySelector 
               selectedDifficulty={selectedDifficulty}
-              onDifficultyChange={setSelectedDifficulty}
+              onChange={setSelectedDifficulty}
             />
 
             {/* Year Selector */}

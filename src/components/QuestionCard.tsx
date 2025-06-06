@@ -3,7 +3,7 @@ import React from 'react';
 import { CheckCircle, XCircle, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Question, Difficulty } from '@/types/questionTypes';
+import { Question, Difficulty, VerbalType } from '@/types/questionTypes';
 
 interface QuestionCardProps {
   question: Question;
@@ -11,6 +11,30 @@ interface QuestionCardProps {
   onAnswer: (answer: string) => void;
   showExplanation: boolean;
 }
+
+const verbalTypeLabels: Record<VerbalType, string> = {
+  insertLetter: 'Insert a Letter',
+  twoOddOnes: 'Two Odd Ones Out',
+  relatedWords: 'Related Words',
+  closestMeaning: 'Closest Meaning',
+  hiddenWord: 'Hidden Word',
+  missingWord: 'Missing Word',
+  lettersNumbers: 'Letters for Numbers',
+  moveLetter: 'Move a Letter',
+  letterSeries: 'Letter Series',
+  wordConnections: 'Word Connections',
+  numberSeries: 'Number Series',
+  compoundWords: 'Compound Words',
+  makeWord: 'Make a Word',
+  letterConnections: 'Letter Connections',
+  readingInfo: 'Reading Information',
+  oppositeMeaning: 'Opposite Meaning',
+  completeSum: 'Complete the Sum',
+  relatedNumbers: 'Related Numbers',
+  wordNumberCodes: 'Word-Number Codes',
+  completeWord: 'Complete the Word',
+  sameMeaning: 'Same Meaning',
+};
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
@@ -41,7 +65,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       transition={{ duration: 0.4 }}
       className="w-full max-w-2xl mx-auto glass rounded-2xl p-8"
     >
-      <div className="flex items-start gap-2 mb-6">
+      <div className="flex items-start gap-2 mb-6 flex-wrap">
         <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-medium">
           {question.subject.charAt(0).toUpperCase() + question.subject.slice(1)}
         </span>
@@ -49,6 +73,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           {getDifficultyIcon(question.difficulty)}
           {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
         </span>
+        {question.subject === 'verbal' && question.verbalType && (
+          <span className="bg-purple-500/10 text-purple-600 px-3 py-1 rounded-full text-xs font-medium">
+            {verbalTypeLabels[question.verbalType]}
+          </span>
+        )}
       </div>
       
       <h2 className="text-xl font-display mb-6">{question.text}</h2>
@@ -179,5 +208,15 @@ const Option: React.FC<OptionProps> = ({
     </motion.button>
   );
 };
+
+interface OptionProps {
+  option: string;
+  index: number;
+  isSelected: boolean;
+  isCorrect: boolean;
+  showCorrectness: boolean;
+  onSelect: () => void;
+  imageUrl?: string;
+}
 
 export default QuestionCard;

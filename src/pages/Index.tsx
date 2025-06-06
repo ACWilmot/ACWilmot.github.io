@@ -1,13 +1,13 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import DifficultySelector from '@/components/DifficultySelector';
-import { YearSelector } from '@/components/YearSelector';
-import { TimesTablesSelector } from '@/components/TimesTablesSelector';
+import YearSelector from '@/components/YearSelector';
+import TimesTablesSelector from '@/components/TimesTablesSelector';
 import Header from '@/components/Header';
 import VerbalTypesSelector from '@/components/VerbalTypesSelector';
+import { Subject } from '@/types/questionTypes';
 
 const Index = () => {
   const {
@@ -29,7 +29,7 @@ const Index = () => {
     shouldShowVerbalTypesSelector,
   } = useQuiz();
 
-  const handleSubjectSelect = (subject: string) => {
+  const handleSubjectSelect = (subject: Subject) => {
     setSelectedSubject(subject);
   };
 
@@ -111,7 +111,7 @@ const Index = () => {
             {shouldShowYearSelector(selectedSubject) && (
               <YearSelector 
                 selectedYear={selectedYear}
-                onYearChange={setSelectedYear}
+                onChange={setSelectedYear}
               />
             )}
 
@@ -119,7 +119,7 @@ const Index = () => {
             {selectedSubject === 'timesTables' && (
               <TimesTablesSelector 
                 selectedTables={selectedTimesTables}
-                onTablesChange={setSelectedTimesTables}
+                onChange={setSelectedTimesTables}
               />
             )}
 

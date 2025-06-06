@@ -95,13 +95,14 @@ serve(async (req) => {
       
       logStep("Analyzing subscription price", { priceId, unitAmount });
       
-      // Map price amounts to tiers (amounts are in cents)
-      if (unitAmount >= 1999) {
-        subscriptionTier = "tutor"; // $19.99 or higher
-      } else if (unitAmount >= 499) {
-        subscriptionTier = "premium"; // $4.99 to $19.98
+      // Map price amounts to tiers (amounts are in pence for GBP)
+      // £15.99 = 1599 pence, £3.99 = 399 pence
+      if (unitAmount >= 1599) {
+        subscriptionTier = "tutor"; // £15.99 or higher
+      } else if (unitAmount >= 399) {
+        subscriptionTier = "premium"; // £3.99 to £15.98
       } else {
-        subscriptionTier = "basic"; // Less than $4.99
+        subscriptionTier = "basic"; // Less than £3.99
       }
       
       logStep("Determined subscription tier", { unitAmount, subscriptionTier });

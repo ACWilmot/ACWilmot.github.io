@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface SubscriptionState {
   isSubscribed: boolean;
@@ -31,6 +30,7 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(u
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const { toast } = useToast();
   const [state, setState] = useState<SubscriptionState>({
     isSubscribed: false,
     subscriptionTier: null,
@@ -71,7 +71,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (error) {
         console.error("Error checking subscription:", error);
-        toast.error("Failed to check subscription status");
+        toast({
+          title: "Error",
+          description: "Failed to check subscription status",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -87,11 +91,18 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }));
 
       if (data.subscribed) {
-        toast.success(`You have an active ${data.subscription_tier} subscription`);
+        toast({
+          title: "Subscription Active",
+          description: `You have an active ${data.subscription_tier} subscription`,
+        });
       }
     } catch (error) {
       console.error("Error checking subscription:", error);
-      toast.error("Failed to check subscription status");
+      toast({
+        title: "Error",
+        description: "Failed to check subscription status",
+        variant: "destructive",
+      });
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
@@ -100,7 +111,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Function to create checkout session
   const createCheckoutSession = async (tier: 'premium' | 'tutor' = 'premium'): Promise<void> => {
     if (!isAuthenticated) {
-      toast.error("You must be logged in to subscribe");
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to subscribe",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -114,13 +129,21 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (error) {
         console.error("Error creating checkout session:", error);
-        toast.error("Failed to create checkout session");
+        toast({
+          title: "Error",
+          description: "Failed to create checkout session",
+          variant: "destructive",
+        });
         return;
       }
 
       if (!data.url) {
         console.error("No checkout URL returned");
-        toast.error("Failed to create checkout session");
+        toast({
+          title: "Error",
+          description: "Failed to create checkout session",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -130,7 +153,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       window.location.href = data.url;
     } catch (error) {
       console.error("Error creating checkout session:", error);
-      toast.error("Failed to create checkout session");
+      toast({
+        title: "Error",
+        description: "Failed to create checkout session",
+        variant: "destructive",
+      });
     } finally {
       setState(prev => ({ ...prev, isCheckoutLoading: false }));
     }
@@ -139,7 +166,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Function to open customer portal
   const openCustomerPortal = async (): Promise<void> => {
     if (!isAuthenticated) {
-      toast.error("You must be logged in to manage your subscription");
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to manage your subscription",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -151,13 +182,21 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (error) {
         console.error("Error opening customer portal:", error);
-        toast.error("Failed to open customer portal");
+        toast({
+          title: "Error",
+          description: "Failed to open customer portal",
+          variant: "destructive",
+        });
         return;
       }
 
       if (!data.url) {
         console.error("No portal URL returned");
-        toast.error("Failed to open customer portal");
+        toast({
+          title: "Error", 
+          description: "Failed to open customer portal",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -167,7 +206,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       window.location.href = data.url;
     } catch (error) {
       console.error("Error opening customer portal:", error);
-      toast.error("Failed to open customer portal");
+      toast({
+        title: "Error",
+        description: "Failed to open customer portal",
+        variant: "destructive",
+      });
     } finally {
       setState(prev => ({ ...prev, isPortalLoading: false }));
     }

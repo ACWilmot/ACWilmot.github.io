@@ -10,6 +10,25 @@ import geographyQuestions from '@/data/questions/geography';
 import religiousEdQuestions from '@/data/questions/religiousEd';
 
 /**
+ * Generates a UUID v4
+ */
+const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+/**
+ * Checks if a string is a valid UUID
+ */
+const isValidUUID = (str: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+};
+
+/**
  * Uploads a batch of questions to the Supabase database
  * @param questions The array of questions to upload
  * @param onProgress Optional callback to report progress
@@ -29,19 +48,24 @@ export const uploadQuestionBatch = async (
       const batch = questions.slice(i, i + batchSize);
       
       // Transform questions to match the database schema
-      const transformedBatch = batch.map(question => ({
-        id: question.id,
-        subject: question.subject,
-        text: question.text,
-        options: question.options.map(opt => String(opt)), // Ensure all options are strings
-        correct_answer: question.correctAnswer,
-        explanation: question.explanation,
-        difficulty: question.difficulty,
-        image_url: question.imageUrl || null,
-        option_images: Array.isArray(question.optionImages) ? question.optionImages : null,
-        year: question.year || null,
-        times_table: question.timesTable || null
-      }));
+      const transformedBatch = batch.map(question => {
+        // Generate a UUID if the current ID is not a valid UUID
+        const questionId = isValidUUID(question.id) ? question.id : generateUUID();
+        
+        return {
+          id: questionId,
+          subject: question.subject,
+          text: question.text,
+          options: question.options.map(opt => String(opt)), // Ensure all options are strings
+          correct_answer: question.correctAnswer,
+          explanation: question.explanation,
+          difficulty: question.difficulty,
+          image_url: question.imageUrl || null,
+          option_images: Array.isArray(question.optionImages) ? question.optionImages : null,
+          year: question.year || null,
+          times_table: question.timesTable || null
+        };
+      });
       
       // Upload batch to Supabase with upsert (will update if exists, insert if not)
       const { error, count } = await supabase

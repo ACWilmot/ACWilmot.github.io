@@ -9,7 +9,8 @@ const mediumVerbalQuestions: Question[] = [
     options: ['Cowardly', 'Fearful', 'Courageous', 'Timid'],
     correctAnswer: 'Courageous',
     explanation: 'Courageous means showing courage, which is similar to being brave.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'sameMeaning'
   },
   {
     id: 'v7',
@@ -18,7 +19,8 @@ const mediumVerbalQuestions: Question[] = [
     options: ['Noun', 'Adjective', 'Verb', 'Adverb'],
     correctAnswer: 'Adverb',
     explanation: 'An adverb modifies a verb, adjective, or another adverb, indicating how, where, when, or to what extent. "Quickly" describes how he ran.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v9',
@@ -32,7 +34,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'She said, "Let\'s go."',
     explanation: 'This sentence correctly uses a comma after "said," quotation marks to enclose the direct quote, and an apostrophe in "Let\'s" to indicate a contraction.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v11',
@@ -46,7 +49,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'To wish someone good luck',
     explanation: 'The idiom "break a leg" is a theatrical expression used to wish a performer good luck.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v14',
@@ -60,7 +64,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'They\'re going there.',
     explanation: '"There" indicates a place, and "they\'re" is a contraction of "they are," making this sentence grammatically correct.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v15',
@@ -69,7 +74,8 @@ const mediumVerbalQuestions: Question[] = [
     options: ['Level', 'Apple', 'House', 'Table'],
     correctAnswer: 'Level',
     explanation: 'A palindrome is a word that reads the same backward as forward. "Level" is a palindrome.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v17',
@@ -83,7 +89,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'Her smile is a ray of sunshine.',
     explanation: 'A metaphor is a figure of speech that directly compares two unrelated things. "Her smile is a ray of sunshine" compares her smile to sunshine without using "like" or "as."',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v18',
@@ -92,7 +99,8 @@ const mediumVerbalQuestions: Question[] = [
     options: ['Whisper', 'Echo', 'Splash', 'Silent'],
     correctAnswer: 'Splash',
     explanation: 'Onomatopoeia is a word that imitates the natural sound of something. "Splash" imitates the sound of liquid hitting a surface.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v20',
@@ -106,7 +114,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'She is as brave as a lion.',
     explanation: 'A simile is a figure of speech that compares two things using "like" or "as." This sentence compares her bravery to that of a lion using "as."',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v22',
@@ -120,7 +129,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'The dogs bark loudly.',
     explanation: 'In the correct sentence, the plural subject "dogs" agrees with the plural verb "bark."',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v24',
@@ -134,7 +144,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'To connect words, phrases, or clauses',
     explanation: 'A conjunction is used to connect words, phrases, or clauses in a sentence.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v25',
@@ -148,7 +159,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'The weather will affect our plans.',
     explanation: '"Affect" is a verb that means to influence or produce an effect on something.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v26',
@@ -162,7 +174,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'The cat\'s toy is red.',
     explanation: 'The apostrophe is used to show that the toy belongs to the cat.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v28',
@@ -176,7 +189,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'To enclose direct quotes',
     explanation: 'Quotation marks are used to enclose direct quotes, indicating the exact words someone said or wrote.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v30',
@@ -190,7 +204,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'They are going to the store.',
     explanation: '"To" is a preposition that indicates direction.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v33',
@@ -204,7 +219,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'The dog wagged its tail.',
     explanation: '"Its" is a possessive pronoun that shows ownership.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v34',
@@ -218,7 +234,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'I need the following: apples, bananas, and oranges.',
     explanation: 'A colon is used to introduce a list or explanation.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'completeTheWord'
   },
   {
     id: 'v36',
@@ -232,7 +249,8 @@ const mediumVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'To join two independent clauses',
     explanation: 'A semicolon is used to join two independent clauses that are closely related.',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    verbalType: 'relatedWords'
   }
 ];
 

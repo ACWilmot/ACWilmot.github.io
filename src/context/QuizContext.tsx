@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
-import { Question, Difficulty, Subject } from '@/types/questionTypes';
+import { Question, Difficulty, Subject, VerbalQuestionType } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useStudentProgressActions } from '@/hooks/useStudentProgressActions';
@@ -18,6 +18,7 @@ interface QuizContextType {
   isLoading: boolean;
   questionCount: number;
   selectedTimesTables: number[];
+  selectedVerbalTypes: VerbalQuestionType[];
   startTime: number | null;
   endTime: number | null;
   timeLimit: number | null; // Time limit in seconds
@@ -27,6 +28,7 @@ interface QuizContextType {
   setSelectedDifficulty: (difficulty: Difficulty | 'all') => void;
   setSelectedYear: (year: number | null) => void;
   setSelectedTimesTables: (tables: number[]) => void;
+  setSelectedVerbalTypes: (types: VerbalQuestionType[]) => void;
   setTimeLimit: (seconds: number | null) => void; // Set time limit
   startQuiz: (subject: Subject) => void;
   answerQuestion: (questionId: string, answer: string) => void;
@@ -42,6 +44,7 @@ interface QuizContextType {
     timeTaken: number | null;
   };
   shouldShowYearSelector: (subject: Subject | null) => boolean;
+  shouldShowVerbalTypesSelector: (subject: Subject | null) => boolean;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -57,6 +60,9 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(10);
   const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
+  const [selectedVerbalTypes, setSelectedVerbalTypes] = useState<VerbalQuestionType[]>([
+    'oppositeMeaning', 'sameMeaning', 'wordConnections', 'relatedWords', 'completeTheWord'
+  ]);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
   const [timeLimit, setTimeLimit] = useState<number | null>(null);
@@ -98,6 +104,11 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return subject !== 'timesTables' && subject !== 'verbal';
   };
 
+  // Helper function to determine if verbal types selector should be shown
+  const shouldShowVerbalTypesSelector = (subject: Subject | null): boolean => {
+    return subject === 'verbal';
+  };
+
   const startQuiz = (subject: Subject) => {
     setIsLoading(true);
     
@@ -110,6 +121,28 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (subject === 'timesTables') {
         selectedQuestions = generateTimesTablesQuestions(selectedTimesTables, questionCount);
         console.log("Generated times tables questions:", selectedQuestions);
+      } else if (subject === 'verbal') {
+        let verbalQuestions = [...sampleQuestions.verbal];
+        
+        // Filter by selected verbal types if any are selected
+        if (selectedVerbalTypes.length > 0) {
+          verbalQuestions = verbalQuestions.filter(q => 
+            q.verbalType && selectedVerbalTypes.includes(q.verbalType)
+          );
+        }
+        
+        // Filter by difficulty if selected
+        let filteredQuestions = selectedDifficulty === 'all' 
+          ? verbalQuestions 
+          : verbalQuestions.filter(q => q.difficulty === selectedDifficulty);
+        
+        // Shuffle questions
+        for (let i = filteredQuestions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
+        }
+        
+        selectedQuestions = filteredQuestions.slice(0, Math.min(questionCount, filteredQuestions.length));
       } else if (subject === 'all') {
         let subjectQuestions: Question[] = [];
         Object.values(sampleQuestions).forEach(questions => {
@@ -323,6 +356,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         questionCount,
         selectedTimesTables,
+        selectedVerbalTypes,
         startTime,
         endTime,
         timeLimit,
@@ -332,6 +366,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSelectedDifficulty,
         setSelectedYear,
         setSelectedTimesTables,
+        setSelectedVerbalTypes,
         setTimeLimit,
         startQuiz,
         answerQuestion,
@@ -341,6 +376,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         endQuiz,
         getResults,
         shouldShowYearSelector,
+        shouldShowVerbalTypesSelector,
       }}
     >
       {children}

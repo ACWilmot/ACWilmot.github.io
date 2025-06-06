@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -8,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CreditCard, UserRound, Settings2, ArrowLeft, Mail, Lock, Key, Check } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
@@ -33,6 +34,7 @@ const ProfilePage = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("account");
   const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
+  const { toast } = useToast();
   
   // Handle query params for checkout success/failure
   useEffect(() => {
@@ -40,14 +42,20 @@ const ProfilePage = () => {
     const checkoutCanceled = searchParams.get('checkoutCanceled');
     
     if (checkoutSuccess === 'true') {
-      toast.success('Thank you for subscribing!');
+      toast({
+        title: "Success!",
+        description: "Thank you for subscribing!",
+      });
       checkSubscription(); // Refresh subscription status
       setActiveTab('subscription');
       
       // Clean up URL
       navigate('/profile', { replace: true });
     } else if (checkoutCanceled === 'true') {
-      toast.info('Subscription checkout was canceled');
+      toast({
+        title: "Checkout Canceled",
+        description: "Subscription checkout was canceled",
+      });
       
       // Clean up URL
       navigate('/profile', { replace: true });
@@ -58,7 +66,7 @@ const ProfilePage = () => {
     if (tabParam && ['account', 'subscription', 'security'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, toast, checkSubscription]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -81,10 +89,17 @@ const ProfilePage = () => {
         throw error;
       }
       
-      toast.success('Password reset email has been sent to your inbox');
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Password reset email has been sent to your inbox",
+      });
     } catch (error) {
       console.error('Password reset error:', error);
-      toast.error('Failed to send password reset email');
+      toast({
+        title: "Error",
+        description: "Failed to send password reset email",
+        variant: "destructive",
+      });
     } finally {
       setIsPasswordResetLoading(false);
     }

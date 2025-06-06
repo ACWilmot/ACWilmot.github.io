@@ -10,7 +10,7 @@ import StudentsPage from './pages/StudentsPage';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { StudentProvider } from './context/StudentContext';
-import { Toaster } from './components/ui/sonner';
+import { Toaster } from './components/ui/toaster';
 import { QuizProvider } from './context/QuizContext';
 import { SubscriptionProvider } from './context/SubscriptionContext';
 import Index from './pages/Index';
@@ -45,7 +45,7 @@ function App() {
             </StudentProvider>
           </SubscriptionProvider>
         </ProfileProvider>
-        <Toaster position="top-right" />
+        <Toaster />
       </AuthProvider>
     </BrowserRouter>
   );

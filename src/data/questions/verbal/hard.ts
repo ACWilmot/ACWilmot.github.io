@@ -14,7 +14,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'Running quickly, the bus was caught by Maria.',
     explanation: 'A misplaced modifier is a phrase or clause placed awkwardly in a sentence so that it appears to modify or refer to an unintended word. In the correct sentence, "Maria, running quickly, caught the bus," the modifier "running quickly" clearly refers to Maria.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v37',
@@ -28,7 +29,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'She is taller than I.',
     explanation: '"Than" is used to make comparisons.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v38',
@@ -42,7 +44,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'He is a well-trained dog.',
     explanation: 'A hyphen is used to join two or more words serving as a single adjective before a noun.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v39',
@@ -51,7 +54,8 @@ const hardVerbalQuestions: Question[] = [
     options: ['Jump quickly', 'Blue house', 'Peter Piper', 'Green table'],
     correctAnswer: 'Peter Piper',
     explanation: 'Alliteration is the occurrence of the same letter or sound at the beginning of adjacent or closely connected words. "Peter Piper" is an example.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'letterSeries'
   },
   {
     id: 'v42',
@@ -65,7 +69,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'I will lie down for a nap.',
     explanation: '"Lie" means to rest or recline.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v43',
@@ -74,7 +79,8 @@ const hardVerbalQuestions: Question[] = [
     options: ['Red hat', 'Green tree', 'Blue moon', 'Fine time'],
     correctAnswer: 'Fine time',
     explanation: 'Assonance is the repetition of the sound of a vowel or diphthong in nonrhyming stressed syllables near enough to each other for the echo to be discernible. "Fine time" is an example.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'letterSeries'
   },
   {
     id: 'v44',
@@ -88,7 +94,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'Everywhere',
     explanation: '"Ubiquitous" means present, appearing, or found everywhere.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'sameMeaning'
   },
   {
     id: 'v45',
@@ -102,7 +109,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'Who is going to the party?',
     explanation: '"Who" is used as a subject pronoun.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v46',
@@ -116,7 +124,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'Whom did you see?',
     explanation: '"Whom" is used as an object pronoun.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v47',
@@ -125,7 +134,8 @@ const hardVerbalQuestions: Question[] = [
     options: ['Red bed', 'Green tree', 'Blue moon', 'Fine time'],
     correctAnswer: 'Red bed',
     explanation: 'Consonance is the recurrence of similar sounds, especially consonants, in close proximity. "Red bed" is an example.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'letterSeries'
   },
   {
     id: 'v48',
@@ -139,7 +149,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'Brief',
     explanation: '"Ephemeral" means lasting for a very short time.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'sameMeaning'
   },
   {
     id: 'v49',
@@ -153,7 +164,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'The question is whether or not to go.',
     explanation: '"Whether" is used to express a doubt or choice between alternatives.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   },
   {
     id: 'v50',
@@ -167,7 +179,8 @@ const hardVerbalQuestions: Question[] = [
     ],
     correctAnswer: 'The weather is nice today.',
     explanation: '"Weather" refers to the state of the atmosphere.',
-    difficulty: 'hard'
+    difficulty: 'hard',
+    verbalType: 'relatedWords'
   }
 ];
 

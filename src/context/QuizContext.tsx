@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import sampleQuestions from '@/data/sampleQuestions';
-import { Question, Difficulty, Subject } from '@/types/questionTypes';
+import { Question, Difficulty, Subject, VerbalType } from '@/types/questionTypes';
 import { generateTimesTablesQuestions } from '@/utils/timesTablesUtils';
 import { useProgressActions } from '@/hooks/useProgressActions';
 import { useStudentProgressActions } from '@/hooks/useStudentProgressActions';
@@ -18,6 +19,7 @@ interface QuizContextType {
   isLoading: boolean;
   questionCount: number;
   selectedTimesTables: number[];
+  selectedVerbalTypes: VerbalType[];
   startTime: number | null;
   endTime: number | null;
   timeLimit: number | null; // Time limit in seconds
@@ -27,6 +29,7 @@ interface QuizContextType {
   setSelectedDifficulty: (difficulty: Difficulty | 'all') => void;
   setSelectedYear: (year: number | null) => void;
   setSelectedTimesTables: (tables: number[]) => void;
+  setSelectedVerbalTypes: (types: VerbalType[]) => void;
   setTimeLimit: (seconds: number | null) => void; // Set time limit
   startQuiz: (subject: Subject) => void;
   answerQuestion: (questionId: string, answer: string) => void;
@@ -57,6 +60,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(10);
   const [selectedTimesTables, setSelectedTimesTables] = useState<number[]>([2, 5, 10]);
+  const [selectedVerbalTypes, setSelectedVerbalTypes] = useState<VerbalType[]>(['oppositeMeaning', 'closestMeaning', 'wordConnections']);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
   const [timeLimit, setTimeLimit] = useState<number | null>(null);
@@ -128,6 +132,14 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
           );
         }
         
+        // Filter verbal questions by selected types
+        filteredQuestions = filteredQuestions.filter(q => {
+          if (q.subject === 'verbal' && q.verbalType) {
+            return selectedVerbalTypes.includes(q.verbalType);
+          }
+          return true;
+        });
+        
         for (let i = filteredQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
@@ -146,6 +158,13 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (selectedYear && shouldShowYearSelector(subject)) {
           filteredQuestions = filteredQuestions.filter(q => 
             !q.year || q.year === selectedYear
+          );
+        }
+        
+        // Filter verbal questions by selected types
+        if (subject === 'verbal') {
+          filteredQuestions = filteredQuestions.filter(q => 
+            q.verbalType && selectedVerbalTypes.includes(q.verbalType)
           );
         }
         
@@ -323,6 +342,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         questionCount,
         selectedTimesTables,
+        selectedVerbalTypes,
         startTime,
         endTime,
         timeLimit,
@@ -332,6 +352,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSelectedDifficulty,
         setSelectedYear,
         setSelectedTimesTables,
+        setSelectedVerbalTypes,
         setTimeLimit,
         startQuiz,
         answerQuestion,

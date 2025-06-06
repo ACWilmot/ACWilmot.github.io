@@ -4,6 +4,30 @@ export type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
 // Export the Subject type to be used in other files
 export type Subject = 'maths' | 'english' | 'verbal' | 'all' | 'timesTables' | 'history' | 'geography' | 'religiousEd';
 
+// Verbal reasoning question types
+export type VerbalType = 
+  | 'insertLetter'       // TYPE 1: Insert a Letter (IPS Type A)
+  | 'twoOddOnes'        // TYPE 2: Two Odd Ones Out (IPS Type B)
+  | 'relatedWords'      // TYPE 3: Related Words (IPS Type C)
+  | 'closestMeaning'    // TYPE 4: Closest Meaning (IPS Type D)
+  | 'hiddenWord'        // TYPE 5: Hidden Word (IPS Type E)
+  | 'missingWord'       // TYPE 6: Missing Word (IPS Type F)
+  | 'lettersNumbers'    // TYPE 7: Letters for Numbers (IPS Type G)
+  | 'moveLetter'        // TYPE 8: Move a Letter (IPS Type J)
+  | 'letterSeries'      // TYPE 9: Letter Series (IPS Type L)
+  | 'wordConnections'   // TYPE 10: Word Connections (IPS Type M)
+  | 'numberSeries'      // TYPE 11: Number Series (IPS Type P)
+  | 'compoundWords'     // TYPE 12: Compound Words (IPS Type Q)
+  | 'makeWord'          // TYPE 13: Make a Word (IPS Type R)
+  | 'letterConnections' // TYPE 14: Letter Connections (IPS Type U)
+  | 'readingInfo'       // TYPE 15: Reading Information (IPS Type Z)
+  | 'oppositeMeaning'   // TYPE 16: Opposite Meaning (IPS Type H)
+  | 'completeSum'       // TYPE 17: Complete the Sum (IPS Type I)
+  | 'relatedNumbers'    // TYPE 18: Related Numbers (IPS Type K)
+  | 'wordNumberCodes'   // TYPE 19: Word-Number Codes (IPS Type N)
+  | 'completeWord'      // TYPE 20: Complete the Word (IPS Type O)
+  | 'sameMeaning';      // TYPE 21: Same Meaning (IPS Type S)
+
 export interface Question {
   id: string;
   subject: Subject;
@@ -16,6 +40,7 @@ export interface Question {
   optionImages?: string[];
   timesTable?: number; // Add times table identifier
   year?: number; // Add year level identifier
+  verbalType?: VerbalType; // Add verbal reasoning type identifier
 }
 
 export type SubjectQuestions = Record<Subject, Question[]>;

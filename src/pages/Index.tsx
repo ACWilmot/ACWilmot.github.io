@@ -31,6 +31,7 @@ import DifficultySelector from '@/components/DifficultySelector';
 import YearSelector from '@/components/YearSelector';
 import { useQuiz } from '@/context/QuizContext';
 import TimesTablesSelector from '@/components/TimesTablesSelector';
+import VerbalTypesSelector from '@/components/VerbalTypesSelector';
 import { Subject } from '@/types/questionTypes';
 
 const Index = () => {
@@ -49,6 +50,8 @@ const Index = () => {
     setSelectedYear,
     selectedTimesTables,
     setSelectedTimesTables,
+    selectedVerbalTypes,
+    setSelectedVerbalTypes,
     setTimeLimit,
     timeLimit,
   } = useQuiz();
@@ -73,6 +76,9 @@ const Index = () => {
   const handleStartQuiz = () => {
     if (selectedSubject) {
       if (selectedSubject === 'timesTables' && selectedTimesTables.length === 0) {
+        return;
+      }
+      if (selectedSubject === 'verbal' && selectedVerbalTypes.length === 0) {
         return;
       }
       startQuiz(selectedSubject);
@@ -113,6 +119,7 @@ const Index = () => {
   const isReadyToStart = () => {
     if (!selectedSubject) return false;
     if (selectedSubject === 'timesTables' && selectedTimesTables.length === 0) return false;
+    if (selectedSubject === 'verbal' && selectedVerbalTypes.length === 0) return false;
     return true;
   };
 
@@ -253,7 +260,7 @@ const Index = () => {
               transition={{ duration: 0.3 }}
               className="mb-8"
             >
-              {selectedSubject !== 'timesTables' && (
+              {selectedSubject !== 'timesTables' && selectedSubject !== 'verbal' && (
                 <>
                   <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select difficulty level</h2>
                   <div className="flex justify-center mb-6">
@@ -292,6 +299,20 @@ const Index = () => {
                     <TimesTablesSelector
                       selectedTables={selectedTimesTables}
                       onChange={setSelectedTimesTables}
+                      className="mb-6"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedSubject === 'verbal' && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-display font-semibold mb-6 text-center">Select verbal reasoning types</h2>
+                  {/* Grey out for free users but keep it visible */}
+                  <div className={!isSubscribed ? "opacity-50 pointer-events-none" : ""}>
+                    <VerbalTypesSelector
+                      selectedTypes={selectedVerbalTypes}
+                      onChange={setSelectedVerbalTypes}
                       className="mb-6"
                     />
                   </div>

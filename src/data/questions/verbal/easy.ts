@@ -1,3 +1,4 @@
+
 import { Question } from '@/types/questionTypes';
 
 const easyVerbalQuestions: Question[] = [
@@ -1413,4 +1414,8 @@ const easyVerbalQuestions: Question[] = [
     correctAnswer: 'ears',
     explanation: 'Ears are the organs we use for hearing.',
     difficulty: 'easy',
-    verbalType:
+    verbalType: 'missingWord'
+  }
+];
+
+export default easyVerbalQuestions;

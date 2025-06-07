@@ -206,6 +206,7 @@ export type Database = {
           text: string
           times_table: number | null
           user_id: string | null
+          verbal_type: string | null
           year: number | null
         }
         Insert: {
@@ -221,6 +222,7 @@ export type Database = {
           text: string
           times_table?: number | null
           user_id?: string | null
+          verbal_type?: string | null
           year?: number | null
         }
         Update: {
@@ -236,6 +238,7 @@ export type Database = {
           text?: string
           times_table?: number | null
           user_id?: string | null
+          verbal_type?: string | null
           year?: number | null
         }
         Relationships: []

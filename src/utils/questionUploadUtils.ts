@@ -63,7 +63,8 @@ export const uploadQuestionBatch = async (
           image_url: question.imageUrl || null,
           option_images: Array.isArray(question.optionImages) ? question.optionImages : null,
           year: question.year || null,
-          times_table: question.timesTable || null
+          times_table: question.timesTable || null,
+          verbal_type: question.verbalType || null
         };
       });
       

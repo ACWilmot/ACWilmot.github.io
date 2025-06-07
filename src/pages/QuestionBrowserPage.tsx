@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -108,6 +107,8 @@ const QuestionBrowserPage: React.FC<QuestionBrowserPageProps> = ({ supabaseClien
           
         if (error) throw error;
         
+        console.log('Raw question data from database:', data);
+        
         const mappedQuestions: Question[] = data.map(q => ({
           id: q.id,
           subject: q.subject,
@@ -123,6 +124,9 @@ const QuestionBrowserPage: React.FC<QuestionBrowserPageProps> = ({ supabaseClien
           userId: q.user_id,
           verbalType: q.verbal_type || null,
         }));
+        
+        console.log('Mapped questions:', mappedQuestions);
+        console.log('Verbal questions:', mappedQuestions.filter(q => q.subject === 'verbal'));
         
         return mappedQuestions;
       } catch (err) {
@@ -148,6 +152,8 @@ const QuestionBrowserPage: React.FC<QuestionBrowserPageProps> = ({ supabaseClien
     .filter(q => q.subject === 'verbal' && q.verbalType)
     .map(q => q.verbalType))]
     .filter(Boolean) as string[];
+
+  console.log('Available verbal types:', verbalTypes);
 
   const startEdit = (question: Question) => {
     setEditingId(question.id);
@@ -344,11 +350,15 @@ const QuestionBrowserPage: React.FC<QuestionBrowserPageProps> = ({ supabaseClien
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Verbal Types</SelectItem>
-                  {verbalTypes.map(type => (
-                    <SelectItem key={type} value={type}>
-                      {verbalTypeLabels[type as VerbalType] || type}
-                    </SelectItem>
-                  ))}
+                  {verbalTypes.length > 0 ? (
+                    verbalTypes.map(type => (
+                      <SelectItem key={type} value={type}>
+                        {verbalTypeLabels[type as VerbalType] || type}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-types" disabled>No verbal types found</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -364,6 +374,13 @@ const QuestionBrowserPage: React.FC<QuestionBrowserPageProps> = ({ supabaseClien
           </div>
         </div>
       </div>
+
+      {/* Debug info */}
+      {subjectFilter === 'verbal' && (
+        <div className="bg-muted p-3 rounded text-sm">
+          <strong>Debug:</strong> Found {verbalTypes.length} verbal types: {verbalTypes.join(', ') || 'none'}
+        </div>
+      )}
 
       {/* Results count */}
       <div className="text-sm text-muted-foreground">
@@ -469,7 +486,11 @@ const QuestionBrowserPage: React.FC<QuestionBrowserPageProps> = ({ supabaseClien
                         <Badge variant="outline">
                           {verbalTypeLabels[question.verbalType as VerbalType] || question.verbalType}
                         </Badge>
-                      ) : null
+                      ) : (
+                        question.subject === 'verbal' ? (
+                          <span className="text-muted-foreground text-sm">No type set</span>
+                        ) : null
+                      )
                     )}
                   </TableCell>
                   <TableCell>{question.year}</TableCell>
